@@ -9,15 +9,75 @@ import "google/protobuf/any.proto";
 
 option go_package = "github.com/tendermint/farming/x/farming/types";
 
-// PublicPlanProposal details a proposal for creating a public plan.
-message PublicPlanProposal {
+// AddPublicPlanProposal details a proposal for creating a public plan.
+message AddPublicPlanProposal {
   option (gogoproto.goproto_getters)  = false;
   option (gogoproto.goproto_stringer) = false;
 
+  // title specifies the title of the plan
   string title       = 1;
+
+  // description specifies the description of the plan
   string description = 2;
 
-  // plans specifies the plan interface(s); it can be FixedAmountPlan or
-  // RatioPlan
-  repeated google.protobuf.Any plans = 3;
+  // staking_coin_weights specifies coin weights for the plan
+  repeated cosmos.base.v1beta1.DecCoin staking_coin_weights = 3 [
+    (gogoproto.moretags)     = "yaml:\"staking_coin_weights\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.nullable)     = false
+  ];
+
+  // start_time specifies the start time of the plan
+  google.protobuf.Timestamp start_time = 7
+      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"start_time\""];
+
+  // end_time specifies the end time of the plan
+  google.protobuf.Timestamp end_time = 8
+      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"end_time\""];
+}
+
+// UpdatePublicPlanProposal details a proposal for updating an existing public plan.
+message UpdatePublicPlanProposal {
+  option (gogoproto.goproto_getters)  = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  // title specifies the title of the plan
+  string title       = 1;
+
+  // description specifies the description of the plan
+  string description = 2;  
+  
+  // plan_id specifies index of the farming plan
+  uint64 plan_id = 3;
+
+ // staking_coin_weights specifies coin weights for the plan
+  repeated cosmos.base.v1beta1.DecCoin staking_coin_weights = 3 [
+    (gogoproto.moretags)     = "yaml:\"staking_coin_weights\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.nullable)     = false
+  ];
+
+  // start_time specifies the start time of the plan
+  google.protobuf.Timestamp start_time = 7
+      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"start_time\""];
+
+  // end_time specifies the end time of the plan
+  google.protobuf.Timestamp end_time = 8
+      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"end_time\""];
+}
+
+// DeletePublicPlanProposal details a proposal for deleting an existing public plan.
+message DeletePublicPlanProposal {
+  option (gogoproto.goproto_getters)  = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  // title specifies the title of the plan
+  string title       = 1;
+
+  // description specifies the description of the plan
+  string description = 2;  
+  
+  // plan_id specifies index of the farming plan
+  uint64 plan_id = 3;
+
 }
