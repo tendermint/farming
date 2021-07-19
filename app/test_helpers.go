@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -39,19 +41,27 @@ var DefaultConsensusParams = &abci.ConsensusParams{
 	},
 }
 
+func setup(withGenesis bool, invCheckPeriod uint) (*FarmingApp, GenesisState) {
+	db := dbm.NewMemDB()
+	encCdc := MakeEncodingConfig()
+	app := NewFarmingApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encCdc, EmptyAppOptions{})
+	if withGenesis {
+		return app, NewDefaultGenesisState(encCdc.Marshaler)
+	}
+	return app, GenesisState{}
+}
+
 // Setup initializes a new FarmingApp. A Nop logger is set in FarmingApp.
 func Setup(isCheckTx bool) *FarmingApp {
-	db := dbm.NewMemDB()
-	app := NewFarmingApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, MakeEncodingConfig(), EmptyAppOptions{})
+	app, genesisState := setup(!isCheckTx, 5)
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
-		genesisState := NewDefaultGenesisState()
 		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 		if err != nil {
 			panic(err)
 		}
 
-		// Initialize the chain
+		// initialize the chain
 		app.InitChain(
 			abci.RequestInitChain{
 				Validators:      []abci.ValidatorUpdate{},
@@ -64,7 +74,7 @@ func Setup(isCheckTx bool) *FarmingApp {
 	return app
 }
 
-// CreateTestInput returns a simapp with custom FarmingKeeper to avoid
+// CreateTestInput returns FarmingApp with custom FarmingKeeper to avoid
 // messing with the hooks.
 func CreateTestInput() (*FarmingApp, sdk.Context) {
 	cdc := codec.NewLegacyAmino()
@@ -88,6 +98,19 @@ func CreateTestInput() (*FarmingApp, sdk.Context) {
 	)
 
 	return app, ctx
+}
+
+type GenerateAccountStrategy func(int) []sdk.AccAddress
+
+// createRandomAccounts is a strategy used by addTestAddrs() in order to generated addresses in random order.
+func createRandomAccounts(accNum int) []sdk.AccAddress {
+	testAddrs := make([]sdk.AccAddress, accNum)
+	for i := 0; i < accNum; i++ {
+		pk := ed25519.GenPrivKey().PubKey()
+		testAddrs[i] = sdk.AccAddress(pk.Address())
+	}
+
+	return testAddrs
 }
 
 // createIncrementalAccounts is a strategy used by addTestAddrs() in order to generated addresses in ascending order.
@@ -114,41 +137,33 @@ func createIncrementalAccounts(accNum int) []sdk.AccAddress {
 
 // AddTestAddrs constructs and returns accNum amount of accounts with an
 // initial balance of accAmt in random order
-func AddTestAddrs(app *FarmingApp, ctx sdk.Context, accNum int, initCoins sdk.Coins) []sdk.AccAddress {
-	testAddrs := createIncrementalAccounts(accNum)
+func AddTestAddrs(app *FarmingApp, ctx sdk.Context, accNum int, accAmt sdk.Int) []sdk.AccAddress {
+	return addTestAddrs(app, ctx, accNum, accAmt, createRandomAccounts)
+}
+
+func addTestAddrs(app *FarmingApp, ctx sdk.Context, accNum int, accAmt sdk.Int, strategy GenerateAccountStrategy) []sdk.AccAddress {
+	testAddrs := strategy(accNum)
+
+	initCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt))
+
 	for _, addr := range testAddrs {
-		fmt.Println(addr)
-		// addTotalSupply(app, ctx, initCoins)
-		// SaveAccount(app, ctx, addr, initCoins)
+		initAccountWithCoins(app, ctx, addr, initCoins)
 	}
+
 	return testAddrs
 }
 
-// TODO: update the methods in accordance with SDK 0.43.0-rc0
-// func addTotalSupply(app *FarmingApp, ctx sdk.Context, coins sdk.Coins) {
-// 	for _, coin := range coins {
-// 		prevSupply := app.BankKeeper.GetSupply(ctx, coin.Denom)
-// 		app.BankKeeper.AllBalances(context.Context, *banktypes.QueryAllBalancesRequest)
-// 		app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(prevSupply.GetTotal().Add(coins...)))
-// 	}
-// }
+func initAccountWithCoins(app *FarmingApp, ctx sdk.Context, addr sdk.AccAddress, coins sdk.Coins) {
+	err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
+	if err != nil {
+		panic(err)
+	}
 
-// // setTotalSupply provides the total supply based on accAmt * totalAccounts.
-// func setTotalSupply(app *FarmingApp, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
-// 	totalSupply := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt.MulRaw(int64(totalAccounts))))
-// 	prevSupply := app.BankKeeper.GetSupply(ctx)
-// 	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(prevSupply.GetTotal().Add(totalSupply...)))
-// }
-
-// // SaveAccount saves the provided account into the simapp with balance based on initCoins.
-// func SaveAccount(app *FarmingApp, ctx sdk.Context, addr sdk.AccAddress, initCoins sdk.Coins) {
-// 	acc := app.AccountKeeper.NewAccountWithAddress(ctx, addr)
-// 	app.AccountKeeper.SetAccount(ctx, acc)
-// 	err := app.BankKeeper.AddCoins(ctx, addr, initCoins)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
+	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, coins)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func TestAddr(addr string, bech string) (sdk.AccAddress, error) {
 	res, err := sdk.AccAddressFromHex(addr)
