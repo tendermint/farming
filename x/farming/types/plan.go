@@ -27,7 +27,7 @@ func NewBasePlan(id uint64, name string, typ PlanType, farmingPoolAddr, terminat
 		Name:               name,
 		Type:               typ,
 		FarmingPoolAddress: farmingPoolAddr,
-		RewardPoolAddress:  GenerateRewardPoolAcc(PlanName(id, typ, farmingPoolAddr)).String(),
+		RewardPoolAddress:  GenerateRewardPoolAcc(PlanUniqueKey(id, typ, farmingPoolAddr)).String(),
 		TerminationAddress: terminationAddr,
 		StakingCoinWeights: coinWeights,
 		StartTime:          startTime,
@@ -162,13 +162,8 @@ func NewRatioPlan(basePlan *BasePlan, epochRatio sdk.Dec) *RatioPlan {
 	}
 }
 
-// GetPlanName returns unique name of the plan
-func (plan BasePlan) Name() string {
-	return PlanName(plan.Id, plan.Type, plan.FarmingPoolAddress)
-}
-
-// PlanName returns unique name of the plan consists of given Id, Type and FarmingPoolAddress.
-func PlanName(id uint64, typ PlanType, farmingPoolAddr string) string {
+// PlanUniqueKey returns unique name of the plan consists of given Id, Type and FarmingPoolAddress.
+func PlanUniqueKey(id uint64, typ PlanType, farmingPoolAddr string) string {
 	poolNameObjects := make([]string, 3)
 	poolNameObjects[0] = strconv.FormatUint(id, 10)
 	poolNameObjects[1] = strconv.FormatInt(int64(typ), 10)
