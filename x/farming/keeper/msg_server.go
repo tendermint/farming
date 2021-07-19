@@ -30,7 +30,8 @@ var _ types.MsgServer = msgServer{}
 func (k msgServer) CreateFixedAmountPlan(goCtx context.Context, msg *types.MsgCreateFixedAmountPlan) (*types.MsgCreateFixedAmountPlanResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	fixedPlan := k.Keeper.CreateFixedAmountPlan(ctx, msg, types.PlanTypePrivate)
+	name := ""
+	fixedPlan := k.Keeper.CreateFixedAmountPlan(ctx, msg, name, types.PlanTypePrivate)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -50,7 +51,8 @@ func (k msgServer) CreateFixedAmountPlan(goCtx context.Context, msg *types.MsgCr
 func (k msgServer) CreateRatioPlan(goCtx context.Context, msg *types.MsgCreateRatioPlan) (*types.MsgCreateRatioPlanResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	ratioPlan := k.Keeper.CreateRatioPlan(ctx, msg, types.PlanTypePrivate)
+	name := ""
+	ratioPlan := k.Keeper.CreateRatioPlan(ctx, msg, name, types.PlanTypePrivate)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

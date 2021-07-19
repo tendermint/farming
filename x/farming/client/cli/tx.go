@@ -9,6 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
+	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/spf13/cobra"
 
 	"github.com/tendermint/farming/x/farming/types"
@@ -232,6 +234,189 @@ $ %s tx %s claim --from mykey
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
+
+	return cmd
+}
+
+// TODO: not implemented yet
+// GetCmdSubmitAddPublicPlanProposal implements a command handler for submitting a public farming plan creation transaction.
+func GetCmdSubmitAddPublicPlanProposal() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-public-farming-plan [proposal-file] [flags]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Submit a public farming plan creation",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Submit a a public farming plan creation along with an initial deposit.
+The proposal details must be supplied via a JSON file.
+
+Example:
+$ %s tx gov submit-proposal public-farming-plan <path/to/proposal.json> --from=<key_or_address> --deposit=<deposit_amount>
+
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return err
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return err
+			}
+
+			title := "title"
+			desc := "description"
+			coinWeights := sdk.NewDecCoins(sdk.NewDecCoin("test", sdk.NewInt(1)))
+			startTime := time.Now().UTC()
+			endTime := startTime.AddDate(1, 0, 0)
+
+			content, err := types.NewAddPublicPlanProposal(title, desc, coinWeights, startTime, endTime)
+			if err != nil {
+				return err
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			msg, err := gov.NewMsgSubmitProposal(content, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
+
+	return cmd
+}
+
+// TODO: not implemented yet
+// GetCmdSubmitUpdatePublicPlanProposal implements a command handler for submitting a public farming plan creation transaction.
+func GetCmdSubmitUpdatePublicPlanProposal() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-public-farming-plan [proposal-file] [flags]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Submit a public farming plan creation",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Submit a a public farming plan creation along with an initial deposit.
+The proposal details must be supplied via a JSON file.
+
+Example:
+$ %s tx gov submit-proposal public-farming-plan <path/to/proposal.json> --from=<key_or_address> --deposit=<deposit_amount>
+
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return err
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return err
+			}
+
+			title := "title"
+			desc := "description"
+			coinWeights := sdk.NewDecCoins(sdk.NewDecCoin("test", sdk.NewInt(1)))
+			startTime := time.Now().UTC()
+			endTime := startTime.AddDate(1, 0, 0)
+
+			content, err := types.NewAddPublicPlanProposal(title, desc, coinWeights, startTime, endTime)
+			if err != nil {
+				return err
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			msg, err := gov.NewMsgSubmitProposal(content, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
+
+	return cmd
+}
+
+// TODO: not implemented yet
+// GetCmdSubmitDeletePublicPlanProposal implements a command handler for submitting a public farming plan creation transaction.
+func GetCmdSubmitDeletePublicPlanProposal() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-public-farming-plan [proposal-file] [flags]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Submit a public farming plan creation",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Submit a a public farming plan creation along with an initial deposit.
+The proposal details must be supplied via a JSON file.
+
+Example:
+$ %s tx gov submit-proposal public-farming-plan <path/to/proposal.json> --from=<key_or_address> --deposit=<deposit_amount>
+
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return err
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return err
+			}
+
+			title := "title"
+			desc := "description"
+			coinWeights := sdk.NewDecCoins(sdk.NewDecCoin("test", sdk.NewInt(1)))
+			startTime := time.Now().UTC()
+			endTime := startTime.AddDate(1, 0, 0)
+
+			content, err := types.NewAddPublicPlanProposal(title, desc, coinWeights, startTime, endTime)
+			if err != nil {
+				return err
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			msg, err := gov.NewMsgSubmitProposal(content, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
 
 	return cmd
 }

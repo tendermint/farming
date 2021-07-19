@@ -14,6 +14,7 @@ import (
 func TestGetSetNewPlan(t *testing.T) {
 	app, ctx := createTestApp(true)
 
+	name := ""
 	farmingPoolAddr := sdk.AccAddress([]byte("farmingPoolAddr"))
 	terminationAddr := sdk.AccAddress([]byte("terminationAddr"))
 	farmerAddr := sdk.AccAddress([]byte("farmer"))
@@ -23,7 +24,7 @@ func TestGetSetNewPlan(t *testing.T) {
 	)
 	startTime := time.Now().UTC()
 	endTime := startTime.AddDate(1, 0, 0)
-	basePlan := types.NewBasePlan(1, 1, farmingPoolAddr.String(), terminationAddr.String(), coinWeights, startTime, endTime)
+	basePlan := types.NewBasePlan(1, name, 1, farmingPoolAddr.String(), terminationAddr.String(), coinWeights, startTime, endTime)
 	fixedPlan := types.NewFixedAmountPlan(basePlan, sdk.NewCoins(sdk.NewCoin("testFarmCoinDenom", sdk.NewInt(1000000))))
 	app.FarmingKeeper.SetPlan(ctx, fixedPlan)
 

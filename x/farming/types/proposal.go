@@ -4,8 +4,10 @@ import (
 	"fmt"
 	time "time"
 
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 const (
@@ -123,4 +125,36 @@ func (p DeletePublicPlanProposal) String() string {
   Description: 		  %s
   PlanId: 		  	  %s
 `, p.Title, p.Description, p.PlanId)
+}
+
+// PackPlans converts PlanIs to Any slice.
+func PackPlans(plans []PlanI) ([]*types.Any, error) {
+	plansAny := make([]*types.Any, len(plans))
+	for i, plan := range plans {
+		msg, ok := plan.(proto.Message)
+		if !ok {
+			return nil, fmt.Errorf("cannot proto marshal %T", plan)
+		}
+		any, err := types.NewAnyWithValue(msg)
+		if err != nil {
+			return nil, err
+		}
+		plansAny[i] = any
+	}
+
+	return plansAny, nil
+}
+
+// UnpackPlans converts Any slice to PlanIs.
+func UnpackPlans(plansAny []*types.Any) ([]PlanI, error) {
+	plans := make([]PlanI, len(plansAny))
+	for i, any := range plansAny {
+		p, ok := any.GetCachedValue().(PlanI)
+		if !ok {
+			return nil, fmt.Errorf("expected planI")
+		}
+		plans[i] = p
+	}
+
+	return plans, nil
 }

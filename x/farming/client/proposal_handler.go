@@ -1,12 +1,15 @@
 package client
 
-// import (
-// 	"github.com/tendermint/farming/x/farming/client/cli"
-// 	"github.com/tendermint/farming/x/farming/client/rest"
-// 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-// )
+import (
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 
-// // ProposalHandler is the public plan creation handler.
-// var (
-// 	ProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitProposal, rest.ProposalRESTHandler)
-// )
+	"github.com/tendermint/farming/x/farming/client/cli"
+	"github.com/tendermint/farming/x/farming/client/rest"
+)
+
+// ProposalHandler is the public plan creation handler.
+var (
+	AddProposalHandler    = govclient.NewProposalHandler(cli.GetCmdSubmitAddPublicPlanProposal, rest.ProposalRESTHandler)
+	UpdateProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitUpdatePublicPlanProposal, rest.ProposalRESTHandler)
+	DeleteProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitDeletePublicPlanProposal, rest.ProposalRESTHandler)
+)

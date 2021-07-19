@@ -115,13 +115,14 @@ func (k Keeper) SetPlanIdByFarmerAddrIndex(ctx sdk.Context, farmerAcc sdk.AccAdd
 }
 
 // CreateFixedAmountPlan sets fixed amount plan.
-func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) *types.FixedAmountPlan {
+func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, name string, typ types.PlanType) *types.FixedAmountPlan {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddr := msg.FarmingPoolAddress
 	terminationAddr := farmingPoolAddr
 
 	basePlan := types.NewBasePlan(
 		nextId,
+		name,
 		typ,
 		farmingPoolAddr,
 		terminationAddr,
@@ -138,13 +139,14 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 }
 
 // CreateRatioPlan sets ratio plan.
-func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) *types.RatioPlan {
+func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, name string, typ types.PlanType) *types.RatioPlan {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddr := msg.FarmingPoolAddress
 	terminationAddr := farmingPoolAddr
 
 	basePlan := types.NewBasePlan(
 		nextId,
+		name,
 		typ,
 		farmingPoolAddr,
 		terminationAddr,
