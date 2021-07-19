@@ -21,6 +21,7 @@ func TestGetPoolInformation(t *testing.T) {
 
 	testCases := []struct {
 		planId          uint64
+		name            string
 		planType        types.PlanType
 		farmingPoolAddr string
 		rewardPoolAddr  string
@@ -30,6 +31,7 @@ func TestGetPoolInformation(t *testing.T) {
 	}{
 		{
 			planId:          uint64(1),
+			name:            "",
 			planType:        types.PlanTypePublic,
 			farmingPoolAddr: sdk.AccAddress([]byte("farmingPoolAddr1")).String(),
 			rewardPoolAddr:  "cosmos1yqurgw7xa94psk95ctje76ferlddg8vykflaln6xsgarj5w6jkrsuvh9dj",
@@ -40,7 +42,7 @@ func TestGetPoolInformation(t *testing.T) {
 	for _, tc := range testCases {
 		planName := types.PlanName(tc.planId, tc.planType, tc.farmingPoolAddr)
 		rewardPoolAcc := types.GenerateRewardPoolAcc(planName)
-		basePlan := types.NewBasePlan(tc.planId, tc.planType, tc.farmingPoolAddr, commonTerminationAcc.String(), commonCoinWeights, commonStartTime, commonEndTime)
+		basePlan := types.NewBasePlan(tc.planId, tc.name, tc.planType, tc.farmingPoolAddr, commonTerminationAcc.String(), commonCoinWeights, commonStartTime, commonEndTime)
 		require.Equal(t, basePlan.RewardPoolAddress, rewardPoolAcc.String())
 	}
 }

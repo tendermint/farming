@@ -2,106 +2,125 @@ package types
 
 import (
 	"fmt"
+	time "time"
 
-	"github.com/gogo/protobuf/proto"
-
-	"github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 const (
-	ProposalTypePublicPlan string = "PublicPlan"
+	ProposalTypeAddPublicPlan    string = "AddPublicPlan"
+	ProposalTypeUpdatePublicPlan string = "UpdatePublicPlan"
+	ProposalTypeDeletePublicPlan string = "DeletePublicPlan"
 )
 
 // Implements Proposal Interface
-var _ gov.Content = &PublicPlanProposal{}
+var _ gov.Content = &AddPublicPlanProposal{}
+var _ gov.Content = &UpdatePublicPlanProposal{}
+var _ gov.Content = &DeletePublicPlanProposal{}
 
 func init() {
-	gov.RegisterProposalType(ProposalTypePublicPlan)
-	gov.RegisterProposalTypeCodec(&PublicPlanProposal{}, "cosmos-sdk/PublicPlanProposal")
+	gov.RegisterProposalType(ProposalTypeAddPublicPlan)
+	gov.RegisterProposalTypeCodec(&AddPublicPlanProposal{}, "cosmos-sdk/AddPublicPlanProposal")
+	gov.RegisterProposalType(ProposalTypeUpdatePublicPlan)
+	gov.RegisterProposalTypeCodec(&UpdatePublicPlanProposal{}, "cosmos-sdk/UpdatePublicPlanProposal")
+	gov.RegisterProposalType(ProposalTypeDeletePublicPlan)
+	gov.RegisterProposalTypeCodec(&DeletePublicPlanProposal{}, "cosmos-sdk/DeletePublicPlanProposal")
 }
 
-func NewPublicPlanProposal(title, description string, plans []PlanI) (gov.Content, error) {
-	plansAny, err := PackPlans(plans)
-	if err != nil {
-		panic(err)
-	}
-
-	return &PublicPlanProposal{
-		Title:       title,
-		Description: description,
-		Plans:       plansAny,
+func NewAddPublicPlanProposal(title, description string, coinWeights sdk.DecCoins, startTime, endTime time.Time) (gov.Content, error) {
+	return &AddPublicPlanProposal{
+		Title:              title,
+		Description:        description,
+		StakingCoinWeights: coinWeights,
+		StartTime:          startTime,
+		EndTime:            endTime,
 	}, nil
 }
 
-func (p *PublicPlanProposal) GetTitle() string { return p.Title }
+func (p *AddPublicPlanProposal) GetTitle() string { return p.Title }
 
-func (p *PublicPlanProposal) GetDescription() string { return p.Description }
+func (p *AddPublicPlanProposal) GetDescription() string { return p.Description }
 
-func (p *PublicPlanProposal) ProposalRoute() string { return RouterKey }
+func (p *AddPublicPlanProposal) ProposalRoute() string { return RouterKey }
 
-func (p *PublicPlanProposal) ProposalType() string { return ProposalTypePublicPlan }
+func (p *AddPublicPlanProposal) ProposalType() string { return ProposalTypeAddPublicPlan }
 
-func (p *PublicPlanProposal) ValidateBasic() error {
-	for _, plan := range p.Plans {
-		_, ok := plan.GetCachedValue().(PlanI)
-		if !ok {
-			return fmt.Errorf("expected planI")
-		}
-		// TODO: PlanI needs ValidateBasic()?
-		// if err := p.ValidateBasic(); err != nil {
-		// 	return err
-		// }
-	}
+func (p *AddPublicPlanProposal) ValidateBasic() error {
+	// TODO: not implemented yet
 	return gov.ValidateAbstract(p)
 }
 
-func (p PublicPlanProposal) String() string {
-	return fmt.Sprintf(`Create FixedAmountPlan Proposal:
-  Title:       %s
-  Description: %s
-  Plans: 	   %s
-`, p.Title, p.Description, p.Plans)
+func (p AddPublicPlanProposal) String() string {
+	return fmt.Sprintf(`Add Public Plan Proposal:
+  Title:       		  %s
+  Description: 		  %s
+  StakingCoinWeights: %s
+  StartTime: 	      %s
+  EndTime: 	   	  	  %s
+`, p.Title, p.Description, p.StakingCoinWeights, p.StartTime, p.EndTime)
 }
 
-// PackPlans converts PlanIs to Any slice.
-func PackPlans(plans []PlanI) ([]*types.Any, error) {
-	plansAny := make([]*types.Any, len(plans))
-	for i, plan := range plans {
-		msg, ok := plan.(proto.Message)
-		if !ok {
-			return nil, fmt.Errorf("cannot proto marshal %T", plan)
-		}
-		any, err := types.NewAnyWithValue(msg)
-		if err != nil {
-			return nil, err
-		}
-		plansAny[i] = any
-	}
-
-	return plansAny, nil
+func NewUpdatePublicPlanProposal(title, description string, id uint64, coinWeights sdk.DecCoins, startTime, endTime time.Time) (gov.Content, error) {
+	return &UpdatePublicPlanProposal{
+		Title:              title,
+		Description:        description,
+		PlanId:             id,
+		StakingCoinWeights: coinWeights,
+		StartTime:          startTime,
+		EndTime:            endTime,
+	}, nil
 }
 
-// UnpackPlans converts Any slice to PlanIs.
-func UnpackPlans(plansAny []*types.Any) ([]PlanI, error) {
-	plans := make([]PlanI, len(plansAny))
-	for i, any := range plansAny {
-		p, ok := any.GetCachedValue().(PlanI)
-		if !ok {
-			return nil, fmt.Errorf("expected planI")
-		}
-		plans[i] = p
-	}
+func (p *UpdatePublicPlanProposal) GetTitle() string { return p.Title }
 
-	return plans, nil
+func (p *UpdatePublicPlanProposal) GetDescription() string { return p.Description }
+
+func (p *UpdatePublicPlanProposal) ProposalRoute() string { return RouterKey }
+
+func (p *UpdatePublicPlanProposal) ProposalType() string { return ProposalTypeUpdatePublicPlan }
+
+func (p *UpdatePublicPlanProposal) ValidateBasic() error {
+	// TODO: not implemented yet
+	return gov.ValidateAbstract(p)
 }
 
-// UnpackPlan converts Any slice to PlanI.
-func UnpackPlan(any *types.Any) (PlanI, error) {
-	p, ok := any.GetCachedValue().(PlanI)
-	if !ok {
-		return nil, fmt.Errorf("expected planI")
-	}
+func (p UpdatePublicPlanProposal) String() string {
+	return fmt.Sprintf(`Update Public Plan Proposal:
+  Title:       		  %s
+  Description: 		  %s
+  PlanId: 		  	  %s
+  StakingCoinWeights: %s
+  StartTime: 	      %s
+  EndTime: 	   	  	  %s
+`, p.Title, p.Description, p.PlanId, p.StakingCoinWeights, p.StartTime, p.EndTime)
+}
 
-	return p, nil
+func NewDeletePublicPlanProposal(title, description string, id uint64) (gov.Content, error) {
+	return &DeletePublicPlanProposal{
+		Title:       title,
+		Description: description,
+		PlanId:      id,
+	}, nil
+}
+
+func (p *DeletePublicPlanProposal) GetTitle() string { return p.Title }
+
+func (p *DeletePublicPlanProposal) GetDescription() string { return p.Description }
+
+func (p *DeletePublicPlanProposal) ProposalRoute() string { return RouterKey }
+
+func (p *DeletePublicPlanProposal) ProposalType() string { return ProposalTypeUpdatePublicPlan }
+
+func (p *DeletePublicPlanProposal) ValidateBasic() error {
+	// TODO: not implemented yet
+	return gov.ValidateAbstract(p)
+}
+
+func (p DeletePublicPlanProposal) String() string {
+	return fmt.Sprintf(`Delete Public Plan Proposal:
+  Title:       		  %s
+  Description: 		  %s
+  PlanId: 		  	  %s
+`, p.Title, p.Description, p.PlanId)
 }

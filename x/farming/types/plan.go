@@ -21,9 +21,10 @@ var (
 
 // NewBasePlan creates a new BasePlan object
 //nolint:interfacer
-func NewBasePlan(id uint64, typ PlanType, farmingPoolAddr, terminationAddr string, coinWeights sdk.DecCoins, startTime, endTime time.Time) *BasePlan {
+func NewBasePlan(id uint64, name string, typ PlanType, farmingPoolAddr, terminationAddr string, coinWeights sdk.DecCoins, startTime, endTime time.Time) *BasePlan {
 	basePlan := &BasePlan{
 		Id:                 id,
+		Name:               name,
 		Type:               typ,
 		FarmingPoolAddress: farmingPoolAddr,
 		RewardPoolAddress:  GenerateRewardPoolAcc(PlanName(id, typ, farmingPoolAddr)).String(),
