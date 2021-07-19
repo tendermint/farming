@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	gogotypes "github.com/gogo/protobuf/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -115,7 +117,7 @@ func (k Keeper) SetPlanIdByFarmerAddrIndex(ctx sdk.Context, farmerAcc sdk.AccAdd
 }
 
 // CreateFixedAmountPlan sets fixed amount plan.
-func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) *types.FixedAmountPlan {
+func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddr := msg.FarmingPoolAddress
 	terminationAddr := farmingPoolAddr
@@ -134,11 +136,22 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 
 	k.SetPlan(ctx, fixedPlan)
 
-	return fixedPlan
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCreateFixedAmountPlan,
+			sdk.NewAttribute(types.AttributeKeyFarmingPoolAddress, msg.FarmingPoolAddress),
+			sdk.NewAttribute(types.AttributeKeyRewardPoolAddress, fixedPlan.RewardPoolAddress),
+			sdk.NewAttribute(types.AttributeKeyStartTime, msg.StartTime.String()),
+			sdk.NewAttribute(types.AttributeKeyEndTime, msg.EndTime.String()),
+			sdk.NewAttribute(types.AttributeKeyEpochAmount, msg.EpochAmount.String()),
+		),
+	})
+
+	return nil
 }
 
 // CreateRatioPlan sets ratio plan.
-func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) *types.RatioPlan {
+func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddr := msg.FarmingPoolAddress
 	terminationAddr := farmingPoolAddr
@@ -157,5 +170,16 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 
 	k.SetPlan(ctx, ratioPlan)
 
-	return ratioPlan
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCreateRatioPlan,
+			sdk.NewAttribute(types.AttributeKeyFarmingPoolAddress, msg.FarmingPoolAddress),
+			sdk.NewAttribute(types.AttributeKeyRewardPoolAddress, ratioPlan.RewardPoolAddress),
+			sdk.NewAttribute(types.AttributeKeyStartTime, msg.StartTime.String()),
+			sdk.NewAttribute(types.AttributeKeyEndTime, msg.EndTime.String()),
+			sdk.NewAttribute(types.AttributeKeyEpochRatio, fmt.Sprint(msg.EpochRatio)),
+		),
+	})
+
+	return nil
 }

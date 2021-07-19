@@ -153,7 +153,7 @@ func (k Querier) Rewards(c context.Context, req *types.QueryRewardsRequest) (*ty
 		var rewards []*types.Reward
 		indexStore := prefix.NewStore(store, types.GetRewardByFarmerAddrIndexPrefix(farmerAddr))
 		pageRes, err := query.FilteredPaginate(indexStore, req.Pagination, func(key, value []byte, accumulate bool) (bool, error) {
-			stakingCoinDenom := types.GetRewardStakingCoinDenomFromIndexKey(key)
+			stakingCoinDenom := types.GetStakingCoinDenomFromRewardByFarmerAddrIndexKey(key)
 			if req.StakingCoinDenom != "" {
 				if stakingCoinDenom != req.StakingCoinDenom {
 					return false, nil

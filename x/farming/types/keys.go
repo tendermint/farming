@@ -29,7 +29,7 @@ var (
 	// param key for global farming plan IDs
 	GlobalPlanIdKey           = []byte("globalPlanId")
 	GlobalLastEpochTimePrefix = []byte("globalLastEpochTime")
-	GlobalStakingIdKey        = []byte("globalStakingId")
+	GlobalLastStakingIDKey    = []byte("globalLastStakingId")
 
 	PlanKeyPrefix                     = []byte{0x11}
 	PlanByFarmerAddrIndexKeyPrefix    = []byte{0x12}
@@ -122,7 +122,17 @@ func GetRewardByFarmerAddrIndexPrefix(farmerAcc sdk.AccAddress) []byte {
 	return append(RewardByFarmerAddrIndexKeyPrefix, address.MustLengthPrefix(farmerAcc.Bytes())...)
 }
 
-func GetRewardStakingCoinDenomFromIndexKey(key []byte) string {
+func GetStakingCoinDenomFromRewardKey(key []byte) string {
+	denomLen := key[1]
+	return string(key[2:2 + denomLen])
+}
+
+func GetFarmerAddrFromRewardKey(key []byte) sdk.AccAddress {
+	denomLen := key[1]
+	return key[2 + denomLen + 1:]
+}
+
+func GetStakingCoinDenomFromRewardByFarmerAddrIndexKey(key []byte) string {
 	addrLen := key[1]
-	return string(key[2+addrLen:])
+	return string(key[2+addrLen+1:])
 }
