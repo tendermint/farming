@@ -27,7 +27,7 @@ const (
 
 var (
 	// param key for global farming plan IDs
-	GlobalPlanIdKey           = []byte("globalPlanId")
+	GlobalPlanIDKey           = []byte("globalPlanId")
 	GlobalLastEpochTimePrefix = []byte("globalLastEpochTime")
 	GlobalLastStakingIDKey    = []byte("globalLastStakingId")
 
@@ -72,27 +72,18 @@ func GetStakingPrefix(planID uint64) []byte {
 	return key
 }
 
-// GetStakingIndexKey returns key for staking of corresponding the id
+// GetStakingKey returns a key for staking of corresponding the id
 func GetStakingKey(id uint64) []byte {
 	return append(StakingKeyPrefix, sdk.Uint64ToBigEndian(id)...)
 }
 
-// GetStakingIndexKey returns key for the farmer's staking of corresponding
+// GetStakingByFarmerAddrIndexKey returns key for the farmer's staking of corresponding
 func GetStakingByFarmerAddrIndexKey(farmerAcc sdk.AccAddress) []byte {
 	return append(StakingByFarmerAddrIndexKeyPrefix, address.MustLengthPrefix(farmerAcc.Bytes())...)
 }
 
-// GetStakingByStakingCoinDenomIdIndexPrefix returns prefix for the iterable staking list by the staking coin denomination
-func GetStakingByStakingCoinDenomIdIndexPrefix(denom string) []byte {
-	return append(StakingByFarmerAddrIndexKeyPrefix, MustLengthPrefixString(denom)...)
-}
-
-//// GetStakingByStakingCoinDenomIdIndexKey returns key for the staking index by the staking coin denomination
-//func GetStakingByStakingCoinDenomIdIndexKey(denom string, id uint64) []byte {
-//	return append(StakingByFarmerAddrIndexKeyPrefix, MustLengthPrefixString(denom)...)
-//}
-
-// MustLengthPrefix is LengthPrefix with panic on error.
+// MustLengthPrefixString is LengthPrefix with panic on error.
+// TODO: update documentation
 func MustLengthPrefixString(str string) []byte {
 	bz := []byte(str)
 	bzLen := len(bz)
@@ -112,7 +103,7 @@ func GetRewardByFarmerAddrIndexKey(farmerAcc sdk.AccAddress, stakingCoinDenom st
 	return append(append(RewardByFarmerAddrIndexKeyPrefix, address.MustLengthPrefix(farmerAcc.Bytes())...), MustLengthPrefixString(stakingCoinDenom)...)
 }
 
-// GetRewardKey returns prefix for staking coin denomination's reward list
+// GetRewardByStakingCoinDenomPrefix returns prefix for staking coin denomination's reward list
 func GetRewardByStakingCoinDenomPrefix(stakingCoinDenom string) []byte {
 	return append(RewardKeyPrefix, MustLengthPrefixString(stakingCoinDenom)...)
 }
@@ -122,17 +113,20 @@ func GetRewardByFarmerAddrIndexPrefix(farmerAcc sdk.AccAddress) []byte {
 	return append(RewardByFarmerAddrIndexKeyPrefix, address.MustLengthPrefix(farmerAcc.Bytes())...)
 }
 
-func GetStakingCoinDenomFromRewardKey(key []byte) string {
+// ParseRewardKey parses a RewardKey.
+func ParseRewardKey(key []byte) (stakingCoinDenom string, farmer sdk.AccAddress, err error) {
 	denomLen := key[1]
-	return string(key[2 : 2+denomLen])
+	stakingCoinDenom = string(key[2 : 2+denomLen])
+	farmer = key[2+denomLen+1:]
+	// TODO: add error case
+	return
 }
 
-func GetFarmerAddrFromRewardKey(key []byte) sdk.AccAddress {
-	denomLen := key[1]
-	return key[2+denomLen+1:]
-}
-
-func GetStakingCoinDenomFromRewardByFarmerAddrIndexKey(key []byte) string {
+// ParseRewardByFarmerAddrIndexKey parses a key of RewardByFarmerAddrIndex from bytes.
+func ParseRewardByFarmerAddrIndexKey(key []byte) (stakingCoinDenom string, farmer sdk.AccAddress, err error) {
 	addrLen := key[1]
-	return string(key[2+addrLen+1:])
+	farmer = key[2 : 2+addrLen]
+	stakingCoinDenom = string(key[2+addrLen+1:])
+	// TODO: add error case
+	return
 }

@@ -145,21 +145,24 @@ func (k Querier) Rewards(c context.Context, req *types.QueryRewardsRequest) (*ty
 	store := ctx.KVStore(k.storeKey)
 
 	if req.Farmer != "" {
-		farmerAddr, err := sdk.AccAddressFromBech32(req.Farmer)
+		farmer, err := sdk.AccAddressFromBech32(req.Farmer)
 		if err != nil {
 			return nil, err
 		}
 
 		var rewards []*types.Reward
-		indexStore := prefix.NewStore(store, types.GetRewardByFarmerAddrIndexPrefix(farmerAddr))
+		indexStore := prefix.NewStore(store, types.GetRewardByFarmerAddrIndexPrefix(farmer))
 		pageRes, err := query.FilteredPaginate(indexStore, req.Pagination, func(key, value []byte, accumulate bool) (bool, error) {
-			stakingCoinDenom := types.GetStakingCoinDenomFromRewardByFarmerAddrIndexKey(key)
+			stakingCoinDenom, _, err := types.ParseRewardByFarmerAddrIndexKey(key)
+			if err != nil { // TODO: remove this check
+				panic(err)
+			}
 			if req.StakingCoinDenom != "" {
 				if stakingCoinDenom != req.StakingCoinDenom {
 					return false, nil
 				}
 			}
-			reward, found := k.GetReward(ctx, farmerAddr, stakingCoinDenom)
+			reward, found := k.GetReward(ctx, stakingCoinDenom, farmer)
 			if !found { // TODO: remove this check
 				return false, fmt.Errorf("reward not found")
 			}
