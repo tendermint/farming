@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"fmt"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -32,11 +35,10 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Su
 	accountKeeper types.AccountKeeper, bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper,
 	blockedAddrs map[string]bool,
 ) Keeper {
-	// TODO: TBD module account for farming
-	//// ensure farming module account is set
-	//if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
-	//	panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
-	//}
+	// ensure farming module account is set
+	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
 
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
@@ -76,7 +78,7 @@ func (k Keeper) GetNextPlanIDWithUpdate(ctx sdk.Context) uint64 {
 	var id uint64
 	store := ctx.KVStore(k.storeKey)
 
-	bz := store.Get(types.GlobalPlanIDKey)
+	bz := store.Get(types.GlobalPlanIdKey)
 	if bz == nil {
 		// initialize the PlanId
 		id = 1
@@ -91,7 +93,7 @@ func (k Keeper) GetNextPlanIDWithUpdate(ctx sdk.Context) uint64 {
 		id = val.GetValue()
 	}
 	bz = k.cdc.MustMarshal(&gogotypes.UInt64Value{Value: id + 1})
-	store.Set(types.GlobalPlanIDKey, bz)
+	store.Set(types.GlobalPlanIdKey, bz)
 	return id
 }
 
@@ -118,3 +120,13 @@ func (k Keeper) UnmarshalPlan(bz []byte) (types.PlanI, error) {
 
 // GetCodec return codec.Codec object used by the keeper
 func (k Keeper) GetCodec() codec.BinaryCodec { return k.cdc }
+
+// GetStakingCreationFeePool returns module account for collecting Staking Creation Fee
+func (k Keeper) GetStakingCreationFeePool(ctx sdk.Context) authtypes.ModuleAccountI { // nolint:interfacer
+	return k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+}
+
+// GetStakingStakingReservePoolAcc returns module account for Staking Reserve Pool account
+func (k Keeper) GetStakingStakingReservePoolAcc(ctx sdk.Context) sdk.AccAddress { // nolint:interfacer
+	return types.StakingReserveAcc
+}

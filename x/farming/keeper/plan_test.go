@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -43,9 +44,14 @@ func TestGetSetNewPlan(t *testing.T) {
 	err := simapp.FarmingKeeper.Stake(ctx, farmerAddr, stakingCoins)
 	require.NoError(t, err)
 
-	// stakings := simapp.FarmingKeeper.GetAllStakings(ctx)
-	// stakingsByPlan := simapp.FarmingKeeper.GetStaking(ctx, fixedPlan.Id)
-	// require.Equal(t, stakings, stakingsByPlan)
+	stakings := simapp.FarmingKeeper.GetAllStakings(ctx)
+	fmt.Println(stakings)
+	stakingByFarmer, found := simapp.FarmingKeeper.GetStakingByFarmer(ctx, farmerAddr)
+	stakingsByDenom := simapp.FarmingKeeper.GetStakingsByStakingCoinDenom(ctx, sdk.DefaultBondDenom)
+
+	require.True(t, found)
+	require.Equal(t, stakings[0], stakingByFarmer)
+	require.Equal(t, stakings, stakingsByDenom)
 
 	simapp.FarmingKeeper.SetReward(ctx, sdk.DefaultBondDenom, farmerAddr, stakingCoins)
 

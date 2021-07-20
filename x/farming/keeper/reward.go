@@ -22,7 +22,7 @@ func (k Keeper) GetReward(ctx sdk.Context, stakingCoinDenom string, farmerAcc sd
 
 // GetRewardsByFarmer reads from kvstore and return a specific Reward indexed by given farmer's address
 func (k Keeper) GetRewardsByFarmer(ctx sdk.Context, farmer sdk.AccAddress) (rewards []types.Reward) {
-	k.IterateRewardsByFarmer(ctx, farmer, func(_ sdk.AccAddress, _ string, reward types.Reward) bool {
+	k.IterateRewardsByFarmer(ctx, farmer, func(reward types.Reward) bool {
 		rewards = append(rewards, reward)
 		return false
 	})
@@ -53,10 +53,7 @@ func (k Keeper) IterateAllRewards(ctx sdk.Context, cb func(stakingCoinDenom stri
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		stakingCoinDenom, farmer, err := types.ParseRewardKey(iterator.Key())
-		if err != nil { // TODO: remove this check
-			panic(err)
-		}
+		stakingCoinDenom, farmer := types.ParseRewardKey(iterator.Key())
 		var reward types.Reward
 		k.cdc.MustUnmarshal(iterator.Value(), &reward)
 		if cb(stakingCoinDenom, farmer, reward) {
@@ -73,10 +70,7 @@ func (k Keeper) IterateRewardsByStakingCoinDenom(ctx sdk.Context, denom string, 
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		stakingCoinDenom, farmer, err := types.ParseRewardKey(iterator.Key())
-		if err != nil { // TODO: remove this check
-			panic(err)
-		}
+		stakingCoinDenom, farmer := types.ParseRewardKey(iterator.Key())
 		var reward types.Reward
 		k.cdc.MustUnmarshal(iterator.Value(), &reward)
 		if cb(farmer, stakingCoinDenom, reward) {
@@ -87,21 +81,15 @@ func (k Keeper) IterateRewardsByStakingCoinDenom(ctx sdk.Context, denom string, 
 
 // IterateRewardsByFarmer iterates over all the stored rewards indexed by given farmer's address and performs a callback function.
 // Stops iteration when callback returns true.
-func (k Keeper) IterateRewardsByFarmer(ctx sdk.Context, farmer sdk.AccAddress, cb func(farmer sdk.AccAddress, stakingCoinDenom string, reward types.Reward) (stop bool)) {
+func (k Keeper) IterateRewardsByFarmer(ctx sdk.Context, farmer sdk.AccAddress, cb func(reward types.Reward) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.GetRewardByFarmerAddrIndexPrefix(farmer))
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		_, stakingCoinDenom, err := types.ParseRewardByFarmerAddrIndexKey(iterator.Key())
-		if err != nil { // TODO: remove this check
-			panic(err)
-		}
-		reward, found := k.GetReward(ctx, stakingCoinDenom, farmer)
-		if !found { // TODO: remove this check
-			panic("reward not found")
-		}
-		if cb(farmer, stakingCoinDenom, reward) {
+		farmer, denom := types.ParseRewardByFarmerAddrIndexKey(iterator.Key())
+		reward, _ := k.GetReward(ctx, denom, farmer)
+		if cb(reward) {
 			break
 		}
 	}
@@ -139,7 +127,7 @@ func (k Keeper) Harvest(ctx sdk.Context, farmer sdk.AccAddress, stakingCoinDenom
 			return fmt.Errorf("staking not found")
 		}
 		if staking.StakedCoins.IsZero() && staking.QueuedCoins.IsZero() {
-			k.DeleteStaking(ctx, staking.Id)
+			k.DeleteStaking(ctx, staking)
 		}
 	}
 
