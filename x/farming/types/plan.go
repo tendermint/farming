@@ -241,3 +241,16 @@ func (r Reward) MarshalYAML() (interface{}, error) {
 	}
 	return string(bz), err
 }
+
+func (r RewardCoins) String() string {
+	out, _ := r.MarshalYAML()
+	return out.(string)
+}
+
+func (r RewardCoins) MarshalYAML() (interface{}, error) {
+	bz, err := codec.MarshalYAML(codec.NewProtoCodec(codectypes.NewInterfaceRegistry()), &r)
+	if err != nil {
+		return nil, err
+	}
+	return string(bz), err
+}

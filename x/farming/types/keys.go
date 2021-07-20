@@ -123,7 +123,7 @@ func ParseRewardKey(key []byte) (stakingCoinDenom string, farmer sdk.AccAddress,
 }
 
 // ParseRewardByFarmerAddrIndexKey parses a key of RewardByFarmerAddrIndex from bytes.
-func ParseRewardByFarmerAddrIndexKey(key []byte) (stakingCoinDenom string, farmer sdk.AccAddress, err error) {
+func ParseRewardByFarmerAddrIndexKey(key []byte) (farmer sdk.AccAddress, stakingCoinDenom string, err error) {
 	addrLen := key[1]
 	farmer = key[2 : 2+addrLen]
 	stakingCoinDenom = string(key[2+addrLen+1:])

@@ -93,7 +93,7 @@ func (k Keeper) IterateRewardsByFarmer(ctx sdk.Context, farmer sdk.AccAddress, c
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		stakingCoinDenom, _, err := types.ParseRewardByFarmerAddrIndexKey(iterator.Key())
+		_, stakingCoinDenom, err := types.ParseRewardByFarmerAddrIndexKey(iterator.Key())
 		if err != nil { // TODO: remove this check
 			panic(err)
 		}

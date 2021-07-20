@@ -184,7 +184,7 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 			}
 		}
 		staking.QueuedCoins = staking.QueuedCoins.Sub(negativeCoins)
-		staking.StakedCoins = staking.QueuedCoins.Add(negativeCoins...)
+		staking.StakedCoins = staking.StakedCoins.Add(negativeCoins...)
 	}
 
 	// Remove the Staking object from the kvstore when all coins has been unstaked
