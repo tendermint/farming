@@ -91,7 +91,7 @@ func (k Keeper) GetPlansByFarmerAddrIndex(ctx sdk.Context, farmerAcc sdk.AccAddr
 // Stops iteration when callback returns true.
 func (k Keeper) IteratePlansByFarmerAddr(ctx sdk.Context, farmerAcc sdk.AccAddress, cb func(plan types.PlanI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.GetPlansByFarmerAddrIndexKey(farmerAcc))
+	iterator := sdk.KVStorePrefixIterator(store, types.GetPlansByFarmerIndexKey(farmerAcc))
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {

@@ -1,8 +1,6 @@
 package types
 
 import (
-	"encoding/binary"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,15 +19,9 @@ func (s Staking) MarshalYAML() (interface{}, error) {
 	return string(bz), err
 }
 
-func (s Staking) GetFarmerAddress() sdk.AccAddress {
+func (s Staking) GetFarmer() sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(s.Farmer)
 	return addr
-}
-
-func (s Staking) IdBytes() []byte {
-	idBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(idBytes, s.Id)
-	return idBytes
 }
 
 func (s Staking) StakingCoinDenoms() (denoms []string) {

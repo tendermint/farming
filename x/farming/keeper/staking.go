@@ -54,7 +54,7 @@ func (k Keeper) GetStaking(ctx sdk.Context, id uint64) (staking types.Staking, f
 
 func (k Keeper) GetStakingIDByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) (id uint64, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GetStakingByFarmerAddrIndexKey(farmerAcc))
+	bz := store.Get(types.GetStakingByFarmerIndexKey(farmerAcc))
 	if bz == nil {
 		return 0, false
 	}
@@ -100,9 +100,9 @@ func (k Keeper) SetStaking(ctx sdk.Context, staking types.Staking) {
 // SetStakingIndex implements Staking.
 func (k Keeper) SetStakingIndex(ctx sdk.Context, staking types.Staking) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetStakingByFarmerAddrIndexKey(staking.GetFarmerAddress()), staking.IdBytes())
+	store.Set(types.GetStakingByFarmerIndexKey(staking.GetFarmer()), sdk.Uint64ToBigEndian(staking.Id))
 	for _, denom := range staking.StakingCoinDenoms() {
-		store.Set(types.GetStakingByStakingCoinDenomIdIndexKey(denom, staking.Id), []byte{})
+		store.Set(types.GetStakingByStakingCoinDenomIndexKey(denom, staking.Id), []byte{})
 	}
 }
 
@@ -110,7 +110,7 @@ func (k Keeper) SetStakingIndex(ctx sdk.Context, staking types.Staking) {
 func (k Keeper) DeleteStaking(ctx sdk.Context, staking types.Staking) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetStakingKey(staking.Id))
-	store.Delete(types.GetStakingByFarmerAddrIndexKey(staking.GetFarmerAddress()))
+	store.Delete(types.GetStakingByFarmerIndexKey(staking.GetFarmer()))
 	k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, staking.StakingCoinDenoms())
 }
 
@@ -118,7 +118,7 @@ func (k Keeper) DeleteStaking(ctx sdk.Context, staking types.Staking) {
 func (k Keeper) DeleteStakingCoinDenomsIndex(ctx sdk.Context, id uint64, denoms []string) {
 	store := ctx.KVStore(k.storeKey)
 	for _, denom := range denoms {
-		store.Delete(types.GetStakingByStakingCoinDenomIdIndexKey(denom, id))
+		store.Delete(types.GetStakingByStakingCoinDenomIndexKey(denom, id))
 	}
 }
 
@@ -142,10 +142,10 @@ func (k Keeper) IterateAllStakings(ctx sdk.Context, cb func(staking types.Stakin
 // Stops iteration when callback returns true.
 func (k Keeper) IterateStakingsByStakingCoinDenom(ctx sdk.Context, denom string, cb func(staking types.Staking) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.GetStakingByStakingCoinDenomIdIndexPrefix(denom))
+	iterator := sdk.KVStorePrefixIterator(store, types.GetStakingsByStakingCoinDenomIndexKey(denom))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		_, id := types.ParseStakingByStakingCoinDenomIdIndexKey(iterator.Key())
+		_, id := types.ParseStakingsByStakingCoinDenomIndexKey(iterator.Key())
 		staking, _ := k.GetStaking(ctx, id)
 		if cb(staking) {
 			break

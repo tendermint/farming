@@ -161,7 +161,7 @@ func NewRatioPlan(basePlan *BasePlan, epochRatio sdk.Dec) *RatioPlan {
 	}
 }
 
-// GetPlanName returns unique name of the plan
+// Name returns unique name of the plan
 func (plan BasePlan) Name() string {
 	return PlanName(plan.Id, plan.Type, plan.FarmingPoolAddress)
 }
@@ -177,13 +177,7 @@ func PlanName(id uint64, typ PlanType, farmingPoolAddr string) string {
 
 // GenerateRewardPoolAcc returns deterministically generated reward pool account for the given plan name
 func GenerateRewardPoolAcc(name string) sdk.AccAddress {
-	return sdk.AccAddress(address.Module(ModuleName, []byte(strings.Join([]string{RewardPoolAccKeyPrefix, name}, "/"))))
-}
-
-// TODO: deprecated
-// GenerateRewardPoolAcc returns deterministically generated staking reserve account for the given plan name
-func GenerateStakingReserveAcc(name string) sdk.AccAddress {
-	return sdk.AccAddress(address.Module(ModuleName, []byte(strings.Join([]string{StakingReserveAccKeyPrefix, name}, "/"))))
+	return address.Module(ModuleName, []byte(strings.Join([]string{RewardPoolAccKeyPrefix, name}, "/")))
 }
 
 type PlanI interface {
