@@ -8,8 +8,8 @@ import (
 )
 
 // ParsePublicPlanProposal reads and parses a PublicPlanProposal from a file.
-func ParsePublicPlanProposal(cdc codec.JSONCodec, proposalFile string) (types.AddPublicPlanProposal, error) {
-	proposal := types.AddPublicPlanProposal{}
+func ParsePublicPlanProposal(cdc codec.JSONCodec, proposalFile string) (types.PublicPlanProposal, error) {
+	proposal := types.PublicPlanProposal{}
 
 	contents, err := ioutil.ReadFile(proposalFile)
 	if err != nil {

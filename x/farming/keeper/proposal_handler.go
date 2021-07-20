@@ -7,16 +7,7 @@ import (
 )
 
 // HandleAddPublicPlanProposal is a handler for executing a public plan creation proposal.
-func HandleAddPublicPlanProposal(ctx sdk.Context, k Keeper, p *types.AddPublicPlanProposal) error {
-	return nil
-}
-
-// HandleUpdatePublicPlanProposal is a handler for executing an update to the public plan.
-func HandleUpdatePublicPlanProposal(ctx sdk.Context, k Keeper, p *types.UpdatePublicPlanProposal) error {
-	return nil
-}
-
-// HandleDeletePublicPlanProposal is a handler for executing a removal of the public plan.
-func HandleDeletePublicPlanProposal(ctx sdk.Context, k Keeper, p *types.DeletePublicPlanProposal) error {
+func HandleAddPublicPlanProposal(ctx sdk.Context, k Keeper, publicPlanProposal *types.PublicPlanProposal) error {
+	// TODO: not implemented yet
 	return nil
 }

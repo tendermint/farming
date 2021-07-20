@@ -9,7 +9,5 @@ import (
 
 // ProposalHandler is the public plan creation handler.
 var (
-	AddProposalHandler    = govclient.NewProposalHandler(cli.GetCmdSubmitAddPublicPlanProposal, rest.ProposalRESTHandler)
-	UpdateProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitUpdatePublicPlanProposal, rest.ProposalRESTHandler)
-	DeleteProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitDeletePublicPlanProposal, rest.ProposalRESTHandler)
+	AddProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitPublicPlanProposal, rest.ProposalRESTHandler)
 )

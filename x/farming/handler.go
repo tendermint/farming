@@ -45,8 +45,14 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 func NewPublicPlanProposal(k keeper.Keeper) govtypes.Handler {
 	return func(ctx sdk.Context, content govtypes.Content) error {
 		switch c := content.(type) {
-		case *types.PublicPlanProposal:
-			return keeper.HandlePublicPlanProposal(ctx, k, c.Plans)
+		case *types.AddPublicPlanProposal:
+			return keeper.HandleAddPublicPlanProposal(ctx, k, c.Plans)
+
+		case *types.UpdatePublicPlanProposal:
+			return keeper.HandleUpdatePublicPlanProposal(ctx, k, c)
+
+		case *types.DeletePublicPlanProposal:
+			return keeper.HandleDeletePublicPlanProposal(ctx, k, c)
 
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized farming proposal content type: %T", c)

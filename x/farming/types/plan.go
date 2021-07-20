@@ -14,6 +14,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+const (
+	MaxNameLength int = 140
+)
+
 var (
 	_ PlanI = (*FixedAmountPlan)(nil)
 	_ PlanI = (*RatioPlan)(nil)
@@ -124,6 +128,9 @@ func (plan BasePlan) Validate() error {
 	}
 	if _, err := sdk.AccAddressFromBech32(plan.TerminationAddress); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", plan.TerminationAddress, err)
+	}
+	if len(plan.Name) > MaxNameLength {
+		return sdkerrors.Wrapf(ErrInvalidNameLength, "plan name is longer than max length of %d", MaxNameLength)
 	}
 	if err := plan.StakingCoinWeights.Validate(); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)

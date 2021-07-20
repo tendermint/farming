@@ -48,7 +48,6 @@ message BasePlan {
   // id specifies index of the farming plan
   uint64 id = 1;
 
-
   // name specifies the name for the base plan
   string name = 2;
 
