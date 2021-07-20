@@ -101,7 +101,7 @@ func (k Keeper) SetStaking(ctx sdk.Context, staking types.Staking) {
 func (k Keeper) SetStakingIndex(ctx sdk.Context, staking types.Staking) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetStakingByFarmerAddrIndexKey(staking.GetFarmerAddress()), staking.IdBytes())
-	for _, denom := range staking.Denoms() {
+	for _, denom := range staking.StakingCoinDenoms() {
 		store.Set(types.GetStakingByStakingCoinDenomIdIndexKey(denom, staking.Id), []byte{})
 	}
 }
@@ -111,7 +111,7 @@ func (k Keeper) DeleteStaking(ctx sdk.Context, staking types.Staking) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetStakingKey(staking.Id))
 	store.Delete(types.GetStakingByFarmerAddrIndexKey(staking.GetFarmerAddress()))
-	k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, staking.Denoms())
+	k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, staking.StakingCoinDenoms())
 }
 
 // DeleteStakingCoinDenomsIndex removes an staking for the staking mapper store.
