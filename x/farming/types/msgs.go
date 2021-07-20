@@ -51,7 +51,7 @@ func (msg MsgCreateFixedAmountPlan) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid farming pool address %q: %v", msg.FarmingPoolAddress, err)
 	}
 	if !msg.EndTime.After(msg.StartTime) {
-		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", msg.EndTime, msg.StartTime)
+		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", msg.EndTime.Format(time.RFC3339Nano), msg.StartTime.Format(time.RFC3339Nano))
 	}
 	if msg.StakingCoinWeights.Empty() {
 		return ErrEmptyStakingCoinWeights
@@ -114,7 +114,7 @@ func (msg MsgCreateRatioPlan) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid farming pool address %q: %v", msg.FarmingPoolAddress, err)
 	}
 	if !msg.EndTime.After(msg.StartTime) {
-		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", msg.EndTime, msg.StartTime)
+		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", msg.EndTime.Format(time.RFC3339Nano), msg.StartTime.Format(time.RFC3339Nano))
 	}
 	if msg.StakingCoinWeights.Empty() {
 		return ErrEmptyStakingCoinWeights

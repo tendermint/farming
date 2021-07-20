@@ -41,7 +41,7 @@ func TestMsgCreateFixedAmountPlan(t *testing.T) {
 			),
 		},
 		{
-			"end time 2020-11-01 22:08:41 +0000 +0000 must be greater than start time 2021-11-01 22:08:41 +0000 +0000: invalid plan end time",
+			"end time 2020-11-01T22:08:41Z must be greater than start time 2021-11-01T22:08:41Z: invalid plan end time",
 			types.NewMsgCreateFixedAmountPlan(
 				farmingPoolAddr, stakingCoinWeights, startTime,
 				startTime.AddDate(-1, 0, 0), sdk.Coins{sdk.NewCoin("uatom", sdk.NewInt(1))},
@@ -109,7 +109,7 @@ func TestMsgCreateRatioPlan(t *testing.T) {
 			),
 		},
 		{
-			"end time 2020-11-01 22:08:41 +0000 +0000 must be greater than start time 2021-11-01 22:08:41 +0000 +0000: invalid plan end time",
+			"end time 2020-11-01T22:08:41Z must be greater than start time 2021-11-01T22:08:41Z: invalid plan end time",
 			types.NewMsgCreateRatioPlan(
 				farmingPoolAddr, stakingCoinWeights, startTime,
 				startTime.AddDate(-1, 0, 0), sdk.NewDec(1),
