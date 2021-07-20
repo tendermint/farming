@@ -32,19 +32,13 @@ func (s Staking) IdBytes() []byte {
 	return idBytes
 }
 
-func (s Staking) Denoms() (denomList []string) {
-	keys := make(map[string]bool)
-	for _, coin := range s.QueuedCoins {
-		if _, value := keys[coin.Denom]; !value {
-			keys[coin.Denom] = true
-			denomList = append(denomList, coin.Denom)
+func (s Staking) StakingCoinDenoms() (denoms []string) {
+	denomSet := make(map[string]struct{})
+	for _, coin := range append(s.StakedCoins, s.QueuedCoins...) {
+		if _, ok := denomSet[coin.Denom]; !ok {
+			denomSet[coin.Denom] = struct{}{}
+			denoms = append(denoms, coin.Denom)
 		}
 	}
-	for _, coin := range s.StakedCoins {
-		if _, value := keys[coin.Denom]; !value {
-			keys[coin.Denom] = true
-			denomList = append(denomList, coin.Denom)
-		}
-	}
-	return denomList
+	return
 }
