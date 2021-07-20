@@ -213,9 +213,12 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 	if !found {
 		return types.ErrStakingNotExists
 	}
+
 	if err := k.ReleaseStakingCoins(ctx, farmer, amount); err != nil {
 		return err
 	}
+
+	prevDenoms := staking.StakingCoinDenoms()
 
 	var hasNeg bool
 	staking.QueuedCoins, hasNeg = staking.QueuedCoins.SafeSub(amount)
@@ -224,8 +227,6 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 		for _, coin := range staking.QueuedCoins {
 			if coin.IsNegative() {
 				negativeCoins = negativeCoins.Add(coin)
-				staking.QueuedCoins = staking.QueuedCoins.Add(sdk.NewCoin(coin.Denom, coin.Amount.Neg()))
-				staking.StakedCoins = staking.StakedCoins.Add(coin)
 			}
 		}
 		staking.QueuedCoins = staking.QueuedCoins.Sub(negativeCoins)
@@ -238,13 +239,19 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 		k.DeleteStaking(ctx, staking)
 	} else {
 		k.SetStaking(ctx, staking)
-		stakedQueuedCoins := staking.StakedCoins.Add(staking.QueuedCoins...)
+
+		denomSet := make(map[string]struct{})
+		for _, denom := range staking.StakingCoinDenoms() {
+			denomSet[denom] = struct{}{}
+		}
+
 		var removedDenoms []string
-		for _, coin := range amount {
-			if !stakedQueuedCoins.AmountOf(coin.Denom).IsPositive() {
-				removedDenoms = append(removedDenoms, coin.Denom)
+		for _, denom := range prevDenoms {
+			if _, ok := denomSet[denom]; !ok {
+				removedDenoms = append(removedDenoms, denom)
 			}
 		}
+
 		k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, removedDenoms)
 	}
 
