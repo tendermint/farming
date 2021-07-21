@@ -116,6 +116,51 @@ func (k Keeper) SetPlanIdByFarmerAddrIndex(ctx sdk.Context, farmerAcc sdk.AccAdd
 	store.Set(types.GetPlanByFarmerAddrIndexKey(farmerAcc, planID), b)
 }
 
+// GetNextPlanIDWithUpdate returns and increments the global Plan ID counter.
+// If the global plan number is not set, it initializes it with value 1.
+func (k Keeper) GetNextPlanIDWithUpdate(ctx sdk.Context) uint64 {
+	var id uint64
+	store := ctx.KVStore(k.storeKey)
+
+	bz := store.Get(types.GlobalPlanIdKey)
+	if bz == nil {
+		// initialize the PlanId
+		id = 1
+	} else {
+		val := gogotypes.UInt64Value{}
+
+		err := k.cdc.Unmarshal(bz, &val)
+		if err != nil {
+			panic(err)
+		}
+
+		id = val.GetValue()
+	}
+	bz = k.cdc.MustMarshal(&gogotypes.UInt64Value{Value: id + 1})
+	store.Set(types.GlobalPlanIdKey, bz)
+	return id
+}
+
+func (k Keeper) decodePlan(bz []byte) types.PlanI {
+	acc, err := k.UnmarshalPlan(bz)
+	if err != nil {
+		panic(err)
+	}
+
+	return acc
+}
+
+// MarshalPlan protobuf serializes an Plan interface
+func (k Keeper) MarshalPlan(plan types.PlanI) ([]byte, error) { // nolint:interfacer
+	return k.cdc.MarshalInterface(plan)
+}
+
+// UnmarshalPlan returns an Plan interface from raw encoded plan
+// bytes of a Proto-based Plan type
+func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
+	return plan, k.cdc.UnmarshalInterface(bz, &plan)
+}
+
 // CreateFixedAmountPlan sets fixed amount plan.
 func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
