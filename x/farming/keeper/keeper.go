@@ -1,7 +1,9 @@
 package keeper
 
 import (
-	gogotypes "github.com/gogo/protobuf/types"
+	"fmt"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -32,11 +34,10 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Su
 	accountKeeper types.AccountKeeper, bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper,
 	blockedAddrs map[string]bool,
 ) Keeper {
-	// TODO: TBD module account for farming
-	//// ensure farming module account is set
-	//if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
-	//	panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
-	//}
+	// ensure farming module account is set
+	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
 
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
@@ -70,51 +71,15 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramSpace.SetParamSet(ctx, &params)
 }
 
-// GetNextPlanIDWithUpdate returns and increments the global Plan ID counter.
-// If the global plan number is not set, it initializes it with value 1.
-func (k Keeper) GetNextPlanIDWithUpdate(ctx sdk.Context) uint64 {
-	var id uint64
-	store := ctx.KVStore(k.storeKey)
-
-	bz := store.Get(types.GlobalPlanIdKey)
-	if bz == nil {
-		// initialize the PlanId
-		id = 1
-	} else {
-		val := gogotypes.UInt64Value{}
-
-		err := k.cdc.Unmarshal(bz, &val)
-		if err != nil {
-			panic(err)
-		}
-
-		id = val.GetValue()
-	}
-	bz = k.cdc.MustMarshal(&gogotypes.UInt64Value{Value: id + 1})
-	store.Set(types.GlobalPlanIdKey, bz)
-	return id
-}
-
-func (k Keeper) decodePlan(bz []byte) types.PlanI {
-	acc, err := k.UnmarshalPlan(bz)
-	if err != nil {
-		panic(err)
-	}
-
-	return acc
-}
-
-// MarshalPlan protobuf serializes an Plan interface
-func (k Keeper) MarshalPlan(plan types.PlanI) ([]byte, error) { // nolint:interfacer
-	return k.cdc.MarshalInterface(plan)
-}
-
-// UnmarshalPlan returns an Plan interface from raw encoded plan
-// bytes of a Proto-based Plan type
-func (k Keeper) UnmarshalPlan(bz []byte) (types.PlanI, error) {
-	var acc types.PlanI
-	return acc, k.cdc.UnmarshalInterface(bz, &acc)
-}
-
 // GetCodec return codec.Codec object used by the keeper
 func (k Keeper) GetCodec() codec.BinaryCodec { return k.cdc }
+
+// GetStakingCreationFeePool returns module account for collecting Staking Creation Fee
+func (k Keeper) GetStakingCreationFeePool(ctx sdk.Context) authtypes.ModuleAccountI { // nolint:interfacer
+	return k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+}
+
+// GetStakingStakingReservePoolAcc returns module account for Staking Reserve Pool account
+func (k Keeper) GetStakingStakingReservePoolAcc(ctx sdk.Context) sdk.AccAddress { // nolint:interfacer
+	return types.StakingReserveAcc
+}

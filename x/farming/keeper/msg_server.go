@@ -72,17 +72,9 @@ func (k msgServer) CreateRatioPlan(goCtx context.Context, msg *types.MsgCreateRa
 func (k msgServer) Stake(goCtx context.Context, msg *types.MsgStake) (*types.MsgStakeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if _, err := k.Keeper.Stake(ctx, msg.GetFarmer(), msg.StakingCoins); err != nil {
-		return &types.MsgStakeResponse{}, err
+	if err := k.Keeper.Stake(ctx, msg.GetFarmer(), msg.StakingCoins); err != nil {
+		return nil, err
 	}
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeStake,
-			sdk.NewAttribute(types.AttributeKeyFarmer, msg.Farmer),
-			sdk.NewAttribute(types.AttributeKeyStakingCoins, msg.StakingCoins.String()),
-		),
-	})
 
 	return &types.MsgStakeResponse{}, nil
 }
@@ -91,17 +83,9 @@ func (k msgServer) Stake(goCtx context.Context, msg *types.MsgStake) (*types.Msg
 func (k msgServer) Unstake(goCtx context.Context, msg *types.MsgUnstake) (*types.MsgUnstakeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if _, err := k.Keeper.Unstake(ctx, msg.GetFarmer(), msg.UnstakingCoins); err != nil {
-		return &types.MsgUnstakeResponse{}, err
+	if err := k.Keeper.Unstake(ctx, msg.GetFarmer(), msg.UnstakingCoins); err != nil {
+		return nil, err
 	}
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeUnstake,
-			sdk.NewAttribute(types.AttributeKeyFarmer, msg.Farmer),
-			sdk.NewAttribute(types.AttributeKeyUnstakingCoins, msg.UnstakingCoins.String()),
-		),
-	})
 
 	return &types.MsgUnstakeResponse{}, nil
 }
@@ -110,18 +94,9 @@ func (k msgServer) Unstake(goCtx context.Context, msg *types.MsgUnstake) (*types
 func (k msgServer) Harvest(goCtx context.Context, msg *types.MsgHarvest) (*types.MsgHarvestResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	rewardCoins, err := k.Keeper.Harvest(ctx, msg.GetFarmer(), msg.StakingCoinDenoms)
-	if err != nil {
-		return &types.MsgHarvestResponse{}, err
+	if err := k.Keeper.Harvest(ctx, msg.GetFarmer(), msg.StakingCoinDenoms); err != nil {
+		return nil, err
 	}
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeHarvest,
-			sdk.NewAttribute(types.AttributeKeyFarmer, msg.Farmer),
-			sdk.NewAttribute(types.AttributeKeyRewardCoins, rewardCoins.String()),
-		),
-	})
 
 	return &types.MsgHarvestResponse{}, nil
 }
