@@ -154,8 +154,7 @@ func (k Keeper) IterateStakingsByStakingCoinDenom(ctx sdk.Context, denom string,
 }
 
 // UnmarshalStaking unmarshals a Staking from bytes.
-func (k Keeper) UnmarshalStaking(bz []byte) (types.Staking, error) {
-	var staking types.Staking
+func (k Keeper) UnmarshalStaking(bz []byte) (staking types.Staking, err error) {
 	return staking, k.cdc.Unmarshal(bz, &staking)
 }
 

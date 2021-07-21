@@ -203,20 +203,25 @@ func (k Querier) Rewards(c context.Context, req *types.QueryRewardsRequest) (*ty
 			return true, nil
 		})
 	} else {
-		var rewardPrefix []byte
+		var keyPrefix []byte
 		if req.StakingCoinDenom != "" {
-			rewardPrefix = types.GetRewardsByStakingCoinDenomKey(req.StakingCoinDenom)
+			keyPrefix = types.GetRewardsByStakingCoinDenomKey(req.StakingCoinDenom)
 		} else {
-			rewardPrefix = types.RewardKeyPrefix
+			keyPrefix = types.RewardKeyPrefix
 		}
-		rewardStore := prefix.NewStore(store, rewardPrefix)
+		rewardStore := prefix.NewStore(store, keyPrefix)
 
 		pageRes, err = query.Paginate(rewardStore, req.Pagination, func(key, value []byte) error {
-			reward, err := k.UnmarshalReward(value)
+			stakingCoinDenom, farmerAcc := types.ParseRewardKey(key)
+			rewardCoins, err := k.UnmarshalRewardCoins(value)
 			if err != nil {
 				return err
 			}
-			rewards = append(rewards, &reward)
+			rewards = append(rewards, &types.Reward{
+				Farmer:           farmerAcc.String(),
+				StakingCoinDenom: stakingCoinDenom,
+				RewardCoins:      rewardCoins.RewardCoins,
+			})
 			return nil
 		})
 	}

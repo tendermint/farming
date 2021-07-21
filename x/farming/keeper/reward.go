@@ -30,10 +30,30 @@ func (k Keeper) GetRewardsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) (r
 	return rewards
 }
 
+// GetAllRewards returns all rewards in the Keeper.
+func (k Keeper) GetAllRewards(ctx sdk.Context) (rewards []types.Reward) {
+	k.IterateAllRewards(ctx, func(reward types.Reward) (stop bool) {
+		rewards = append(rewards, reward)
+		return false
+	})
+
+	return rewards
+}
+
+// GetRewardsByStakingCoinDenom reads from kvstore and return a specific Reward indexed by given staking coin denom
+func (k Keeper) GetRewardsByStakingCoinDenom(ctx sdk.Context, denom string) (rewards []types.Reward) {
+	k.IterateRewardsByStakingCoinDenom(ctx, denom, func(reward types.Reward) bool {
+		rewards = append(rewards, reward)
+		return false
+	})
+
+	return rewards
+}
+
 // SetReward implements Reward.
 func (k Keeper) SetReward(ctx sdk.Context, stakingCoinDenom string, farmerAcc sdk.AccAddress, rewardCoins sdk.Coins) {
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&types.Reward{RewardCoins: rewardCoins})
+	bz := k.cdc.MustMarshal(&types.RewardCoins{RewardCoins: rewardCoins})
 	store.Set(types.GetRewardKey(stakingCoinDenom, farmerAcc), bz)
 	store.Set(types.GetRewardByFarmerAndStakingCoinDenomIndexKey(farmerAcc, stakingCoinDenom), []byte{})
 }
@@ -95,10 +115,9 @@ func (k Keeper) IterateRewardsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress
 	}
 }
 
-// UnmarshalReward unmarshals a Reward from bytes.
-func (k Keeper) UnmarshalReward(bz []byte) (types.Reward, error) {
-	var reward types.Reward
-	return reward, k.cdc.Unmarshal(bz, &reward)
+// UnmarshalRewardCoins unmarshals a RewardCoins from bytes.
+func (k Keeper) UnmarshalRewardCoins(bz []byte) (rewardCoins types.RewardCoins, err error) {
+	return rewardCoins, k.cdc.Unmarshal(bz, &rewardCoins)
 }
 
 // Harvest claims farming rewards from the reward pool account.
@@ -121,7 +140,6 @@ func (k Keeper) Harvest(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDe
 	}
 
 	if len(k.GetRewardsByFarmer(ctx, farmerAcc)) == 0 {
-		k.GetStakingIDByFarmer(ctx, farmerAcc)
 		staking, found := k.GetStakingByFarmer(ctx, farmerAcc)
 		if !found { // TODO: remove this check
 			return fmt.Errorf("staking not found")
