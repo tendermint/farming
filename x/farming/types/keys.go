@@ -25,6 +25,9 @@ const (
 
 	// StakingReserveAccKeyPrefix is prefix for generating deterministic staking reserve module account of the each plan
 	StakingReserveAccKeyPrefix = "StakingReserveAcc"
+
+	// FarmingFeeCollector is a fee collector module account that collects fees within the farming module
+	FarmingFeeCollector = "FarmingFeeCollectorAcc"
 )
 
 var (
@@ -45,7 +48,8 @@ var (
 	RewardKeyPrefix               = []byte{0x31}
 	RewardsByFarmerIndexKeyPrefix = []byte{0x32}
 
-	StakingReserveAcc = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
+	StakingReserveAcc      = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
+	FarmingFeeCollectorAcc = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc")))
 )
 
 // GetPlanKey returns kv indexing key of the plan

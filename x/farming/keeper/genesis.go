@@ -15,6 +15,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
+
 	// TODO: unimplemented
 	//for _, record := range genState.PlanRecords {
 	//	k.SetPlanRecord(ctx, record)
@@ -25,6 +26,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	//for _, reward := range genState.Rewards {
 	//	k.SetReward(ctx, reword)
 	//}
+
+	farmingFeeCollector := k.accountKeeper.GetModuleAccount(ctx, types.FarmingFeeCollector)
+	k.accountKeeper.SetModuleAccount(ctx, farmingFeeCollector)
 }
 
 // ExportGenesis returns the farming module's genesis state.
