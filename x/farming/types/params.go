@@ -86,7 +86,7 @@ func validatePrivatePlanCreationFee(i interface{}) error {
 	}
 
 	if v.Empty() {
-		return fmt.Errorf("plan creation fee must not be empty")
+		return fmt.Errorf("private plan creation fee must not be empty")
 	}
 
 	return nil
@@ -129,7 +129,7 @@ func validateFarmingFeeCollector(i interface{}) error {
 	}
 
 	if v == "" {
-		return fmt.Errorf("farming_fee_collector must not be empty: %s", v)
+		return fmt.Errorf("farming fee collector address must not be empty")
 	}
 
 	return nil
