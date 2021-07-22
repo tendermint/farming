@@ -48,8 +48,7 @@ var (
 	RewardKeyPrefix               = []byte{0x31}
 	RewardsByFarmerIndexKeyPrefix = []byte{0x32}
 
-	StakingReserveAcc      = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
-	FarmingFeeCollectorAcc = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc")))
+	StakingReserveAcc = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
 )
 
 // GetPlanKey returns kv indexing key of the plan

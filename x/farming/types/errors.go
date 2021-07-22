@@ -17,4 +17,5 @@ var (
 	ErrStakingNotExists          = sdkerrors.Register(ModuleName, 10, "staking not exists")
 	ErrRewardNotExists           = sdkerrors.Register(ModuleName, 11, "reward not exists")
 	ErrInsufficientStakingAmount = sdkerrors.Register(ModuleName, 12, "insufficient staking amount")
+	ErrInsufficientBalance       = sdkerrors.Register(ModuleName, 13, "insufficient coin balance")
 )

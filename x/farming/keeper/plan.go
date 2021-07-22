@@ -164,14 +164,26 @@ func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
 // CreateFixedAmountPlan sets fixed amount plan.
 func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
-	farmingPoolAddr := msg.FarmingPoolAddress
-	terminationAddr := farmingPoolAddr
+	farmingPoolAddrAcc := sdk.AccAddress(msg.FarmingPoolAddress)
+	terminationAddrAcc := farmingPoolAddrAcc
+
+	params := k.GetParams(ctx)
+
+	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
+	balances = balances.Sub(params.StakingCreationFee)
+	if balances.IsAnyNegative() {
+		return types.ErrInsufficientBalance
+	}
+
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, params.FarmingFeeCollector, params.StakingCreationFee); err != nil {
+		return err
+	}
 
 	basePlan := types.NewBasePlan(
 		nextId,
 		typ,
-		farmingPoolAddr,
-		terminationAddr,
+		farmingPoolAddrAcc.String(),
+		terminationAddrAcc.String(),
 		msg.StakingCoinWeights,
 		msg.StartTime,
 		msg.EndTime,
@@ -198,14 +210,26 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 // CreateRatioPlan sets ratio plan.
 func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
-	farmingPoolAddr := msg.FarmingPoolAddress
-	terminationAddr := farmingPoolAddr
+	farmingPoolAddrAcc := sdk.AccAddress(msg.FarmingPoolAddress)
+	terminationAddrAcc := farmingPoolAddrAcc
+
+	params := k.GetParams(ctx)
+
+	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
+	balances = balances.Sub(params.StakingCreationFee)
+	if balances.IsAnyNegative() {
+		return types.ErrInsufficientBalance
+	}
+
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, params.FarmingFeeCollector, params.StakingCreationFee); err != nil {
+		return err
+	}
 
 	basePlan := types.NewBasePlan(
 		nextId,
 		typ,
-		farmingPoolAddr,
-		terminationAddr,
+		farmingPoolAddrAcc.String(),
+		terminationAddrAcc.String(),
 		msg.StakingCoinWeights,
 		msg.StartTime,
 		msg.EndTime,

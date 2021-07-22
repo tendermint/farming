@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -21,7 +22,7 @@ var (
 	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000_000)))
 	DefaultStakingCreationFee     = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000)))
 	DefaultEpochDays              = uint32(1)
-	DefaultFarmingFeeCollector    = FarmingFeeCollectorAcc.String()
+	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
 )
 
 var _ paramstypes.ParamSet = (*Params)(nil)
