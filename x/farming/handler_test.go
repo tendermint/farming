@@ -32,7 +32,7 @@ func createTestInput() (*farmingapp.FarmingApp, sdk.Context, []sdk.AccAddress) {
 		map[string]bool{},
 	)
 
-	addrs := farmingapp.AddTestAddrs(app, ctx, 1, sdk.NewInt(100000))
+	addrs := farmingapp.AddTestAddrs(app, ctx, 1, sdk.NewInt(200_000_000))
 
 	return app, ctx, addrs
 }

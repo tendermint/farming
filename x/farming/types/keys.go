@@ -26,8 +26,8 @@ const (
 	// StakingReserveAccKeyPrefix is prefix for generating deterministic staking reserve module account of the each plan
 	StakingReserveAccKeyPrefix = "StakingReserveAcc"
 
-	// FarmingFeeCollector is a fee collector module account that collects fees within the farming module
-	FarmingFeeCollector = "FarmingFeeCollectorAcc"
+	// FarmingFeeCollectorName is the root string for the fee collector module account address that collects fees within the farming module
+	FarmingFeeCollectorName = "FarmingFeeCollector"
 )
 
 var (

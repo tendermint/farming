@@ -164,18 +164,21 @@ func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
 // CreateFixedAmountPlan sets fixed amount plan.
 func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
-	farmingPoolAddrAcc := sdk.AccAddress(msg.FarmingPoolAddress)
+	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
+	if err != nil {
+		panic(err)
+	}
 	terminationAddrAcc := farmingPoolAddrAcc
 
 	params := k.GetParams(ctx)
 
 	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
-	balances = balances.Sub(params.StakingCreationFee)
-	if balances.IsAnyNegative() {
+	_, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
+	if hasNeg {
 		return types.ErrInsufficientBalance
 	}
 
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, params.FarmingFeeCollector, params.StakingCreationFee); err != nil {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollector, params.PrivatePlanCreationFee); err != nil {
 		return err
 	}
 
@@ -210,18 +213,21 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 // CreateRatioPlan sets ratio plan.
 func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) error {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
-	farmingPoolAddrAcc := sdk.AccAddress(msg.FarmingPoolAddress)
+	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
+	if err != nil {
+		panic(err)
+	}
 	terminationAddrAcc := farmingPoolAddrAcc
 
 	params := k.GetParams(ctx)
 
 	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
-	balances = balances.Sub(params.StakingCreationFee)
-	if balances.IsAnyNegative() {
+	_, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
+	if hasNeg {
 		return types.ErrInsufficientBalance
 	}
 
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, params.FarmingFeeCollector, params.StakingCreationFee); err != nil {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollector, params.PrivatePlanCreationFee); err != nil {
 		return err
 	}
 
