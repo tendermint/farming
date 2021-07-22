@@ -40,7 +40,7 @@ func NewKeeper(cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Su
 	}
 
 	// ensure farming fee collector account is set
-	if addr := accountKeeper.GetModuleAddress(types.FarmingFeeCollector); addr == nil {
+	if addr := accountKeeper.GetModuleAddress(types.FarmingFeeCollectorName); addr == nil {
 		panic(fmt.Sprintf("%s farming fee collector account has not been set", types.ModuleName))
 	}
 

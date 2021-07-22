@@ -178,7 +178,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		return types.ErrInsufficientBalance
 	}
 
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollector, params.PrivatePlanCreationFee); err != nil {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollectorName, params.PrivatePlanCreationFee); err != nil {
 		return err
 	}
 
@@ -227,7 +227,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 		return types.ErrInsufficientBalance
 	}
 
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollector, params.PrivatePlanCreationFee); err != nil {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollectorName, params.PrivatePlanCreationFee); err != nil {
 		return err
 	}
 
