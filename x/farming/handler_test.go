@@ -66,9 +66,9 @@ func TestMsgCreateFixedAmountPlan(t *testing.T) {
 }
 
 func TestMsgCreateRatioPlan(t *testing.T) {
-	app, ctx, _ := createTestInput()
+	app, ctx, addrs := createTestInput()
 
-	farmingPoolAddr := sdk.AccAddress([]byte("farmingPoolAddr"))
+	farmingPoolAddr := addrs[0]
 	stakingCoinWeights := sdk.NewDecCoins(
 		sdk.DecCoin{Denom: "testFarmStakingCoinDenom", Amount: sdk.MustNewDecFromStr("1.0")},
 	)

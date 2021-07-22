@@ -16,7 +16,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
 
-	farmingFeeCollector := k.accountKeeper.GetModuleAccount(ctx, types.FarmingFeeCollector)
+	farmingFeeCollector := k.accountKeeper.GetModuleAccount(ctx, types.FarmingFeeCollectorName)
 	k.accountKeeper.SetModuleAccount(ctx, farmingFeeCollector)
 
 	// TODO: unimplemented
