@@ -16,8 +16,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
 
-	farmingFeeCollector := k.accountKeeper.GetModuleAccount(ctx, types.FarmingFeeCollectorName)
-	k.accountKeeper.SetModuleAccount(ctx, farmingFeeCollector)
+	// TODO: decision making is needed
+	// feeCollectorAcc, err := sdk.AccAddressFromBech32(types.DefaultFarmingFeeCollector)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// k.accountKeeper.SetModuleAccount(ctx, feeCollectorAcc)
 
 	// TODO: unimplemented
 	//for _, record := range genState.PlanRecords {
