@@ -133,5 +133,10 @@ func validateFarmingFeeCollector(i interface{}) error {
 		return fmt.Errorf("farming fee collector address must not be empty")
 	}
 
+	_, err := sdk.AccAddressFromBech32(v)
+	if err != nil {
+		return fmt.Errorf("invalid account address: %v", v)
+	}
+
 	return nil
 }

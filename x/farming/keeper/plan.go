@@ -6,6 +6,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -166,7 +167,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	terminationAddrAcc := farmingPoolAddrAcc
 
@@ -175,10 +176,15 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
 	_, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
 	if hasNeg {
-		return types.ErrInsufficientBalance
+		return sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient balance to pay private plan creation fee")
 	}
 
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollectorName, params.PrivatePlanCreationFee); err != nil {
+	farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
+	if err != nil {
+		return err
+	}
+
+	if err := k.bankKeeper.SendCoins(ctx, farmingPoolAddrAcc, farmingFeeCollectorAcc, params.PrivatePlanCreationFee); err != nil {
 		return err
 	}
 
@@ -215,7 +221,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	terminationAddrAcc := farmingPoolAddrAcc
 
@@ -224,10 +230,15 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
 	_, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
 	if hasNeg {
-		return types.ErrInsufficientBalance
+		return sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient balance to pay private plan creation fee")
 	}
 
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmingPoolAddrAcc, types.FarmingFeeCollectorName, params.PrivatePlanCreationFee); err != nil {
+	farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
+	if err != nil {
+		return err
+	}
+
+	if err := k.bankKeeper.SendCoins(ctx, farmingPoolAddrAcc, farmingFeeCollectorAcc, params.PrivatePlanCreationFee); err != nil {
 		return err
 	}
 
