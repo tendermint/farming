@@ -28,25 +28,25 @@ func (suite *KeeperTestSuite) TestGetSetNewPlan() {
 	suite.keeper.SetPlan(suite.ctx, fixedPlan)
 
 	planGet, found := suite.keeper.GetPlan(suite.ctx, 1)
-	suite.True(found)
-	suite.Equal(fixedPlan, planGet)
+	suite.Require().True(found)
+	suite.Require().Equal(fixedPlan, planGet)
 
 	plans := suite.keeper.GetAllPlans(suite.ctx)
-	suite.Len(plans, 1)
-	suite.Equal(fixedPlan, plans[0])
+	suite.Require().Len(plans, 1)
+	suite.Require().Equal(fixedPlan, plans[0])
 
 	// TODO: tmp test codes for testing functionality, need to separated
 	err := suite.keeper.Stake(suite.ctx, farmerAddr, stakingCoins)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	stakings := suite.keeper.GetAllStakings(suite.ctx)
 	fmt.Println(stakings)
 	stakingByFarmer, found := suite.keeper.GetStakingByFarmer(suite.ctx, farmerAddr)
 	stakingsByDenom := suite.keeper.GetStakingsByStakingCoinDenom(suite.ctx, sdk.DefaultBondDenom)
 
-	suite.True(found)
-	suite.Equal(stakings[0], stakingByFarmer)
-	suite.Equal(stakings, stakingsByDenom)
+	suite.Require().True(found)
+	suite.Require().Equal(stakings[0], stakingByFarmer)
+	suite.Require().Equal(stakings, stakingsByDenom)
 
 	suite.keeper.SetReward(suite.ctx, sdk.DefaultBondDenom, farmerAddr, stakingCoins)
 
@@ -54,6 +54,6 @@ func (suite *KeeperTestSuite) TestGetSetNewPlan() {
 	//rewardsByFarmer := suite.keeper.GetRewardsByFarmer(ctx, farmerAddr)
 	//rewardsByDenom := suite.keeper.GetRewardsByStakingCoinDenom(ctx, sdk.DefaultBondDenom)
 	//
-	//suite.Equal(rewards, rewardsByFarmer)
-	//suite.Equal(rewards, rewardsByDenom)
+	//suite.Require().Equal(rewards, rewardsByFarmer)
+	//suite.Require().Equal(rewards, rewardsByDenom)
 }

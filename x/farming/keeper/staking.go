@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/tendermint/farming/x/farming/types"
@@ -185,7 +186,7 @@ func (k Keeper) Stake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins) 
 	staking, found := k.GetStakingByFarmer(ctx, farmer)
 	if !found {
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, farmer, types.ModuleName, params.StakingCreationFee); err != nil {
-			return err
+			return sdkerrors.Wrap(types.ErrFeeCollectionFailure, err.Error())
 		}
 
 		staking = k.NewStaking(ctx, farmer)

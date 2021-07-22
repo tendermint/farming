@@ -18,6 +18,7 @@ type KeeperTestSuite struct {
 	app    *simapp.FarmingApp
 	ctx    sdk.Context
 	keeper keeper.Keeper
+	addrs  []sdk.AccAddress
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -31,4 +32,5 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.app = app
 	suite.ctx = ctx
 	suite.keeper = suite.app.FarmingKeeper
+	suite.addrs = simapp.AddTestAddrs(suite.app, suite.ctx, 4, sdk.NewInt(30000000))
 }
