@@ -36,7 +36,7 @@ func (suite *KeeperTestSuite) TestGetSetNewPlan() {
 	suite.Require().Equal(fixedPlan, plans[0])
 
 	// TODO: tmp test codes for testing functionality, need to separated
-	err := suite.keeper.Stake(suite.ctx, farmerAddr, stakingCoins)
+	_, err := suite.keeper.Stake(suite.ctx, farmerAddr, stakingCoins)
 	suite.Require().NoError(err)
 
 	stakings := suite.keeper.GetAllStakings(suite.ctx)

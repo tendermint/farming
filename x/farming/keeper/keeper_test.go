@@ -10,6 +10,19 @@ import (
 
 	simapp "github.com/tendermint/farming/app"
 	"github.com/tendermint/farming/x/farming/keeper"
+	"github.com/tendermint/farming/x/farming/types"
+)
+
+const (
+	denom1 = "denom1"
+	denom2 = "denom2"
+)
+
+var (
+	initialBalances = sdk.NewCoins(
+		sdk.NewInt64Coin(sdk.DefaultBondDenom, 30000000),
+		sdk.NewInt64Coin(denom1, 30000000),
+		sdk.NewInt64Coin(denom2, 30000000))
 )
 
 type KeeperTestSuite struct {
@@ -32,25 +45,25 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.app = app
 	suite.ctx = ctx
 	suite.keeper = suite.app.FarmingKeeper
-	suite.addrs = simapp.AddTestAddrs(suite.app, suite.ctx, 4, sdk.NewInt(30000000))
+	suite.addrs = simapp.AddTestAddrs(suite.app, suite.ctx, 4, sdk.ZeroInt())
+	for _, addr := range suite.addrs {
+		err := simapp.FundAccount(suite.app.BankKeeper, suite.ctx, addr, initialBalances)
+		suite.Require().NoError(err)
+	}
 }
 
 // Stake is a convenient method to test Keeper.Stake.
-func (suite *KeeperTestSuite) Stake(addr sdk.AccAddress, amt sdk.Coins) {
-	staking, found := suite.keeper.GetStakingByFarmer(suite.ctx, addr)
-	if !found {
-		staking.QueuedCoins = sdk.NewCoins()
-	}
-
-	err := suite.keeper.Stake(suite.ctx, addr, amt)
+func (suite *KeeperTestSuite) Stake(addr sdk.AccAddress, amt sdk.Coins) types.Staking {
+	staking, err := suite.keeper.Stake(suite.ctx, addr, amt)
 	suite.Require().NoError(err)
 
-	staking2, found := suite.keeper.GetStakingByFarmer(suite.ctx, addr)
-	suite.Require().True(found, "staking should be present")
-
-	suite.Require().True(staking2.QueuedCoins.IsEqual(staking.QueuedCoins.Add(amt...)), "inconsistent queued coins amount")
+	return staking
 }
 
 func IntEq(exp, got sdk.Int) (bool, string, string, string) {
 	return exp.Equal(got), "expected:\t%v\ngot:\t\t%v", exp.String(), got.String()
+}
+
+func CoinsEq(exp, got sdk.Coins) (bool, string, string, string) {
+	return exp.IsEqual(got), "expected:\t%v\ngot:\t\t%v", exp.String(), got.String()
 }

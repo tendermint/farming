@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gogotypes "github.com/gogo/protobuf/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -112,7 +113,9 @@ func (k Keeper) DeleteStaking(ctx sdk.Context, staking types.Staking) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetStakingKey(staking.Id))
 	store.Delete(types.GetStakingByFarmerIndexKey(staking.GetFarmer()))
-	k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, staking.StakingCoinDenoms())
+	if denoms := staking.StakingCoinDenoms(); len(denoms) > 0 {
+		k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, denoms)
+	}
 }
 
 // DeleteStakingCoinDenomsIndex removes an staking for the staking mapper store.
@@ -176,22 +179,21 @@ func (k Keeper) ReleaseStakingCoins(ctx sdk.Context, farmer sdk.AccAddress, unst
 }
 
 // Stake stores staking coins to queued coins and it will be processed in the next epoch.
-func (k Keeper) Stake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) Stake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins) (types.Staking, error) {
 	if err := k.ReserveStakingCoins(ctx, farmer, amount); err != nil {
-		return err
+		return types.Staking{}, err
 	}
 
 	params := k.GetParams(ctx)
 
 	staking, found := k.GetStakingByFarmer(ctx, farmer)
 	if !found {
-		farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
-		if err != nil {
-			return err
-		}
+		// We don't need to check error here because it is already checked
+		// in Params validation.
+		farmingFeeCollectorAcc, _ := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
 
 		if err := k.bankKeeper.SendCoins(ctx, farmer, farmingFeeCollectorAcc, params.StakingCreationFee); err != nil {
-			return err
+			return types.Staking{}, sdkerrors.Wrap(types.ErrFeeCollectionFailure, err.Error())
 		}
 
 		staking = k.NewStaking(ctx, farmer)
@@ -209,18 +211,18 @@ func (k Keeper) Stake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins) 
 		),
 	})
 
-	return nil
+	return staking, nil
 }
 
 // Unstake unstakes an amount of staking coins from the staking reserve account.
-func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins) (types.Staking, error) {
 	staking, found := k.GetStakingByFarmer(ctx, farmer)
 	if !found {
-		return types.ErrStakingNotExists
+		return types.Staking{}, types.ErrStakingNotExists
 	}
 
 	if err := k.ReleaseStakingCoins(ctx, farmer, amount); err != nil {
-		return err
+		return types.Staking{}, err
 	}
 
 	prevDenoms := staking.StakingCoinDenoms()
@@ -257,7 +259,9 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 			}
 		}
 
-		k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, removedDenoms)
+		if len(removedDenoms) > 0 {
+			k.DeleteStakingCoinDenomsIndex(ctx, staking.Id, removedDenoms)
+		}
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -268,7 +272,8 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 		),
 	})
 
-	return nil
+	// We're returning a Staking even if it has deleted.
+	return staking, nil
 }
 
 // ProcessQueuedCoins moves queued coins into staked coins.
