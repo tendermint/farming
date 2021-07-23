@@ -3,8 +3,9 @@ package keeper
 import (
 	"encoding/binary"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/gogo/protobuf/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/tendermint/farming/x/farming/types"
 )
