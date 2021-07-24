@@ -132,13 +132,13 @@ $ %s tx %s create-ratio-plan --from mykey
 
 func NewStakeCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "stake",
-		Args:  cobra.ExactArgs(0),
-		Short: "stake coins to the farming plan",
+		Use:   "stake [amount]",
+		Args:  cobra.ExactArgs(1),
+		Short: "stake coins",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`stake coins to the farming plan.
+			fmt.Sprintf(`stake coins.
 Example:
-$ %s tx %s stake --from mykey
+$ %s tx %s stake 1000uatom --from mykey
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -148,11 +148,13 @@ $ %s tx %s stake --from mykey
 			if err != nil {
 				return err
 			}
-			farmer := clientCtx.GetFromAddress()
 
-			stakingCoins := sdk.NewCoins(sdk.NewInt64Coin("atom", 1000)) // TODO: get from flags
+			stakingCoins, err := sdk.ParseCoinsNormalized(args[0])
+			if err != nil {
+				return err
+			}
 
-			msg := types.NewMsgStake(farmer, stakingCoins)
+			msg := types.NewMsgStake(clientCtx.GetFromAddress(), stakingCoins)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -165,12 +167,12 @@ $ %s tx %s stake --from mykey
 func NewUnstakeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unstake",
-		Args:  cobra.ExactArgs(0),
-		Short: "unstake coins from the farming plan",
+		Args:  cobra.ExactArgs(1),
+		Short: "unstake coins",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`unstake coins from the farming plan.
+			fmt.Sprintf(`unstake coins.
 Example:
-$ %s tx %s unstake --from mykey
+$ %s tx %s unstake 1000uatom --from mykey
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -180,11 +182,13 @@ $ %s tx %s unstake --from mykey
 			if err != nil {
 				return err
 			}
-			farmer := clientCtx.GetFromAddress()
 
-			unstakingCoins := sdk.NewCoins(sdk.NewInt64Coin("atom", 500)) // TODO: get from flags
+			unstakingCoins, err := sdk.ParseCoinsNormalized(args[0])
+			if err != nil {
+				return err
+			}
 
-			msg := types.NewMsgUnstake(farmer, unstakingCoins)
+			msg := types.NewMsgUnstake(clientCtx.GetFromAddress(), unstakingCoins)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
