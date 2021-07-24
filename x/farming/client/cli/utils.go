@@ -1,11 +1,63 @@
 package cli
 
 import (
+	"encoding/json"
 	"io/ioutil"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/tendermint/farming/x/farming/types"
 )
+
+// PrivateFixedPlanRequest defines CLI request for a private fixed plan.
+type PrivateFixedPlanRequest struct {
+	StakingCoinWeights sdk.DecCoins `json:"staking_coin_weights"`
+	StartTime          time.Time    `json:"start_time"`
+	EndTime            time.Time    `json:"end_time"`
+	EpochAmount        sdk.Coins    `json:"epoch_amount"`
+}
+
+// PrivateRatioPlanRequest defines CLI request for a private ratio plan.
+type PrivateRatioPlanRequest struct {
+	StakingCoinWeights sdk.DecCoins `json:"staking_coin_weights"`
+	StartTime          time.Time    `json:"start_time"`
+	EndTime            time.Time    `json:"end_time"`
+	EpochRatio         sdk.Dec      `json:"epoch_ratio"`
+}
+
+// ParsePrivateFixedPlanProposal reads and parses a PrivateFixedPlanRequest from a file.
+func ParsePrivateFixedPlanProposal(file string) (PrivateFixedPlanRequest, error) {
+	plan := PrivateFixedPlanRequest{}
+
+	contents, err := ioutil.ReadFile(file)
+	if err != nil {
+		return plan, err
+	}
+
+	if err = json.Unmarshal(contents, &plan); err != nil {
+		return plan, err
+	}
+
+	return plan, nil
+}
+
+// ParsePrivateRatioPlanProposal reads and parses a PrivateRatioPlanRequest from a file.
+func ParsePrivateRatioPlanProposal(file string) (PrivateRatioPlanRequest, error) {
+	plan := PrivateRatioPlanRequest{}
+
+	contents, err := ioutil.ReadFile(file)
+	if err != nil {
+		return plan, err
+	}
+
+	if err = json.Unmarshal(contents, &plan); err != nil {
+		return plan, err
+	}
+
+	return plan, nil
+}
 
 // ParsePublicPlanProposal reads and parses a PublicPlanProposal from a file.
 func ParsePublicPlanProposal(cdc codec.JSONCodec, proposalFile string) (types.PublicPlanProposal, error) {

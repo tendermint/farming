@@ -6,8 +6,8 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
-// HandleAddPublicPlanProposal is a handler for executing a public plan creation proposal.
-func HandleAddPublicPlanProposal(ctx sdk.Context, k Keeper, publicPlanProposal *types.PublicPlanProposal) error {
+// HandlePublicPlanProposal is a handler for executing a public plan creation proposal.
+func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, publicPlanProposal *types.PublicPlanProposal) error {
 	// TODO: not implemented yet
 	return nil
 }

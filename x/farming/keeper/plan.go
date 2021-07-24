@@ -163,11 +163,13 @@ func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
 }
 
 // CreateFixedAmountPlan sets fixed amount plan.
-func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, name string, typ types.PlanType) *types.FixedAmountPlan {
+func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan,
+	name string, typ types.PlanType) (*types.FixedAmountPlan, error) {
+
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	terminationAddrAcc := farmingPoolAddrAcc
 
@@ -176,16 +178,16 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
 	_, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
 	if hasNeg {
-		return sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient balance to pay private plan creation fee")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient balance to pay private plan creation fee")
 	}
 
 	farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := k.bankKeeper.SendCoins(ctx, farmingPoolAddrAcc, farmingFeeCollectorAcc, params.PrivatePlanCreationFee); err != nil {
-		return err
+		return nil, err
 	}
 
 	basePlan := types.NewBasePlan(
@@ -214,15 +216,15 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		),
 	})
 
-	return nil
+	return fixedPlan, nil
 }
 
 // CreateRatioPlan sets ratio plan.
-func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, name string, typ types.PlanType) *types.RatioPlan {
+func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, name string, typ types.PlanType) (*types.RatioPlan, error) {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	terminationAddrAcc := farmingPoolAddrAcc
 
@@ -231,16 +233,16 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 	balances := k.bankKeeper.GetAllBalances(ctx, farmingPoolAddrAcc)
 	_, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
 	if hasNeg {
-		return sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient balance to pay private plan creation fee")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "insufficient balance to pay private plan creation fee")
 	}
 
 	farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := k.bankKeeper.SendCoins(ctx, farmingPoolAddrAcc, farmingFeeCollectorAcc, params.PrivatePlanCreationFee); err != nil {
-		return err
+		return nil, err
 	}
 
 	basePlan := types.NewBasePlan(
@@ -269,5 +271,5 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 		),
 	})
 
-	return nil
+	return ratioPlan, nil
 }

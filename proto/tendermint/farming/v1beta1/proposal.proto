@@ -25,11 +25,12 @@ message PublicPlanProposal {
   string name = 3;
 
   // add_request_proposals specifies AddRequestProposal object
-  repeated AddRequestProposal add_request_proposals = 4 [(gogoproto.moretags) = "yaml:\"add_request_proposals\""];
+  repeated AddRequestProposal add_request_proposals = 4 
+      [(gogoproto.moretags) = "yaml:\"add_request_proposals\""];
 
   // update_request_proposals specifies UpdateRequestProposal object
   repeated UpdateRequestProposal update_request_proposals = 5
-      [(gogoproto.moretags) = "yaml:\" update_request_proposals\""];
+      [(gogoproto.moretags) = "yaml:\"update_request_proposals\""];
 
   // delete_request_proposals specifies DeleteRequestProposal object
   repeated DeleteRequestProposal delete_request_proposals = 6
@@ -38,9 +39,6 @@ message PublicPlanProposal {
 
 // AddRequestProposal details a proposal for creating a public plan.
 message AddRequestProposal {
-  option (gogoproto.goproto_getters)  = false;
-  option (gogoproto.goproto_stringer) = false;
-
   // farming_pool_address defines the bech32-encoded address of the farming pool
   string farming_pool_address = 1 [(gogoproto.moretags) = "yaml:\"farming_pool_address\""];
 
@@ -81,9 +79,6 @@ message AddRequestProposal {
 
 // UpdateRequestProposal details a proposal for updating an existing public plan.
 message UpdateRequestProposal {
-  option (gogoproto.goproto_getters)  = false;
-  option (gogoproto.goproto_stringer) = false;
-
   // plan_id specifies index of the farming plan
   uint64 plan_id = 1;
 
@@ -127,8 +122,6 @@ message UpdateRequestProposal {
 
 // DeleteRequestProposal details a proposal for deleting an existing public plan.
 message DeleteRequestProposal {
-  // option (gogoproto.goproto_getters)  = false;
-
   // plan_id specifies index of the farming plan
   uint64 plan_id = 1;
 }

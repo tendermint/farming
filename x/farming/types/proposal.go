@@ -52,14 +52,3 @@ func (p PublicPlanProposal) String() string {
   DeleteRequestProposals: %s
 `, p.Title, p.Description, p.AddRequestProposals, p.UpdateRequestProposals, p.DeleteRequestProposals)
 }
-
-func NewAddRequestProposal(title, description, name string, addReq []*AddRequestProposal,
-	updateReq []*UpdateRequestProposal, deleteReq []*DeleteRequestProposal) (AddRequestProposal, error) {
-	return &AddRequestProposal{
-		FarmingPoolAddress: farmingPoolAddr,
-		TerminationAddress: terminationAddr,
-		StakingCoinWeights: stakingCoinWeights,
-		StartTime:          startTime,
-		EndTime:            endTime,
-	}, nil
-}
