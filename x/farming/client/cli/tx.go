@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -12,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/spf13/cobra"
 
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -78,9 +79,9 @@ Where plan.json contains:
 				return err
 			}
 
-			plan, err := ParsePrivateFixedPlanProposal(args[0])
+			plan, err := ParsePrivateFixedPlan(args[0])
 			if err != nil {
-				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file: %w", args[0], err)
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file: %v", args[0], err)
 			}
 
 			msg := types.NewMsgCreateFixedAmountPlan(
@@ -125,14 +126,9 @@ Where plan.json contains:
 	      "amount": "1.000000000000000000"
 	  }
   ],
-  "start_time": "2021-07-24T08:41:21.662422Z",
-  "end_time": "2022-07-28T08:41:21.662422Z",
-  "epoch_amount": [
-    {
-      "denom": "uatom",
-      "amount": "1"
-    }
-  ]
+  "start_time": "2021-07-15T08:41:21.662422Z",
+  "end_time": "2022-07-16T08:41:21.662422Z",
+  "epoch_ratio":"1.000000000000000000"
 }
 `,
 				version.AppName, types.ModuleName,
@@ -144,9 +140,9 @@ Where plan.json contains:
 				return err
 			}
 
-			plan, err := ParsePrivateRatioPlanProposal(args[0])
+			plan, err := ParsePrivateRatioPlan(args[0])
 			if err != nil {
-				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file: %w", args[0], err)
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file: %v", args[0], err)
 			}
 
 			msg := types.NewMsgCreateRatioPlan(

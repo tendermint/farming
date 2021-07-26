@@ -27,8 +27,8 @@ type PrivateRatioPlanRequest struct {
 	EpochRatio         sdk.Dec      `json:"epoch_ratio"`
 }
 
-// ParsePrivateFixedPlanProposal reads and parses a PrivateFixedPlanRequest from a file.
-func ParsePrivateFixedPlanProposal(file string) (PrivateFixedPlanRequest, error) {
+// ParsePrivateFixedPlan reads and parses a PrivateFixedPlanRequest from a file.
+func ParsePrivateFixedPlan(file string) (PrivateFixedPlanRequest, error) {
 	plan := PrivateFixedPlanRequest{}
 
 	contents, err := ioutil.ReadFile(file)
@@ -43,8 +43,8 @@ func ParsePrivateFixedPlanProposal(file string) (PrivateFixedPlanRequest, error)
 	return plan, nil
 }
 
-// ParsePrivateRatioPlanProposal reads and parses a PrivateRatioPlanRequest from a file.
-func ParsePrivateRatioPlanProposal(file string) (PrivateRatioPlanRequest, error) {
+// ParsePrivateRatioPlan reads and parses a PrivateRatioPlanRequest from a file.
+func ParsePrivateRatioPlan(file string) (PrivateRatioPlanRequest, error) {
 	plan := PrivateRatioPlanRequest{}
 
 	contents, err := ioutil.ReadFile(file)
