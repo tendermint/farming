@@ -27,7 +27,7 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 			return err
 		}
 	default:
-		sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unexpected public plan proposal %s", proposal.String())
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unexpected public plan proposal %s", proposal.String())
 	}
 
 	return nil
