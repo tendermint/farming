@@ -101,22 +101,22 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 		switch p := plan.(type) {
 		case *types.FixedAmountPlan:
-			p.SetFarmingPoolAddress(farmingPoolAddrAcc)
-			p.SetTerminationAddress(terminationAddrAcc)
-			p.SetStakingCoinWeights(proposal.GetStakingCoinWeights())
-			p.SetStartTime(proposal.GetStartTime())
-			p.SetEndTime(proposal.GetStartTime())
-			p.EpochAmount = proposal.GetEpochAmount()
+			p.SetFarmingPoolAddress(farmingPoolAddrAcc)               // nolint:errcheck
+			p.SetTerminationAddress(terminationAddrAcc)               // nolint:errcheck
+			p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()) // nolint:errcheck
+			p.SetStartTime(proposal.GetStartTime())                   // nolint:errcheck
+			p.SetEndTime(proposal.GetStartTime())                     // nolint:errcheck
+			p.EpochAmount = proposal.GetEpochAmount()                 // nolint:errcheck
 
 			k.SetPlan(ctx, p)
 
 		case *types.RatioPlan:
-			p.SetFarmingPoolAddress(farmingPoolAddrAcc)
-			p.SetTerminationAddress(terminationAddrAcc)
-			p.SetStakingCoinWeights(proposal.GetStakingCoinWeights())
-			p.SetStartTime(proposal.GetStartTime())
-			p.SetEndTime(proposal.GetStartTime())
-			p.EpochRatio = proposal.EpochRatio
+			p.SetFarmingPoolAddress(farmingPoolAddrAcc)               // nolint:errcheck
+			p.SetTerminationAddress(terminationAddrAcc)               // nolint:errcheck
+			p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()) // nolint:errcheck
+			p.SetStartTime(proposal.GetStartTime())                   // nolint:errcheck
+			p.SetEndTime(proposal.GetStartTime())                     // nolint:errcheck
+			p.EpochRatio = proposal.EpochRatio                        // nolint:errcheck
 
 			k.SetPlan(ctx, p)
 
