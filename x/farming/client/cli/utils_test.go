@@ -5,34 +5,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	simapp "github.com/tendermint/farming/app"
 	"github.com/tendermint/farming/app/params"
 	"github.com/tendermint/farming/x/farming/client/cli"
-	"github.com/tendermint/farming/x/farming/keeper"
-	"github.com/tendermint/farming/x/farming/types"
 )
-
-func createTestInput() (*simapp.FarmingApp, sdk.Context) {
-	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
-	app.FarmingKeeper = keeper.NewKeeper(
-		app.AppCodec(),
-		app.GetKey(types.StoreKey),
-		app.GetSubspace(types.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.DistrKeeper,
-		map[string]bool{},
-	)
-
-	return app, ctx
-}
 
 func TestParsePrivateFixedPlan(t *testing.T) {
 	okJSON := testutil.WriteToNewTempFile(t, `

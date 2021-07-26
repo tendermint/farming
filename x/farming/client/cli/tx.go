@@ -266,19 +266,47 @@ $ %s tx %s harvest --from mykey
 	return cmd
 }
 
-// GetCmdSubmitPublicPlanProposal implements a command handler for submitting a public farming plan creation transaction.
+// GetCmdSubmitPublicPlanProposal implements a command handler for submitting a public farming plan
+// to create, update, delete transaction.
 func GetCmdSubmitPublicPlanProposal() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add-public-farming-plan [proposal-file] [flags]",
+		Use:   "public-farming-plan [proposal-file] [flags]",
 		Args:  cobra.ExactArgs(1),
-		Short: "Submit a public farming plan creation",
+		Short: "Submit a public farming plan",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Submit a a public farming plan creation along with an initial deposit.
+			fmt.Sprintf(`Submit a a public farming plan along with an initial deposit.
 The proposal details must be supplied via a JSON file.
 
 Example:
 $ %s tx gov submit-proposal public-farming-plan <path/to/proposal.json> --from=<key_or_address> --deposit=<deposit_amount>
 
+Where proposal.json contains:
+
+{
+  "title": "Public Farming Plan",
+  "description": "Are you ready to farm?",
+  "name": "Cosmos Hub Community Tax",
+  "add_request_proposals": [
+    {
+      "farming_pool_address": "cosmos1mzgucqnfr2l8cj5apvdpllhzt4zeuh2cshz5xu",
+      "termination_address": "cosmos1mzgucqnfr2l8cj5apvdpllhzt4zeuh2cshz5xu",
+      "staking_coin_weights": [
+        {
+          "denom": "PoolCoinDenom",
+          "amount": "1.000000000000000000"
+        }
+      ],
+      "start_time": "2021-07-15T08:41:21.662422Z",
+      "end_time": "2022-07-16T08:41:21.662422Z",
+      "epoch_amount": [
+        {
+          "denom": "uatom",
+          "amount": "1"
+        }
+      ]
+    }
+  ]
+}
 `,
 				version.AppName,
 			),
@@ -304,9 +332,8 @@ $ %s tx gov submit-proposal public-farming-plan <path/to/proposal.json> --from=<
 				return err
 			}
 
-			name := ""
-
-			content, err := types.NewPublicPlanProposal(proposal.Title, proposal.Description, name, []*types.AddRequestProposal{}, []*types.UpdateRequestProposal{}, []*types.DeleteRequestProposal{})
+			content, err := types.NewPublicPlanProposal(proposal.Title, proposal.Description, proposal.Name,
+				proposal.AddRequestProposals, proposal.UpdateRequestProposals, proposal.DeleteRequestProposals)
 			if err != nil {
 				return err
 			}

@@ -39,7 +39,9 @@ func (p *PublicPlanProposal) ProposalRoute() string { return RouterKey }
 func (p *PublicPlanProposal) ProposalType() string { return ProposalTypePublicPlan }
 
 func (p *PublicPlanProposal) ValidateBasic() error {
-	// TODO: not implemented yet
+	// if p.AddRequestProposals == nil && p.UpdateRequestProposals == nil && p.DeleteRequestProposals == nil {
+	// 	return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proposal must not be empty")
+	// }
 	return gov.ValidateAbstract(p)
 }
 
