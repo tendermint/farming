@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	farmingapp "github.com/tendermint/farming/app"
+	"github.com/tendermint/farming/x/farming/client/cli"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -44,41 +46,30 @@ func TestParseJSONFile(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// func TestMarshalPublic(t *testing.T) {
-// 	app, _ := createTestInput()
+func TestParsePrivateFixedPlan(t *testing.T) {
+	fixedPlanStr := `{
+  "staking_coin_weights": [
+	  {
+	      "denom": "poolCoinDenom",
+	      "amount": "1.000000000000000000"
+	  }
+  ],
+  "start_time": "2021-07-15T08:41:21.662422Z",
+  "end_time": "2022-07-16T08:41:21.662422Z",
+  "epoch_amount": [
+    {
+      "denom": "uatom",
+      "amount": "1"
+    }
+  ]
+}
+`
+	plan := cli.PrivateFixedPlanRequest{}
 
-// 	farmingPoolAddr := sdk.AccAddress([]byte("farmingPoolAddr"))
-// 	terminationAddr := sdk.AccAddress([]byte("terminationAddr"))
-// 	coinWeights := sdk.NewDecCoins(sdk.DecCoin{Denom: "testFarmStakingCoinDenom", Amount: sdk.MustNewDecFromStr("1.0")})
-// 	startTime := time.Now().UTC()
-// 	endTime := startTime.AddDate(1, 0, 0)
-// 	name := ""
+	contents := []byte(fixedPlanStr)
+	err := json.Unmarshal(contents, &plan)
+	require.NoError(t, err)
 
-// 	proposal := types.AddPublicPlanProposal{}
-// 	proposal.Title = "Public Plan Test"
-// 	proposal.Description = "TEST..."
-
-// 	basePlan := types.NewBasePlan(
-// 		1,
-// 		name,
-// 		types.PlanTypePublic,
-// 		farmingPoolAddr.String(),
-// 		terminationAddr.String(),
-// 		coinWeights,
-// 		startTime,
-// 		endTime,
-// 	)
-// 	epochRatio := sdk.NewDec(1.0)
-
-// 	ratioPlan := types.NewRatioPlan(basePlan, epochRatio)
-
-// 	plans, err := types.PackPlans([]types.PlanI{ratioPlan})
-// 	require.NoError(t, err)
-
-// 	proposal.Plans = plans
-
-// 	bz, err := app.AppCodec().MarshalJSON(&proposal)
-// 	require.NoError(t, err)
-
-// 	fmt.Println("bz: ", string(bz))
-// }
+	require.Equal(t, "1.000000000000000000poolCoinDenom", plan.StakingCoinWeights.String())
+	require.Equal(t, "1uatom", plan.EpochAmount.String())
+}
