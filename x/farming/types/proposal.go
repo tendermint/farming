@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -39,9 +40,9 @@ func (p *PublicPlanProposal) ProposalRoute() string { return RouterKey }
 func (p *PublicPlanProposal) ProposalType() string { return ProposalTypePublicPlan }
 
 func (p *PublicPlanProposal) ValidateBasic() error {
-	// if p.AddRequestProposals == nil && p.UpdateRequestProposals == nil && p.DeleteRequestProposals == nil {
-	// 	return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proposal must not be empty")
-	// }
+	if p.AddRequestProposals == nil && p.UpdateRequestProposals == nil && p.DeleteRequestProposals == nil {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proposal request must not be empty")
+	}
 	return gov.ValidateAbstract(p)
 }
 

@@ -60,7 +60,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 			logger.Info("created public fixed amount plan", "fixed_amount_plan", plan)
 		}
 
-		if !p.EpochRatio.IsZero() || !p.EpochRatio.IsNegative() {
+		if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNil() && !p.EpochRatio.IsNegative() {
 			msg := types.NewMsgCreateRatioPlan(
 				name,
 				farmingPoolAddrAcc,
@@ -122,6 +122,9 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 			k.SetPlan(ctx, p)
 
+			logger := k.Logger(ctx)
+			logger.Info("updated public fixed amount plan", "fixed_amount_plan", plan)
+
 		case *types.RatioPlan:
 			if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
 				return err
@@ -142,6 +145,9 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 			k.SetPlan(ctx, p)
 
+			logger := k.Logger(ctx)
+			logger.Info("updated public ratio plan", "ratio_plan", plan)
+
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized plan type: %T", p)
 		}
@@ -159,6 +165,9 @@ func (k Keeper) DeletePublicPlanProposal(ctx sdk.Context, proposals []*types.Del
 		}
 
 		k.RemovePlan(ctx, plan)
+
+		logger := k.Logger(ctx)
+		logger.Info("removed public ratio plan", "plan_id", plan.GetId())
 	}
 
 	return nil

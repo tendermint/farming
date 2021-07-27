@@ -14,7 +14,7 @@ import (
 )
 
 func TestMsgCreateFixedAmountPlan(t *testing.T) {
-	name := "Test"
+	name := "test"
 	farmingPoolAddr := sdk.AccAddress(crypto.AddressHash([]byte("farmingPoolAddr")))
 	stakingCoinWeights := sdk.NewDecCoins(
 		sdk.DecCoin{Denom: "testFarmStakingCoinDenom", Amount: sdk.MustNewDecFromStr("1.0")},
@@ -83,7 +83,7 @@ func TestMsgCreateFixedAmountPlan(t *testing.T) {
 }
 
 func TestMsgCreateRatioPlan(t *testing.T) {
-	name := "Test"
+	name := "test"
 	farmingPoolAddr := sdk.AccAddress(crypto.AddressHash([]byte("farmingPoolAddr")))
 	stakingCoinWeights := sdk.NewDecCoins(
 		sdk.DecCoin{Denom: "testFarmStakingCoinDenom", Amount: sdk.MustNewDecFromStr("1.0")},
