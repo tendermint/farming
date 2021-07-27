@@ -82,7 +82,7 @@ Where plan.json contains:
 
 			plan, err := ParsePrivateFixedPlan(args[0])
 			if err != nil {
-				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file: %v", args[0], err)
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file due to %v", args[0], err)
 			}
 
 			msg := types.NewMsgCreateFixedAmountPlan(
@@ -145,7 +145,7 @@ Where plan.json contains:
 
 			plan, err := ParsePrivateRatioPlan(args[0])
 			if err != nil {
-				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file: %v", args[0], err)
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to parse %s file due to %v", args[0], err)
 			}
 
 			msg := types.NewMsgCreateRatioPlan(
@@ -270,8 +270,7 @@ $ %s tx %s harvest --from mykey
 	return cmd
 }
 
-// GetCmdSubmitPublicPlanProposal implements a command handler for submitting a public farming plan
-// to create, update, delete transaction.
+// GetCmdSubmitPublicPlanProposal implements a command handler for submitting a public farming plan transaction to create, update, delete plan.
 func GetCmdSubmitPublicPlanProposal() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "public-farming-plan [proposal-file] [flags]",

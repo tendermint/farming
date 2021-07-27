@@ -163,9 +163,7 @@ func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
 }
 
 // CreateFixedAmountPlan sets fixed amount plan.
-func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan,
-	name string, typ types.PlanType) (*types.FixedAmountPlan, error) {
-
+func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) (*types.FixedAmountPlan, error) {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
@@ -192,7 +190,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 
 	basePlan := types.NewBasePlan(
 		nextId,
-		name,
+		msg.Name,
 		typ,
 		farmingPoolAddrAcc.String(),
 		terminationAddrAcc.String(),
@@ -220,7 +218,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 }
 
 // CreateRatioPlan sets ratio plan.
-func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, name string, typ types.PlanType) (*types.RatioPlan, error) {
+func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) (*types.RatioPlan, error) {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
@@ -247,7 +245,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 
 	basePlan := types.NewBasePlan(
 		nextId,
-		name,
+		msg.Name,
 		typ,
 		farmingPoolAddrAcc.String(),
 		terminationAddrAcc.String(),

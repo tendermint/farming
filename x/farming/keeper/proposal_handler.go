@@ -51,7 +51,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 				p.EpochAmount,
 			)
 
-			plan, err := k.CreateFixedAmountPlan(ctx, msg, name, types.PlanTypePublic)
+			plan, err := k.CreateFixedAmountPlan(ctx, msg, types.PlanTypePublic)
 			if err != nil {
 				return err
 			}
@@ -70,7 +70,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 				p.EpochRatio,
 			)
 
-			plan, err := k.CreateRatioPlan(ctx, msg, name, types.PlanTypePublic)
+			plan, err := k.CreateRatioPlan(ctx, msg, types.PlanTypePublic)
 			if err != nil {
 				return err
 			}
