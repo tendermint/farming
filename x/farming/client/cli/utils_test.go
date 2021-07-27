@@ -15,6 +15,7 @@ import (
 func TestParsePrivateFixedPlan(t *testing.T) {
 	okJSON := testutil.WriteToNewTempFile(t, `
 {
+  "name": "This plan intends to provide incentives for Cosmonauts!",
   "staking_coin_weights": [
 	  {
 	      "denom": "PoolCoinDenom",
@@ -35,6 +36,7 @@ func TestParsePrivateFixedPlan(t *testing.T) {
 	plan, err := cli.ParsePrivateFixedPlan(okJSON.Name())
 	require.NoError(t, err)
 
+	require.Equal(t, "This plan intends to provide incentives for Cosmonauts!", plan.Name)
 	require.Equal(t, "1.000000000000000000PoolCoinDenom", plan.StakingCoinWeights.String())
 	require.Equal(t, "2021-07-15T08:41:21.662422Z", plan.StartTime.Format(time.RFC3339Nano))
 	require.Equal(t, "2022-07-16T08:41:21.662422Z", plan.EndTime.Format(time.RFC3339Nano))
@@ -44,6 +46,7 @@ func TestParsePrivateFixedPlan(t *testing.T) {
 func TestParsePrivateRatioPlan(t *testing.T) {
 	okJSON := testutil.WriteToNewTempFile(t, `
 {
+  "name": "This plan intends to provide incentives for Cosmonauts!",
   "staking_coin_weights": [
 	  {
 	      "denom": "PoolCoinDenom",
@@ -59,6 +62,7 @@ func TestParsePrivateRatioPlan(t *testing.T) {
 	plan, err := cli.ParsePrivateRatioPlan(okJSON.Name())
 	require.NoError(t, err)
 
+	require.Equal(t, "This plan intends to provide incentives for Cosmonauts!", plan.Name)
 	require.Equal(t, "1.000000000000000000PoolCoinDenom", plan.StakingCoinWeights.String())
 	require.Equal(t, "2021-07-15T08:41:21.662422Z", plan.StartTime.Format(time.RFC3339Nano))
 	require.Equal(t, "2022-07-16T08:41:21.662422Z", plan.EndTime.Format(time.RFC3339Nano))

@@ -27,6 +27,7 @@ const (
 
 // NewMsgCreateFixedAmountPlan creates a new MsgCreateFixedAmountPlan.
 func NewMsgCreateFixedAmountPlan(
+	name string,
 	farmingPoolAddr sdk.AccAddress,
 	stakingCoinWeights sdk.DecCoins,
 	startTime time.Time,
@@ -34,6 +35,7 @@ func NewMsgCreateFixedAmountPlan(
 	epochAmount sdk.Coins,
 ) *MsgCreateFixedAmountPlan {
 	return &MsgCreateFixedAmountPlan{
+		Name:               name,
 		FarmingPoolAddress: farmingPoolAddr.String(),
 		StakingCoinWeights: stakingCoinWeights,
 		StartTime:          startTime,
@@ -90,6 +92,7 @@ func (msg MsgCreateFixedAmountPlan) GetCreator() sdk.AccAddress {
 
 // NewMsgCreateRatioPlan creates a new MsgCreateRatioPlan.
 func NewMsgCreateRatioPlan(
+	name string,
 	farmingPoolAddr sdk.AccAddress,
 	stakingCoinWeights sdk.DecCoins,
 	startTime time.Time,
@@ -97,6 +100,7 @@ func NewMsgCreateRatioPlan(
 	epochRatio sdk.Dec,
 ) *MsgCreateRatioPlan {
 	return &MsgCreateRatioPlan{
+		Name:               name,
 		FarmingPoolAddress: farmingPoolAddr.String(),
 		StakingCoinWeights: stakingCoinWeights,
 		StartTime:          startTime,

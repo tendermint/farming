@@ -43,6 +43,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 
 		if !p.EpochAmount.IsZero() && !p.EpochAmount.IsAnyNegative() {
 			msg := types.NewMsgCreateFixedAmountPlan(
+				name,
 				farmingPoolAddrAcc,
 				p.GetStakingCoinWeights(),
 				p.GetStartTime(),
@@ -61,6 +62,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 
 		if !p.EpochRatio.IsZero() || !p.EpochRatio.IsNegative() {
 			msg := types.NewMsgCreateRatioPlan(
+				name,
 				farmingPoolAddrAcc,
 				p.GetStakingCoinWeights(),
 				p.GetStartTime(),
@@ -101,22 +103,42 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 		switch p := plan.(type) {
 		case *types.FixedAmountPlan:
-			p.SetFarmingPoolAddress(farmingPoolAddrAcc)               // nolint:errcheck
-			p.SetTerminationAddress(terminationAddrAcc)               // nolint:errcheck
-			p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()) // nolint:errcheck
-			p.SetStartTime(proposal.GetStartTime())                   // nolint:errcheck
-			p.SetEndTime(proposal.GetStartTime())                     // nolint:errcheck
-			p.EpochAmount = proposal.GetEpochAmount()                 // nolint:errcheck
+			if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
+				return err
+			}
+			if err := p.SetTerminationAddress(terminationAddrAcc); err != nil {
+				return err
+			}
+			if err := p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()); err != nil {
+				return err
+			}
+			if err := p.SetStartTime(proposal.GetStartTime()); err != nil {
+				return err
+			}
+			if err := p.SetEndTime(proposal.GetStartTime()); err != nil {
+				return err
+			}
+			p.EpochAmount = proposal.GetEpochAmount()
 
 			k.SetPlan(ctx, p)
 
 		case *types.RatioPlan:
-			p.SetFarmingPoolAddress(farmingPoolAddrAcc)               // nolint:errcheck
-			p.SetTerminationAddress(terminationAddrAcc)               // nolint:errcheck
-			p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()) // nolint:errcheck
-			p.SetStartTime(proposal.GetStartTime())                   // nolint:errcheck
-			p.SetEndTime(proposal.GetStartTime())                     // nolint:errcheck
-			p.EpochRatio = proposal.EpochRatio                        // nolint:errcheck
+			if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
+				return err
+			}
+			if err := p.SetTerminationAddress(terminationAddrAcc); err != nil {
+				return err
+			}
+			if err := p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()); err != nil {
+				return err
+			}
+			if err := p.SetStartTime(proposal.GetStartTime()); err != nil {
+				return err
+			}
+			if err := p.SetEndTime(proposal.GetStartTime()); err != nil {
+				return err
+			}
+			p.EpochRatio = proposal.EpochRatio
 
 			k.SetPlan(ctx, p)
 

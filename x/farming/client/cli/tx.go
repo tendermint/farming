@@ -54,6 +54,7 @@ $ %s tx %s create-private-fixed-plan <path/to/plan.json> --from mykey
 Where plan.json contains:
 
 {
+  "name": "This plan intends to provide incentives for Cosmonauts!",
   "staking_coin_weights": [
 	  {
 	      "denom": "uatom",
@@ -85,6 +86,7 @@ Where plan.json contains:
 			}
 
 			msg := types.NewMsgCreateFixedAmountPlan(
+				plan.Name,
 				clientCtx.GetFromAddress(),
 				plan.StakingCoinWeights,
 				plan.StartTime,
@@ -120,6 +122,7 @@ $ %s tx %s create-private-ratio-plan <path/to/plan.json> --from mykey
 Where plan.json contains:
 
 {
+  "name": "This plan intends to provide incentives for Cosmonauts!",
   "staking_coin_weights": [
 	  {
 	      "denom": "uatom",
@@ -146,6 +149,7 @@ Where plan.json contains:
 			}
 
 			msg := types.NewMsgCreateRatioPlan(
+				plan.Name,
 				clientCtx.GetFromAddress(),
 				plan.StakingCoinWeights,
 				plan.StartTime,

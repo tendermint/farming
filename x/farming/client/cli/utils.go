@@ -13,6 +13,7 @@ import (
 
 // PrivateFixedPlanRequest defines CLI request for a private fixed plan.
 type PrivateFixedPlanRequest struct {
+	Name               string       `json:"name"`
 	StakingCoinWeights sdk.DecCoins `json:"staking_coin_weights"`
 	StartTime          time.Time    `json:"start_time"`
 	EndTime            time.Time    `json:"end_time"`
@@ -21,6 +22,7 @@ type PrivateFixedPlanRequest struct {
 
 // PrivateRatioPlanRequest defines CLI request for a private ratio plan.
 type PrivateRatioPlanRequest struct {
+	Name               string       `json:"name"`
 	StakingCoinWeights sdk.DecCoins `json:"staking_coin_weights"`
 	StartTime          time.Time    `json:"start_time"`
 	EndTime            time.Time    `json:"end_time"`
