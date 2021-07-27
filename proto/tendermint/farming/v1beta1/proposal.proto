@@ -10,7 +10,9 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/tendermint/farming/x/farming/types";
 
-// PublicPlanProposal details a proposal for creating a public plan.
+// PublicPlanProposal defines a public farming plan governance proposal that receives one of the following requests:
+// A request that creates a public farming plan, a request that updates the plan, and a reuqest that deletes the plan.
+// For public plan creation, depending on which field is passed, either epoch amount or epoch ratio, it creates a fixed amount plan or ratio plan.  
 message PublicPlanProposal {
   option (gogoproto.goproto_getters)  = false;
   option (gogoproto.goproto_stringer) = false;
