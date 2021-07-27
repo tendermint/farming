@@ -335,7 +335,7 @@ Where proposal.json contains:
 				return err
 			}
 
-			content, err := types.NewPublicPlanProposal(proposal.Title, proposal.Description, proposal.Name,
+			content, err := types.NewPublicPlanProposal(proposal.Title, proposal.Description,
 				proposal.AddRequestProposals, proposal.UpdateRequestProposals, proposal.DeleteRequestProposals)
 			if err != nil {
 				return err

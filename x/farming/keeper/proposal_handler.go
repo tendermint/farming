@@ -15,7 +15,7 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 
 	switch {
 	case proposal.AddRequestProposals != nil:
-		if err := k.AddPublicPlanProposal(ctx, proposal.Name, proposal.AddRequestProposals); err != nil {
+		if err := k.AddPublicPlanProposal(ctx, proposal.AddRequestProposals); err != nil {
 			return err
 		}
 	case proposal.UpdateRequestProposals != nil:
@@ -34,7 +34,7 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 }
 
 // AddPublicPlanProposal adds a new public plan once the governance proposal is passed.
-func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []*types.AddRequestProposal) error {
+func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddRequestProposal) error {
 	for _, p := range proposals {
 		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
 		if err != nil {
@@ -43,7 +43,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 
 		if !p.EpochAmount.IsZero() && !p.EpochAmount.IsAnyNegative() {
 			msg := types.NewMsgCreateFixedAmountPlan(
-				name,
+				p.GetName(),
 				farmingPoolAddrAcc,
 				p.GetStakingCoinWeights(),
 				p.GetStartTime(),
@@ -62,7 +62,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, name string, proposals []
 
 		if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNil() && !p.EpochRatio.IsNegative() {
 			msg := types.NewMsgCreateRatioPlan(
-				name,
+				p.GetName(),
 				farmingPoolAddrAcc,
 				p.GetStakingCoinWeights(),
 				p.GetStartTime(),

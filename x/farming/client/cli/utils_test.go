@@ -76,9 +76,9 @@ func TestParsePublicPlanProposal(t *testing.T) {
 {
   "title": "Public Farming Plan",
   "description": "Are you ready to farm?",
-  "name": "First Public Farming Plan",
   "add_request_proposals": [
     {
+      "name": "First Public Farming Plan",
       "farming_pool_address": "cosmos1mzgucqnfr2l8cj5apvdpllhzt4zeuh2cshz5xu",
       "termination_address": "cosmos1mzgucqnfr2l8cj5apvdpllhzt4zeuh2cshz5xu",
       "staking_coin_weights": [
@@ -105,5 +105,4 @@ func TestParsePublicPlanProposal(t *testing.T) {
 
 	require.Equal(t, "Public Farming Plan", proposal.Title)
 	require.Equal(t, "Are you ready to farm?", proposal.Description)
-	require.Equal(t, "First Public Farming Plan", proposal.Name)
 }
