@@ -25,8 +25,7 @@ message PublicPlanProposal {
   string name = 3;
 
   // add_request_proposals specifies AddRequestProposal object
-  repeated AddRequestProposal add_request_proposals = 4 
-      [(gogoproto.moretags) = "yaml:\"add_request_proposals\""];
+  repeated AddRequestProposal add_request_proposals = 4 [(gogoproto.moretags) = "yaml:\"add_request_proposals\""];
 
   // update_request_proposals specifies UpdateRequestProposal object
   repeated UpdateRequestProposal update_request_proposals = 5
@@ -69,7 +68,7 @@ message AddRequestProposal {
     (gogoproto.nullable)     = false
   ];
 
- // epoch_ratio specifies the distributing amount by ratio
+  // epoch_ratio specifies the distributing amount by ratio
   string epoch_ratio = 7 [
     (gogoproto.moretags)   = "yaml:\"epoch_ratio\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
@@ -112,7 +111,7 @@ message UpdateRequestProposal {
     (gogoproto.nullable)     = false
   ];
 
- // epoch_ratio specifies the distributing amount by ratio
+  // epoch_ratio specifies the distributing amount by ratio
   string epoch_ratio = 8 [
     (gogoproto.moretags)   = "yaml:\"epoch_ratio\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
