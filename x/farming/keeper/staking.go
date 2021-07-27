@@ -242,6 +242,7 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 
 	// Remove the Staking object from the kvstore when all coins has been unstaked
 	// and there's no rewards left.
+	// TODO: find more efficient way to check if the farmer has no rewards
 	if staking.StakedCoins.IsZero() && staking.QueuedCoins.IsZero() && len(k.GetRewardsByFarmer(ctx, farmer)) == 0 {
 		k.DeleteStaking(ctx, staking)
 	} else {

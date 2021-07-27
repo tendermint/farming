@@ -29,7 +29,7 @@ var _ types.MsgServer = msgServer{}
 func (k msgServer) CreateFixedAmountPlan(goCtx context.Context, msg *types.MsgCreateFixedAmountPlan) (*types.MsgCreateFixedAmountPlanResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if err := k.Keeper.CreateFixedAmountPlan(ctx, msg, types.PlanTypePrivate); err != nil {
+	if _, err := k.Keeper.CreateFixedAmountPlan(ctx, msg, types.PlanTypePrivate); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func (k msgServer) CreateFixedAmountPlan(goCtx context.Context, msg *types.MsgCr
 func (k msgServer) CreateRatioPlan(goCtx context.Context, msg *types.MsgCreateRatioPlan) (*types.MsgCreateRatioPlanResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if err := k.Keeper.CreateRatioPlan(ctx, msg, types.PlanTypePrivate); err != nil {
+	if _, err := k.Keeper.CreateRatioPlan(ctx, msg, types.PlanTypePrivate); err != nil {
 		return nil, err
 	}
 
