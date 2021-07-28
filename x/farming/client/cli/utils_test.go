@@ -17,10 +17,10 @@ func TestParsePrivateFixedPlan(t *testing.T) {
 {
   "name": "This plan intends to provide incentives for Cosmonauts!",
   "staking_coin_weights": [
-	  {
-	      "denom": "PoolCoinDenom",
-	      "amount": "1.000000000000000000"
-	  }
+    {
+      "denom": "PoolCoinDenom",
+      "amount": "1.000000000000000000"
+    }
   ],
   "start_time": "2021-07-15T08:41:21.662422Z",
   "end_time": "2022-07-16T08:41:21.662422Z",
@@ -48,14 +48,14 @@ func TestParsePrivateRatioPlan(t *testing.T) {
 {
   "name": "This plan intends to provide incentives for Cosmonauts!",
   "staking_coin_weights": [
-	  {
-	      "denom": "PoolCoinDenom",
-	      "amount": "1.000000000000000000"
-	  }
+    {
+      "denom": "PoolCoinDenom",
+      "amount": "1.000000000000000000"
+    }
   ],
   "start_time": "2021-07-15T08:41:21.662422Z",
   "end_time": "2022-07-16T08:41:21.662422Z",
-  "epoch_ratio":"1.000000000000000000"
+  "epoch_ratio": "1.000000000000000000"
 }
 `)
 
