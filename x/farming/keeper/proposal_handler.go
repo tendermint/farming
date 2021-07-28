@@ -37,6 +37,13 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 // AddPublicPlanProposal adds a new public plan once the governance proposal is passed.
 func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddRequestProposal) error {
 	for _, p := range proposals {
+		plans := k.GetAllPlans(ctx)
+		for _, plan := range plans {
+			if plan.(*types.BasePlan).Name == p.Name {
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", p.Name)
+			}
+		}
+
 		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
 		if err != nil {
 			return err
@@ -89,6 +96,13 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 		plan, found := k.GetPlan(ctx, proposal.GetPlanId())
 		if !found {
 			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", proposal.GetPlanId())
+		}
+
+		plans := k.GetAllPlans(ctx)
+		for _, plan := range plans {
+			if plan.(*types.BasePlan).Name == proposal.Name {
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", proposal.Name)
+			}
 		}
 
 		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetFarmingPoolAddress())
