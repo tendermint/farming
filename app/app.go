@@ -115,7 +115,7 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(
 			paramsclient.ProposalHandler, distrclient.ProposalHandler, upgradeclient.ProposalHandler, upgradeclient.CancelProposalHandler,
-			farmingclient.AddProposalHandler,
+			farmingclient.ProposalHandler,
 			// todo: farming proposal handler
 		),
 		params.AppModuleBasic{},
