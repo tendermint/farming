@@ -118,6 +118,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			if err := p.SetEndTime(proposal.GetStartTime()); err != nil {
 				return err
 			}
+			p.Name = proposal.GetName()
 			p.EpochAmount = proposal.GetEpochAmount()
 
 			k.SetPlan(ctx, p)
@@ -141,6 +142,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			if err := p.SetEndTime(proposal.GetStartTime()); err != nil {
 				return err
 			}
+			p.Name = proposal.GetName()
 			p.EpochRatio = proposal.EpochRatio
 
 			k.SetPlan(ctx, p)
