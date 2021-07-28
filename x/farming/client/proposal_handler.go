@@ -8,5 +8,5 @@ import (
 
 // ProposalHandler is the public plan creation handler.
 var (
-	AddProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitPublicPlanProposal, nil)
+	ProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitPublicPlanProposal, nil)
 )
