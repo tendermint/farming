@@ -13,21 +13,22 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 
-	switch {
-	case proposal.AddRequestProposals != nil:
+	if proposal.AddRequestProposals != nil {
 		if err := k.AddPublicPlanProposal(ctx, proposal.AddRequestProposals); err != nil {
 			return err
 		}
-	case proposal.UpdateRequestProposals != nil:
+	}
+
+	if proposal.UpdateRequestProposals != nil {
 		if err := k.UpdatePublicPlanProposal(ctx, proposal.UpdateRequestProposals); err != nil {
 			return err
 		}
-	case proposal.DeleteRequestProposals != nil:
+	}
+
+	if proposal.DeleteRequestProposals != nil {
 		if err := k.DeletePublicPlanProposal(ctx, proposal.DeleteRequestProposals); err != nil {
 			return err
 		}
-	default:
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unexpected public plan proposal %s", proposal.String())
 	}
 
 	return nil
@@ -58,9 +59,8 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 
 			logger := k.Logger(ctx)
 			logger.Info("created public fixed amount plan", "fixed_amount_plan", plan)
-		}
 
-		if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNil() && !p.EpochRatio.IsNegative() {
+		} else if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNil() && !p.EpochRatio.IsNegative() {
 			msg := types.NewMsgCreateRatioPlan(
 				p.GetName(),
 				farmingPoolAddrAcc,
