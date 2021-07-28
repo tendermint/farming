@@ -43,6 +43,21 @@ func (p *PublicPlanProposal) ValidateBasic() error {
 	if p.AddRequestProposals == nil && p.UpdateRequestProposals == nil && p.DeleteRequestProposals == nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proposal request must not be empty")
 	}
+	for _, ap := range p.AddRequestProposals {
+		if err := ap.Validate(); err != nil {
+			return err
+		}
+	}
+	for _, up := range p.UpdateRequestProposals {
+		if err := up.Validate(); err != nil {
+			return err
+		}
+	}
+	for _, dp := range p.DeleteRequestProposals {
+		if err := dp.Validate(); err != nil {
+			return err
+		}
+	}
 	return gov.ValidateAbstract(p)
 }
 
