@@ -130,7 +130,7 @@ func (plan BasePlan) Validate() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", plan.TerminationAddress, err)
 	}
 	if len(plan.Name) > MaxNameLength {
-		return sdkerrors.Wrapf(ErrInvalidNameLength, "plan name is longer than max length of %d", MaxNameLength)
+		return sdkerrors.Wrapf(ErrInvalidNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
 	if err := plan.StakingCoinWeights.Validate(); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)

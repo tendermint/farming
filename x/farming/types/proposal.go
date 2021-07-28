@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
@@ -53,4 +54,58 @@ func (p PublicPlanProposal) String() string {
   UpdateRequestProposals: %s
   DeleteRequestProposals: %s
 `, p.Title, p.Description, p.AddRequestProposals, p.UpdateRequestProposals, p.DeleteRequestProposals)
+}
+
+func (p *AddRequestProposal) Validate() error {
+	if len(p.Name) > MaxNameLength {
+		return sdkerrors.Wrapf(ErrInvalidNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
+	}
+	if _, err := sdk.AccAddressFromBech32(p.FarmingPoolAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid farming pool address %q: %v", p.FarmingPoolAddress, err)
+	}
+	if _, err := sdk.AccAddressFromBech32(p.TerminationAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
+	}
+	if err := p.StakingCoinWeights.Validate(); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)
+	}
+	if !p.EndTime.After(p.StartTime) {
+		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
+	}
+	if !p.EpochAmount.Empty() && !p.EpochRatio.IsZero() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "epoch amount or epoch ratio must be provided")
+	}
+	return nil
+}
+
+func (p *UpdateRequestProposal) Validate() error {
+	if p.PlanId == 0 {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid plan id: %d", p.PlanId)
+	}
+	if len(p.Name) > MaxNameLength {
+		return sdkerrors.Wrapf(ErrInvalidNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
+	}
+	if _, err := sdk.AccAddressFromBech32(p.FarmingPoolAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid farming pool address %q: %v", p.FarmingPoolAddress, err)
+	}
+	if _, err := sdk.AccAddressFromBech32(p.TerminationAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
+	}
+	if err := p.StakingCoinWeights.Validate(); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)
+	}
+	if !p.EndTime.After(p.StartTime) {
+		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
+	}
+	if !p.EpochAmount.Empty() && !p.EpochRatio.IsZero() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "epoch amount or epoch ratio must be provided")
+	}
+	return nil
+}
+
+func (p *DeleteRequestProposal) Validate() error {
+	if p.PlanId == 0 {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid plan id: %d", p.PlanId)
+	}
+	return nil
 }

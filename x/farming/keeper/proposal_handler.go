@@ -37,6 +37,10 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 // AddPublicPlanProposal adds a new public plan once the governance proposal is passed.
 func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddRequestProposal) error {
 	for _, p := range proposals {
+		if err := p.Validate(); err != nil {
+			return err
+		}
+
 		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
 		if err != nil {
 			return err
@@ -86,6 +90,10 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 // UpdatePublicPlanProposal overwrites the plan with the new plan proposal once the governance proposal is passed.
 func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.UpdateRequestProposal) error {
 	for _, proposal := range proposals {
+		if err := proposal.Validate(); err != nil {
+			return err
+		}
+
 		plan, found := k.GetPlan(ctx, proposal.GetPlanId())
 		if !found {
 			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", proposal.GetPlanId())
@@ -161,6 +169,10 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 // DeletePublicPlanProposal delets public plan proposal once the governance proposal is passed.
 func (k Keeper) DeletePublicPlanProposal(ctx sdk.Context, proposals []*types.DeleteRequestProposal) error {
 	for _, p := range proposals {
+		if err := p.Validate(); err != nil {
+			return err
+		}
+
 		plan, found := k.GetPlan(ctx, p.GetPlanId())
 		if !found {
 			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", p.GetPlanId())
