@@ -129,6 +129,9 @@ func (msg MsgCreateRatioPlan) ValidateBasic() error {
 	if !msg.EpochRatio.IsPositive() {
 		return ErrInvalidPlanEpochRatio
 	}
+	if msg.EpochRatio.GT(sdk.NewDec(1)) {
+		return ErrInvalidPlanEpochRatio
+	}
 	return nil
 }
 

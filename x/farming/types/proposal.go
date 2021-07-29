@@ -109,7 +109,7 @@ func (p *UpdateRequestProposal) Validate() error {
 	if err := p.StakingCoinWeights.Validate(); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)
 	}
-	if !p.EndTime.After(p.StartTime) {
+	if !p.EndTime.After(*p.StartTime) {
 		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
 	}
 	if !p.EpochAmount.Empty() && !p.EpochRatio.IsZero() {

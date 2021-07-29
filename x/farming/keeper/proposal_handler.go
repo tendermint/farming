@@ -31,6 +31,8 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 		}
 	}
 
+	// TODO: ctx로 전체 플랜 가져온 후 동일한 farmer 주소의 epoch ratio 합이 1이 넘을경우 리턴
+
 	return nil
 }
 
@@ -93,11 +95,6 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 // UpdatePublicPlanProposal overwrites the plan with the new plan proposal once the governance proposal is passed.
 func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.UpdateRequestProposal) error {
 	for _, proposal := range proposals {
-		plan, found := k.GetPlan(ctx, proposal.GetPlanId())
-		if !found {
-			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", proposal.GetPlanId())
-		}
-
 		plans := k.GetAllPlans(ctx)
 		for _, plan := range plans {
 			if plan.(*types.BasePlan).Name == proposal.Name {
@@ -105,35 +102,52 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			}
 		}
 
-		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetFarmingPoolAddress())
-		if err != nil {
-			return err
-		}
-
-		terminationAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetTerminationAddress())
-		if err != nil {
-			return err
+		plan, found := k.GetPlan(ctx, proposal.GetPlanId())
+		if !found {
+			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", proposal.GetPlanId())
 		}
 
 		switch p := plan.(type) {
 		case *types.FixedAmountPlan:
-			if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
-				return err
+			if proposal.GetFarmingPoolAddress() != "" {
+				farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetFarmingPoolAddress())
+				if err != nil {
+					return err
+				}
+				if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
+					return err
+				}
 			}
-			if err := p.SetTerminationAddress(terminationAddrAcc); err != nil {
-				return err
+			if proposal.GetTerminationAddress() != "" {
+				terminationAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetTerminationAddress())
+				if err != nil {
+					return err
+				}
+				if err := p.SetTerminationAddress(terminationAddrAcc); err != nil {
+					return err
+				}
 			}
-			if err := p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()); err != nil {
-				return err
+			if proposal.GetStakingCoinWeights() != nil {
+				if err := p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()); err != nil {
+					return err
+				}
 			}
-			if err := p.SetStartTime(proposal.GetStartTime()); err != nil {
-				return err
+			if proposal.GetStartTime() != nil {
+				if err := p.SetStartTime(*proposal.GetStartTime()); err != nil {
+					return err
+				}
 			}
-			if err := p.SetEndTime(proposal.GetStartTime()); err != nil {
-				return err
+			if proposal.GetEndTime() != nil {
+				if err := p.SetEndTime(*proposal.GetEndTime()); err != nil {
+					return err
+				}
 			}
-			p.Name = proposal.GetName()
-			p.EpochAmount = proposal.GetEpochAmount()
+			if proposal.GetName() != "" {
+				p.Name = proposal.GetName()
+			}
+			if proposal.GetEpochAmount() != nil {
+				p.EpochAmount = proposal.GetEpochAmount()
+			}
 
 			k.SetPlan(ctx, p)
 
@@ -141,23 +155,45 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			logger.Info("updated public fixed amount plan", "fixed_amount_plan", plan)
 
 		case *types.RatioPlan:
-			if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
-				return err
+			if proposal.GetFarmingPoolAddress() != "" {
+				farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetFarmingPoolAddress())
+				if err != nil {
+					return err
+				}
+				if err := p.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
+					return err
+				}
 			}
-			if err := p.SetTerminationAddress(terminationAddrAcc); err != nil {
-				return err
+			if proposal.GetTerminationAddress() != "" {
+				terminationAddrAcc, err := sdk.AccAddressFromBech32(proposal.GetTerminationAddress())
+				if err != nil {
+					return err
+				}
+				if err := p.SetTerminationAddress(terminationAddrAcc); err != nil {
+					return err
+				}
 			}
-			if err := p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()); err != nil {
-				return err
+			if proposal.GetStakingCoinWeights() != nil {
+				if err := p.SetStakingCoinWeights(proposal.GetStakingCoinWeights()); err != nil {
+					return err
+				}
 			}
-			if err := p.SetStartTime(proposal.GetStartTime()); err != nil {
-				return err
+			if proposal.GetStartTime() != nil {
+				if err := p.SetStartTime(*proposal.GetStartTime()); err != nil {
+					return err
+				}
 			}
-			if err := p.SetEndTime(proposal.GetStartTime()); err != nil {
-				return err
+			if proposal.GetEndTime() != nil {
+				if err := p.SetEndTime(*proposal.GetEndTime()); err != nil {
+					return err
+				}
 			}
-			p.Name = proposal.GetName()
-			p.EpochRatio = proposal.EpochRatio
+			if proposal.GetName() != "" {
+				p.Name = proposal.GetName()
+			}
+			if !proposal.EpochRatio.IsNil() {
+				p.EpochRatio = proposal.EpochRatio
+			}
 
 			k.SetPlan(ctx, p)
 

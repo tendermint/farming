@@ -12,7 +12,8 @@ option go_package = "github.com/tendermint/farming/x/farming/types";
 
 // PublicPlanProposal defines a public farming plan governance proposal that receives one of the following requests:
 // A request that creates a public farming plan, a request that updates the plan, and a request that deletes the plan.
-// For public plan creation, depending on which field is passed, either epoch amount or epoch ratio, it creates a fixed amount plan or ratio plan.  
+// For public plan creation, depending on which field is passed, either epoch amount or epoch ratio, it creates a fixed
+// amount plan or ratio plan.
 message PublicPlanProposal {
   option (gogoproto.goproto_getters)  = false;
   option (gogoproto.goproto_stringer) = false;
@@ -103,11 +104,11 @@ message UpdateRequestProposal {
 
   // start_time specifies the start time of the plan
   google.protobuf.Timestamp start_time = 6
-      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"start_time\""];
+      [(gogoproto.stdtime) = true, (gogoproto.nullable) = true, (gogoproto.moretags) = "yaml:\"start_time\""];
 
   // end_time specifies the end time of the plan
   google.protobuf.Timestamp end_time = 7
-      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"end_time\""];
+      [(gogoproto.stdtime) = true, (gogoproto.nullable) = true, (gogoproto.moretags) = "yaml:\"end_time\""];
 
   // epoch_amount specifies the distributing amount for each epoch
   repeated cosmos.base.v1beta1.Coin epoch_amount = 8 [
