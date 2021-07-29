@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -197,7 +195,6 @@ func (k Keeper) DistributionInfos(ctx sdk.Context) []DistributionInfo {
 		}
 
 		balances := farmingPoolBalances[farmingPool]
-		fmt.Println("farmingPool=", farmingPool, "balances=", balances, "totalCoins=", totalCoins)
 		if !totalCoins.IsAllLT(balances) {
 			continue
 		}
@@ -249,7 +246,9 @@ func (k Keeper) DistributeRewards(ctx sdk.Context) error {
 				weightProportion := coinWeight.Amount.QuoTruncate(totalWeight)
 				distrAmt, _ := sdk.NewDecCoinsFromCoins(distrInfo.Amount...).MulDecTruncate(stakedProportion.MulTruncate(weightProportion)).TruncateDecimal()
 
-				k.SetReward(ctx, coinWeight.Denom, staking.GetFarmer(), distrAmt)
+				reward, _ := k.GetReward(ctx, coinWeight.Denom, staking.GetFarmer())
+				reward.RewardCoins = reward.RewardCoins.Add(distrAmt...)
+				k.SetReward(ctx, coinWeight.Denom, staking.GetFarmer(), reward.RewardCoins)
 				totalDistrAmt = totalDistrAmt.Add(distrAmt...)
 			}
 		}

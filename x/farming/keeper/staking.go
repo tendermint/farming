@@ -280,9 +280,11 @@ func (k Keeper) Unstake(ctx sdk.Context, farmer sdk.AccAddress, amount sdk.Coins
 // ProcessQueuedCoins moves queued coins into staked coins.
 func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 	k.IterateAllStakings(ctx, func(staking types.Staking) (stop bool) {
-		staking.StakedCoins = staking.StakedCoins.Add(staking.QueuedCoins...)
-		staking.QueuedCoins = sdk.NewCoins()
-		k.SetStaking(ctx, staking)
+		if !staking.QueuedCoins.IsZero() {
+			staking.StakedCoins = staking.StakedCoins.Add(staking.QueuedCoins...)
+			staking.QueuedCoins = sdk.NewCoins()
+			k.SetStaking(ctx, staking)
+		}
 		return false
 	})
 }
