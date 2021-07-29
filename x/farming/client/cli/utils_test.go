@@ -22,8 +22,8 @@ func TestParsePrivateFixedPlan(t *testing.T) {
       "amount": "1.000000000000000000"
     }
   ],
-  "start_time": "2021-07-15T08:41:21.662422Z",
-  "end_time": "2022-07-16T08:41:21.662422Z",
+  "start_time": "2021-07-15T08:41:21Z",
+  "end_time": "2022-07-16T08:41:21Z",
   "epoch_amount": [
     {
       "denom": "uatom",
@@ -38,8 +38,8 @@ func TestParsePrivateFixedPlan(t *testing.T) {
 
 	require.Equal(t, "This plan intends to provide incentives for Cosmonauts!", plan.Name)
 	require.Equal(t, "1.000000000000000000PoolCoinDenom", plan.StakingCoinWeights.String())
-	require.Equal(t, "2021-07-15T08:41:21.662422Z", plan.StartTime.Format(time.RFC3339Nano))
-	require.Equal(t, "2022-07-16T08:41:21.662422Z", plan.EndTime.Format(time.RFC3339Nano))
+	require.Equal(t, "2021-07-15T08:41:21Z", plan.StartTime.Format(time.RFC3339))
+	require.Equal(t, "2022-07-16T08:41:21Z", plan.EndTime.Format(time.RFC3339))
 	require.Equal(t, "1uatom", plan.EpochAmount.String())
 }
 
@@ -53,8 +53,8 @@ func TestParsePrivateRatioPlan(t *testing.T) {
       "amount": "1.000000000000000000"
     }
   ],
-  "start_time": "2021-07-15T08:41:21.662422Z",
-  "end_time": "2022-07-16T08:41:21.662422Z",
+  "start_time": "2021-07-15T08:41:21Z",
+  "end_time": "2022-07-16T08:41:21Z",
   "epoch_ratio": "1.000000000000000000"
 }
 `)
@@ -64,8 +64,8 @@ func TestParsePrivateRatioPlan(t *testing.T) {
 
 	require.Equal(t, "This plan intends to provide incentives for Cosmonauts!", plan.Name)
 	require.Equal(t, "1.000000000000000000PoolCoinDenom", plan.StakingCoinWeights.String())
-	require.Equal(t, "2021-07-15T08:41:21.662422Z", plan.StartTime.Format(time.RFC3339Nano))
-	require.Equal(t, "2022-07-16T08:41:21.662422Z", plan.EndTime.Format(time.RFC3339Nano))
+	require.Equal(t, "2021-07-15T08:41:21Z", plan.StartTime.Format(time.RFC3339))
+	require.Equal(t, "2022-07-16T08:41:21Z", plan.EndTime.Format(time.RFC3339))
 	require.Equal(t, "1.000000000000000000", plan.EpochRatio.String())
 }
 
@@ -87,8 +87,8 @@ func TestParsePublicPlanProposal(t *testing.T) {
           "amount": "1.000000000000000000"
         }
       ],
-      "start_time": "2021-07-15T08:41:21.662422Z",
-      "end_time": "2022-07-16T08:41:21.662422Z",
+      "start_time": "2021-07-15T08:41:21Z",
+      "end_time": "2022-07-16T08:41:21Z",
       "epoch_amount": [
         {
           "denom": "uatom",
