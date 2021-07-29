@@ -1,6 +1,7 @@
 package types
 
 import (
+	fmt "fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -211,4 +212,25 @@ type PlanI interface {
 	SetEndTime(time.Time) error
 
 	String() string
+}
+
+func ValidatePlans(plans []PlanI) error {
+	farmerEpochRatio := make(map[string]sdk.Dec) // farmingPoolAddr, epochRatio
+
+	for i, plan := range plans {
+		if _, ok := plan.(*RatioPlan); ok {
+			farmingPoolAddr := plan.GetFarmingPoolAddress().String()
+			farmerEpochRatio[farmingPoolAddr] = plan.(*RatioPlan).EpochRatio
+
+			fmt.Println(">>> i: ", i)
+			fmt.Println(">>> farmingPoolAddr: ", farmingPoolAddr)
+			fmt.Println(">>> farmerEpochRatio[farmingPoolAddr]: ", farmerEpochRatio[farmingPoolAddr])
+			fmt.Println(">>> farmerEpochRatio: ", farmerEpochRatio)
+
+			if farmerEpochRatio[farmingPoolAddr].GT(sdk.NewDec(1)) {
+				return sdkerrors.Wrapf(ErrInvalidPlanEpochRatio, "total epoch ratio for %s must be lower than 1", farmingPoolAddr)
+			}
+		}
+	}
+	return nil
 }

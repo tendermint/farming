@@ -31,7 +31,12 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 		}
 	}
 
-	// TODO: ctx로 전체 플랜 가져온 후 동일한 farmer 주소의 epoch ratio 합이 1이 넘을경우 리턴
+	// make sure that a single account cannot create plans that exceeds
+	// a total epoch ratio of 1 (100%) for farming distribution
+	plans := k.GetAllPlans(ctx)
+	if err := types.ValidatePlans(plans); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -39,11 +44,8 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 // AddPublicPlanProposal adds a new public plan once the governance proposal is passed.
 func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddRequestProposal) error {
 	for _, p := range proposals {
-		plans := k.GetAllPlans(ctx)
-		for _, plan := range plans {
-			if plan.(*types.BasePlan).Name == p.Name {
-				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", p.Name)
-			}
+		if err := k.ValidatePlanName(ctx, p.Name); err != nil {
+			return err
 		}
 
 		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
@@ -95,11 +97,8 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 // UpdatePublicPlanProposal overwrites the plan with the new plan proposal once the governance proposal is passed.
 func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.UpdateRequestProposal) error {
 	for _, proposal := range proposals {
-		plans := k.GetAllPlans(ctx)
-		for _, plan := range plans {
-			if plan.(*types.BasePlan).Name == proposal.Name {
-				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", proposal.Name)
-			}
+		if err := k.ValidatePlanName(ctx, proposal.Name); err != nil {
+			return err
 		}
 
 		plan, found := k.GetPlan(ctx, proposal.GetPlanId())
@@ -222,5 +221,22 @@ func (k Keeper) DeletePublicPlanProposal(ctx sdk.Context, proposals []*types.Del
 		logger.Info("removed public ratio plan", "plan_id", plan.GetId())
 	}
 
+	return nil
+}
+
+func (k Keeper) ValidatePlanName(ctx sdk.Context, name string) error {
+	plans := k.GetAllPlans(ctx)
+	for _, plan := range plans {
+		if plan, ok := plan.(*types.FixedAmountPlan); ok {
+			if plan.Name == name {
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", name)
+			}
+		}
+		if plan, ok := plan.(*types.RatioPlan); ok {
+			if plan.Name == name {
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", name)
+			}
+		}
+	}
 	return nil
 }
