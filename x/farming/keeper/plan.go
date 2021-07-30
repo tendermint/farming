@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	gogotypes "github.com/gogo/protobuf/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -163,7 +161,7 @@ func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
 }
 
 // CreateFixedAmountPlan sets fixed amount plan.
-func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) (*types.FixedAmountPlan, error) {
+func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, typ types.PlanType) (types.PlanI, error) {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
@@ -218,7 +216,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 }
 
 // CreateRatioPlan sets ratio plan.
-func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) (*types.RatioPlan, error) {
+func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, typ types.PlanType) (types.PlanI, error) {
 	nextId := k.GetNextPlanIDWithUpdate(ctx)
 	farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(msg.FarmingPoolAddress)
 	if err != nil {
@@ -265,7 +263,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 			sdk.NewAttribute(types.AttributeKeyRewardPoolAddress, ratioPlan.RewardPoolAddress),
 			sdk.NewAttribute(types.AttributeKeyStartTime, msg.StartTime.String()),
 			sdk.NewAttribute(types.AttributeKeyEndTime, msg.EndTime.String()),
-			sdk.NewAttribute(types.AttributeKeyEpochRatio, fmt.Sprint(msg.EpochRatio)),
+			sdk.NewAttribute(types.AttributeKeyEpochRatio, msg.EpochRatio.String()),
 		),
 	})
 

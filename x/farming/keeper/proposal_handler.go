@@ -57,7 +57,6 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 				p.GetEndTime(),
 				p.EpochAmount,
 			)
-
 			plan, err := k.CreateFixedAmountPlan(ctx, msg, types.PlanTypePublic)
 			if err != nil {
 				return err
