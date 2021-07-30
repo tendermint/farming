@@ -1,7 +1,6 @@
 package types
 
 import (
-	fmt "fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -214,23 +213,45 @@ type PlanI interface {
 	String() string
 }
 
-func ValidatePlans(plans []PlanI) error {
-	farmerEpochRatio := make(map[string]sdk.Dec) // farmingPoolAddr, epochRatio
-
-	for i, plan := range plans {
-		if _, ok := plan.(*RatioPlan); ok {
-			farmingPoolAddr := plan.GetFarmingPoolAddress().String()
-			farmerEpochRatio[farmingPoolAddr] = plan.(*RatioPlan).EpochRatio
-
-			fmt.Println(">>> i: ", i)
-			fmt.Println(">>> farmingPoolAddr: ", farmingPoolAddr)
-			fmt.Println(">>> farmerEpochRatio[farmingPoolAddr]: ", farmerEpochRatio[farmingPoolAddr])
-			fmt.Println(">>> farmerEpochRatio: ", farmerEpochRatio)
-
-			if farmerEpochRatio[farmingPoolAddr].GT(sdk.NewDec(1)) {
-				return sdkerrors.Wrapf(ErrInvalidPlanEpochRatio, "total epoch ratio for %s must be lower than 1", farmingPoolAddr)
+// ValidatePlanName validates if the plan name exists in store.
+func ValidatePlanName(plans []PlanI, name string) error {
+	for _, plan := range plans {
+		switch p := plan.(type) {
+		case *FixedAmountPlan:
+			if p.Name == name {
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", name)
 			}
+		case *RatioPlan:
+			if p.Name == name {
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan name '%s' already exists", name)
+			}
+		default:
+			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized plan type: %T", p)
 		}
 	}
+	return nil
+}
+
+// ValidateOverflowEpochRatio validates that a single account cannot create ratio plans that exceeds
+// a total epoch ratio of 1 (100%) because it will overflow the account's balance
+func ValidateOverflowEpochRatio(plans []PlanI, farmingPoolAddr string, epochRatio sdk.Dec) error {
+	farmerEpochRatio := make(map[string]sdk.Dec)
+
+	for _, plan := range plans {
+		farmingPoolAddr := plan.GetFarmingPoolAddress().String()
+
+		if plan, ok := plan.(*RatioPlan); ok {
+			farmerEpochRatio[farmingPoolAddr] = plan.EpochRatio
+		}
+	}
+
+	if epochRatio, ok := farmerEpochRatio[farmingPoolAddr]; ok {
+		epochRatio = epochRatio.Add(epochRatio)
+
+		if epochRatio.GT(sdk.NewDec(1)) {
+			return sdkerrors.Wrapf(ErrInvalidPlanEpochRatio, "total epoch ratio must be lower than 1")
+		}
+	}
+
 	return nil
 }
