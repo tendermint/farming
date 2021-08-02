@@ -1,8 +1,8 @@
 # Farming Plans
 
-There are two different types of farming plans in the farming module. Where as a public farming plan can only be created through governance proposal, a private farming plan can be created with any account. The plan creator's account is used as distributing account FarmingPoolAddress that will be distributed to farmers automatically. 
+There are two different types of farming plans in the farming module. Whereas a public farming plan can only be created through governance proposal, a private farming plan can be created with any account or an entity. Read [spec](https://github.com/tendermint/farming/blob/master/x/farming/spec/01_concepts.md) documentation for more information about the plan types.
 
-In this documentation, there are sample data provided in JSON structure that are needed to test the functionality by using farming command line interfaces. 
+In this tutorial, some sample data in JSON structure are provided. We will use command-line interfaces to test the functionality. 
 
 ## Table of Contetns
 
@@ -16,6 +16,7 @@ In this documentation, there are sample data provided in JSON structure that are
 - [Private Farming Plan](#Private-Farming-Plan)
   * [PrivateFarmingFixedAmountPlan](#PrivateFarmingFixedAmountPlan)
   * [PrivateFarmingRatioPlan](#PrivateFarmingRatioPlan)
+- [REST APIs](#REST-APIs)
 
 # Bootstrap
 
@@ -57,8 +58,9 @@ $BINARY start
 ```
 
 # Public Farming Plan
-
 ## AddPublicFarmingFixedAmountPlan
+
+Create `public-fixed-plan-proposal.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
@@ -66,7 +68,7 @@ $BINARY start
   "description": "Are you ready to farm?",
   "add_request_proposals": [
     {
-      "name": "First Public Farming Plan",
+      "name": "First Public Fixed Amount Plan",
       "farming_pool_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
@@ -88,7 +90,28 @@ $BINARY start
 }
 ```
 
+```bash
+# Create public fixed amount plan through governance proposal
+farmingd tx gov submit-proposal public-farming-plan public-fixed-plan-proposal.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--deposit 100000stake \
+--broadcast-mode block \
+--yes
+
+# Vote
+# Make sure to change proposal-id for the proposal
+farmingd tx gov vote <proposal-id> yes \
+--chain-id localnet \
+--from val1 \
+--keyring-backend test \
+--yes
+```
+
 ## AddPublicFarmingRatioPlan
+
+Create `public-ratio-plan-proposal.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
@@ -96,7 +119,7 @@ $BINARY start
   "description": "Are you ready to farm?",
   "add_request_proposals": [
     {
-      "name": "First Public Farming Plan",
+      "name": "First Public Ratio Plan",
       "farming_pool_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
@@ -113,7 +136,28 @@ $BINARY start
 }
 ```
 
+```bash
+# Create public ratio plan through governance proposal
+farmingd tx gov submit-proposal public-farming-plan public-ratio-plan-proposal.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--deposit 100000stake \
+--broadcast-mode block \
+--yes
+
+# Vote
+# Make sure to change proposal-id for the proposal
+farmingd tx gov vote <proposal-id> yes \
+--chain-id localnet \
+--from val1 \
+--keyring-backend test \
+--yes
+```
+
 ## AddMultiplePublicPlans
+
+Create `public-multiple-plans-proposal.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
@@ -121,7 +165,7 @@ $BINARY start
   "description": "Are you ready to farm?",
   "add_request_proposals": [
     {
-      "name": "First Public Farming Plan",
+      "name": "First Public Fixed Amount Plan",
       "farming_pool_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
@@ -140,7 +184,7 @@ $BINARY start
       ]
     },
     {
-      "name": "First Public Farming Plan",
+      "name": "First Public Ratio Plan",
       "farming_pool_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
@@ -157,11 +201,31 @@ $BINARY start
 }
 ```
 
+```bash
+# Create public multiple plans through governance proposal
+farmingd tx gov submit-proposal public-farming-plan public-multiple-plans-proposal.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--deposit 100000stake \
+--broadcast-mode block \
+--yes
+
+# Vote
+# Make sure to change proposal-id for the proposal
+farmingd tx gov vote <proposal-id> yes \
+--chain-id localnet \
+--from val1 \
+--keyring-backend test \
+--yes
+```
 ## UpdatePublicFarmingFixedAmountPlan
+
+Create `update-plan-proposal.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
-  "title": "Let's Update the Farming Plan 1",
+  "title": "Update the Farming Plan 1",
   "description": "FarmingPoolAddress needs to be changed",
   "update_request_proposals": [
     {
@@ -187,7 +251,28 @@ $BINARY start
 }
 ```
 
+```bash
+# Update public plan through governance proposal
+farmingd tx gov submit-proposal public-farming-plan update-plan-proposal.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--deposit 100000stake \
+--broadcast-mode block \
+--yes
+
+# Vote
+# Make sure to change proposal-id for the proposal
+farmingd tx gov vote <proposal-id> yes \
+--chain-id localnet \
+--from val1 \
+--keyring-backend test \
+--yes
+```
+
 ## DeletePublicFarmingFixedAmountPlan
+
+Create `delete-plan-proposal.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
@@ -201,18 +286,39 @@ $BINARY start
 }
 ```
 
+```bash
+# Update public plan through governance proposal
+farmingd tx gov submit-proposal public-farming-plan delete-plan-proposal.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--deposit 100000stake \
+--broadcast-mode block \
+--yes
+
+# Vote
+# Make sure to change proposal-id for the proposal
+farmingd tx gov vote <proposal-id> yes \
+--chain-id localnet \
+--from val1 \
+--keyring-backend test \
+--yes
+```
+
 # Private Farming Plan
+
+Create `create-private-fixed-plan.json` file in your local directory and copy the below json into the file. 
 
 ## PrivateFarmingFixedAmountPlan
 
 ```json
 {
-	"name": "This Farming Plan intends to incentivize ATOM HODLERS!",
+  "name": "This Farming Plan intends to incentivize ATOM HODLERS!",
   "staking_coin_weights": [
-	  {
-	      "denom": "uatom",
-	      "amount": "1.000000000000000000"
-	  }
+    {
+      "denom": "uatom",
+      "amount": "1.000000000000000000"
+    }
   ],
   "start_time": "2021-07-15T08:41:21.662422Z",
   "end_time": "2022-07-16T08:41:21.662422Z",
@@ -225,19 +331,46 @@ $BINARY start
 }
 ```
 
+```bash
+# Create private fixed amount plan
+farmingd tx farming create-private-fixed-plan create-private-fixed-plan.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--yes
+```
+
 ## PrivateFarmingRatioPlan
+
+Create `create-private-ratio-plan.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
-	"name": "This Farming Plan intends to incentivize ATOM HODLERS!",
+  "name": "This Farming Plan intends to incentivize ATOM HODLERS!",
   "staking_coin_weights": [
-	  {
-	      "denom": "uatom",
-	      "amount": "1.000000000000000000"
-	  }
+    {
+      "denom": "uatom",
+      "amount": "1.000000000000000000"
+    }
   ],
   "start_time": "2021-07-15T08:41:21.662422Z",
   "end_time": "2022-07-16T08:41:21.662422Z",
-  "epoch_ratio":"1.000000000000000000"
+  "epoch_ratio": "1.000000000000000000"
 }
 ```
+
+```bash
+# Create private ratio plan
+farmingd tx farming create-private-fixed-plan create-private-ratio-plan.json \
+--chain-id localnet \
+--from user1 \
+--keyring-backend test \
+--yes
+```
+
+## REST APIs
+
+- http://localhost:1317/cosmos/bank/v1beta1/balances/{ADDRESS}
+- http://localhost:1317/cosmos/gov/v1beta1/proposals
+- http://localhost:1317/cosmos/farming/v1beta1/plans
+- http://localhost:1317/cosmos/tx/v1beta1/txs/{TX_HASH}
