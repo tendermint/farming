@@ -90,8 +90,11 @@ func (p *AddRequestProposal) Validate() error {
 	if !p.EndTime.After(p.StartTime) {
 		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
 	}
-	if !p.EpochAmount.Empty() && !p.EpochRatio.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "epoch amount or epoch ratio must be provided")
+	if !p.EpochAmount.IsZero() && !p.EpochRatio.IsZero() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "either epoch amount or epoch ratio should be provided")
+	}
+	if p.EpochAmount.IsZero() && p.EpochRatio.IsZero() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "either epoch amount or epoch ratio must not be zero")
 	}
 	return nil
 }
