@@ -31,18 +31,17 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 		}
 	}
 
+	plans := k.GetAllPlans(ctx)
+	if err := types.ValidateRatioPlans(plans); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // AddPublicPlanProposal adds a new public plan once the governance proposal is passed.
 func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddRequestProposal) error {
-	plans := k.GetAllPlans(ctx)
-
 	for _, p := range proposals {
-		if err := types.ValidatePlanName(plans, p.Name); err != nil {
-			return err
-		}
-
 		farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
 		if err != nil {
 			return err
@@ -57,6 +56,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 				p.GetEndTime(),
 				p.EpochAmount,
 			)
+
 			plan, err := k.CreateFixedAmountPlan(ctx, msg, types.PlanTypePublic)
 			if err != nil {
 				return err
@@ -65,11 +65,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 			logger := k.Logger(ctx)
 			logger.Info("created public fixed amount plan", "fixed_amount_plan", plan)
 
-		} else if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNil() && !p.EpochRatio.IsNegative() {
-			if err := types.ValidateOverflowEpochRatio(plans, p.FarmingPoolAddress, p.EpochRatio); err != nil {
-				return err
-			}
-
+		} else if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNegative() && !p.EpochRatio.IsNil() {
 			msg := types.NewMsgCreateRatioPlan(
 				p.GetName(),
 				farmingPoolAddrAcc,
@@ -94,13 +90,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 
 // UpdatePublicPlanProposal overwrites the plan with the new plan proposal once the governance proposal is passed.
 func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.UpdateRequestProposal) error {
-	plans := k.GetAllPlans(ctx)
-
 	for _, p := range proposals {
-		if err := types.ValidatePlanName(plans, p.Name); err != nil {
-			return err
-		}
-
 		plan, found := k.GetPlan(ctx, p.GetPlanId())
 		if !found {
 			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", p.GetPlanId())
@@ -160,10 +150,6 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			logger.Info("updated public fixed amount plan", "fixed_amount_plan", plan)
 
 		case *types.RatioPlan:
-			if err := types.ValidateOverflowEpochRatio(plans, p.FarmingPoolAddress, p.EpochRatio); err != nil {
-				return err
-			}
-
 			if p.GetFarmingPoolAddress() != "" {
 				farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
 				if err != nil {
