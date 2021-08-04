@@ -34,6 +34,7 @@ func GetTxCmd() *cobra.Command {
 		NewStakeCmd(),
 		NewUnstakeCmd(),
 		NewHarvestCmd(),
+		NewAdvanceEpochCmd(),
 	)
 
 	return farmingTxCmd
@@ -272,13 +273,26 @@ $ %s tx %s harvest --from mykey
 
 func NewAdvanceEpochCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "advance-epoch",
-		Args: cobra.ExactArgs(0),
-		Short: "advance one epoch to simulate reward distribution",
+		Use:   "advance-epoch",
+		Args:  cobra.ExactArgs(0),
+		Short: "advance epoch by one to simulate reward distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 
+			requesterAcc := clientCtx.GetFromAddress()
+
+			msg := types.NewMsgAdvanceEpoch(requesterAcc)
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdSubmitPublicPlanProposal implements a command handler for submitting a public farming plan transaction to create, update, delete plan.
