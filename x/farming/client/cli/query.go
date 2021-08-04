@@ -169,7 +169,7 @@ func GetCmdQueryStakings() *cobra.Command {
 			fmt.Sprintf(`Query details about all farming stakings on a network.
 
 Example:
-$ %s query %s stakings
+$ %s query %s stakings stake
 `,
 				version.AppName, types.ModuleName,
 			),

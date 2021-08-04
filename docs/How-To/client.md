@@ -17,6 +17,10 @@ This document provides a high-level overview of how the command-line (CLI) and R
     * [MsgHarvest](#MsgHarvest)
 - [Query](#Query)
     * [Params](#Params)
+    * [Plans](#Plans)
+    * [Plan](#Plan)
+    * [Stakings](#Stakings)
+    * [Rewards](#Rewards)
 
 ## Transaction
 
@@ -412,5 +416,152 @@ https://github.com/tendermint/farming/blob/master/proto/tendermint/farming/v1bet
 ### Params 
 
 ```bash
+# Query the values set as farming parameters
+farmingd q farming params --output json
+```
+
+```json
+{
+  "private_plan_creation_fee": [
+    {
+      "denom": "stake",
+      "amount": "100000000"
+    }
+  ],
+  "staking_creation_fee": [
+    {
+      "denom": "stake",
+      "amount": "100000"
+    }
+  ],
+  "epoch_days": 1,
+  "farming_fee_collector": "cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x"
+}
+```
+
+### Plans 
+
+```bash
+# Query for all farmings plans
+farmingd q farming plans --output json
+```
+
+```json
+{
+  "plans": [
+    {
+      "@type": "/cosmos.farming.v1beta1.FixedAmountPlan",
+      "base_plan": {
+        "id": "1",
+        "name": "This plan intends to provide incentives for Cosmonauts!",
+        "type": "PLAN_TYPE_PRIVATE",
+        "farming_pool_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
+        "reward_pool_address": "cosmos1gshap5099dwjdlxk2ym9z8u40jtkm7hvux45pze8em08fwarww6qc0tvl0",
+        "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
+        "staking_coin_weights": [
+          {
+            "denom": "stake",
+            "amount": "0.500000000000000000"
+          },
+          {
+            "denom": "uatom",
+            "amount": "0.500000000000000000"
+          }
+        ],
+        "start_time": "2021-07-24T08:41:21.662422Z",
+        "end_time": "2022-07-28T08:41:21.662422Z"
+      },
+      "epoch_amount": [
+        {
+          "denom": "uatom",
+          "amount": "100000000"
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "next_key": null,
+    "total": "0"
+  }
+}
+```
+### Plan 
+
+```bash
+# Query plan with the given plan id
+farmingd q farming plan 1 --output json
+```
+
+```json
+{
+  "plan": {
+    "@type": "/cosmos.farming.v1beta1.FixedAmountPlan",
+    "base_plan": {
+      "id": "1",
+      "name": "This plan intends to provide incentives for Cosmonauts!",
+      "type": "PLAN_TYPE_PRIVATE",
+      "farming_pool_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
+      "reward_pool_address": "cosmos1gshap5099dwjdlxk2ym9z8u40jtkm7hvux45pze8em08fwarww6qc0tvl0",
+      "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
+      "staking_coin_weights": [
+        {
+          "denom": "stake",
+          "amount": "0.500000000000000000"
+        },
+        {
+          "denom": "uatom",
+          "amount": "0.500000000000000000"
+        }
+      ],
+      "start_time": "2021-07-24T08:41:21.662422Z",
+      "end_time": "2022-07-28T08:41:21.662422Z"
+    },
+    "epoch_amount": [
+      {
+        "denom": "uatom",
+        "amount": "100000000"
+      }
+    ]
+  }
+}
+```
+
+### Stakings 
+
+```bash
+# Query stakings
+farmingd q farming stakings --id 1 --output json
+```
+
+```json
+{
+  "stakings": [
+    {
+      "id": "1",
+      "farmer": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
+      "staked_coins": [],
+      "queued_coins": [
+        {
+          "denom": "stake",
+          "amount": "10000000"
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "next_key": null,
+    "total": "1"
+  }
+}
+```
+
+### Rewards 
+
+```bash
+# Query rewards
+farmingd q farming rewards --output json
+```
+
+```json
 
 ```
