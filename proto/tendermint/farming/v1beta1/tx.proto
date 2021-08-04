@@ -26,6 +26,10 @@ service Msg {
 
   // harvest defines a method for claiming farming rewards
   rpc Harvest(MsgHarvest) returns (MsgHarvestResponse);
+
+  // AdvanceEpoch defines a method to advance epoch by one.
+  // It is only used for local testing.
+  rpc AdvanceEpoch(MsgAdvanceEpoch) returns (MsgAdvanceEpochResponse);
 }
 
 // MsgCreateFixedAmountPlan defines a SDK message for creating a new fixed
@@ -155,3 +159,11 @@ message MsgHarvest {
 
 // MsgHarvestResponse defines the Msg/MsgHarvestResponse response type.
 message MsgHarvestResponse {}
+
+// MsgAdvanceEpoch defines a message to advance epoch by one.
+message MsgAdvanceEpoch {
+  option (gogoproto.goproto_getters) = false;
+}
+
+// MsgAdvanceEpochResponse defines the Msg/AdvanceEpoch response type.
+message MsgAdvanceEpochResponse {}
