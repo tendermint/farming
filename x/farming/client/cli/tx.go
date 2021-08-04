@@ -270,6 +270,17 @@ $ %s tx %s harvest --from mykey
 	return cmd
 }
 
+func NewAdvanceEpochCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "advance-epoch",
+		Args: cobra.ExactArgs(0),
+		Short: "advance one epoch to simulate reward distribution",
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+		},
+	}
+}
+
 // GetCmdSubmitPublicPlanProposal implements a command handler for submitting a public farming plan transaction to create, update, delete plan.
 func GetCmdSubmitPublicPlanProposal() *cobra.Command {
 	cmd := &cobra.Command{
