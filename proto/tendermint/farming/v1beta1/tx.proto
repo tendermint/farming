@@ -163,6 +163,9 @@ message MsgHarvestResponse {}
 // MsgAdvanceEpoch defines a message to advance epoch by one.
 message MsgAdvanceEpoch {
   option (gogoproto.goproto_getters) = false;
+
+  // requester defines the bech32-encoded address of the requester
+  string requester = 1;
 }
 
 // MsgAdvanceEpochResponse defines the Msg/AdvanceEpoch response type.

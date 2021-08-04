@@ -79,3 +79,15 @@ func (k msgServer) Harvest(goCtx context.Context, msg *types.MsgHarvest) (*types
 
 	return &types.MsgHarvestResponse{}, nil
 }
+
+func (k msgServer) AdvanceEpoch(goCtx context.Context, msg *types.MsgAdvanceEpoch) (*types.MsgAdvanceEpochResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := k.Keeper.DistributeRewards(ctx); err != nil {
+		return nil, err
+	}
+	k.Keeper.ProcessQueuedCoins(ctx)
+	k.Keeper.SetLastEpochTime(ctx, ctx.BlockTime())
+
+	return &types.MsgAdvanceEpochResponse{}, nil
+}
