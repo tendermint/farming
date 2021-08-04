@@ -307,7 +307,7 @@ farmingd tx gov vote <proposal-id> yes \
 
 # Private Farming Plan
 
-Create `create-private-fixed-plan.json` file in your local directory and copy the below json into the file. 
+Create `private-fixed-plan.json` file in your local directory and copy the below json into the file. 
 
 ## PrivateFarmingFixedAmountPlan
 
@@ -333,7 +333,7 @@ Create `create-private-fixed-plan.json` file in your local directory and copy th
 
 ```bash
 # Create private fixed amount plan
-farmingd tx farming create-private-fixed-plan create-private-fixed-plan.json \
+farmingd tx farming create-private-fixed-plan private-fixed-plan.json \
 --chain-id localnet \
 --from user1 \
 --keyring-backend test \
@@ -342,7 +342,7 @@ farmingd tx farming create-private-fixed-plan create-private-fixed-plan.json \
 
 ## PrivateFarmingRatioPlan
 
-Create `create-private-ratio-plan.json` file in your local directory and copy the below json into the file. 
+Create `private-ratio-plan.json` file in your local directory and copy the below json into the file. 
 
 ```json
 {
@@ -361,7 +361,7 @@ Create `create-private-ratio-plan.json` file in your local directory and copy th
 
 ```bash
 # Create private ratio plan
-farmingd tx farming create-private-fixed-plan create-private-ratio-plan.json \
+farmingd tx farming create-private-fixed-plan private-ratio-plan.json \
 --chain-id localnet \
 --from user1 \
 --keyring-backend test \
