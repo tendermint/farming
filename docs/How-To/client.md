@@ -14,7 +14,7 @@ In order to test out the command-line interface, let's boostrap local network by
 ```bash
 # Clone the project 
 git clone https://github.com/tendermint/farming.git
-cd cosmos-sdk
+cd farming
 make install
 
 # Configure variables

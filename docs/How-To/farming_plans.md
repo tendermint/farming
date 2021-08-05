@@ -23,7 +23,7 @@ In this tutorial, some sample data in JSON structure are provided. We will use c
 ```bash
 # Clone the project 
 git clone https://github.com/tendermint/farming.git
-cd cosmos-sdk
+cd farming
 make install
 
 # Configure variables
