@@ -73,8 +73,16 @@ Create `public-fixed-plan-proposal.json` file in your local directory and copy t
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
         {
-          "denom": "PoolCoinDenom",
-          "amount": "1.000000000000000000"
+          "denom": "poolCoinDenom",
+          "amount": "0.200000000000000000"
+        },
+        {
+          "denom": "stake",
+          "amount": "0.400000000000000000"
+        },
+        {
+          "denom": "ukava",
+          "amount": "0.400000000000000000"
         }
       ],
       "start_time": "2021-07-15T08:41:21.662422Z",
@@ -82,7 +90,7 @@ Create `public-fixed-plan-proposal.json` file in your local directory and copy t
       "epoch_amount": [
         {
           "denom": "uatom",
-          "amount": "1"
+          "amount": "100000000"
         }
       ]
     }
@@ -124,7 +132,7 @@ Create `public-ratio-plan-proposal.json` file in your local directory and copy t
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
         {
-          "denom": "PoolCoinDenom",
+          "denom": "stake",
           "amount": "1.000000000000000000"
         }
       ],
@@ -170,7 +178,7 @@ Create `public-multiple-plans-proposal.json` file in your local directory and co
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
         {
-          "denom": "PoolCoinDenom",
+          "denom": "stake",
           "amount": "1.000000000000000000"
         }
       ],
@@ -179,7 +187,7 @@ Create `public-multiple-plans-proposal.json` file in your local directory and co
       "epoch_amount": [
         {
           "denom": "uatom",
-          "amount": "1"
+          "amount": "100000000"
         }
       ]
     },
@@ -189,7 +197,7 @@ Create `public-multiple-plans-proposal.json` file in your local directory and co
       "termination_address": "cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v",
       "staking_coin_weights": [
         {
-          "denom": "PoolCoinDenom",
+          "denom": "stake",
           "amount": "1.000000000000000000"
         }
       ],
@@ -234,7 +242,7 @@ Create `update-plan-proposal.json` file in your local directory and copy the bel
       "termination_address": "cosmos13w4ueuk80d3kmwk7ntlhp84fk0arlm3mqf0w08",
       "staking_coin_weights": [
         {
-          "denom": "uatom",
+          "denom": "stake",
           "amount": "1.000000000000000000"
         }
       ],
@@ -243,7 +251,7 @@ Create `update-plan-proposal.json` file in your local directory and copy the bel
       "epoch_amount": [
         {
           "denom": "uatom",
-          "amount": "1"
+          "amount": "1000000000"
         }
       ]
     }
@@ -316,8 +324,16 @@ Create `private-fixed-plan.json` file in your local directory and copy the below
   "name": "This Farming Plan intends to incentivize ATOM HODLERS!",
   "staking_coin_weights": [
     {
-      "denom": "uatom",
-      "amount": "1.000000000000000000"
+      "denom": "poolCoinDenom",
+      "amount": "0.200000000000000000"
+    },
+    {
+      "denom": "stake",
+      "amount": "0.400000000000000000"
+    },
+    {
+      "denom": "ukava",
+      "amount": "0.400000000000000000"
     }
   ],
   "start_time": "2021-07-15T08:41:21.662422Z",
@@ -325,7 +341,7 @@ Create `private-fixed-plan.json` file in your local directory and copy the below
   "epoch_amount": [
     {
       "denom": "uatom",
-      "amount": "1"
+      "amount": "100000000"
     }
   ]
 }
@@ -349,8 +365,16 @@ Create `private-ratio-plan.json` file in your local directory and copy the below
   "name": "This Farming Plan intends to incentivize ATOM HODLERS!",
   "staking_coin_weights": [
     {
-      "denom": "uatom",
-      "amount": "1.000000000000000000"
+      "denom": "poolCoinDenom",
+      "amount": "0.200000000000000000"
+    },
+    {
+      "denom": "stake",
+      "amount": "0.400000000000000000"
+    },
+    {
+      "denom": "ukava",
+      "amount": "0.400000000000000000"
     }
   ],
   "start_time": "2021-07-15T08:41:21.662422Z",
