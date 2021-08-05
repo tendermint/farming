@@ -82,7 +82,7 @@ func GetCmdQueryPlans() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plans",
 		Args:  cobra.NoArgs,
-		Short: "Query for all farming plans",
+		Short: "Query for all plans",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details about all farming plans on a network.
 
@@ -216,10 +216,11 @@ $ %s query %s stakings --staking-coin-denom stake
 
 	return cmd
 }
+
 func GetCmdQueryStaking() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "staking [staking-id]",
-		Args:  cobra.NoArgs,
+		Args:  cobra.ExactArgs(1),
 		Short: "Query a specific staking",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details about a specific plan.
