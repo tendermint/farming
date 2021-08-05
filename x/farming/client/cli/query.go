@@ -1,5 +1,8 @@
 package cli
 
+// DONTCOVER
+// client is excluded from test coverage in MVP version
+
 import (
 	"context"
 	"fmt"
@@ -32,6 +35,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryPlans(),
 		GetCmdQueryPlan(),
 		GetCmdQueryStakings(),
+		GetCmdQueryStaking(),
 		GetCmdQueryRewards(),
 	)
 
@@ -121,7 +125,7 @@ func GetCmdQueryPlan() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plan [plan-id]",
 		Args:  cobra.ExactArgs(1),
-		Short: "Query a plan",
+		Short: "Query a specific plan",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details about a specific plan.
 
@@ -137,12 +141,12 @@ $ %s query %s plan
 				return err
 			}
 
-			queryClient := types.NewQueryClient(clientCtx)
-
 			planId, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan-id %s is not valid", args[0])
 			}
+
+			queryClient := types.NewQueryClient(clientCtx)
 
 			resp, err := queryClient.Plan(cmd.Context(), &types.QueryPlanRequest{
 				PlanId: planId,
@@ -162,14 +166,66 @@ $ %s query %s plan
 
 func GetCmdQueryStakings() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "stakings [denom]",
-		Args:  cobra.ExactArgs(1),
+		Use:   "stakings [optional flags]",
+		Args:  cobra.NoArgs,
 		Short: "Query for all stakings",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details about all farming stakings on a network.
 
 Example:
-$ %s query %s stakings stake
+$ %s query %s stakings
+$ %s query %s stakings --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
+$ %s query %s stakings --staking-coin-denom stake
+`,
+				version.AppName, types.ModuleName,
+				version.AppName, types.ModuleName,
+				version.AppName, types.ModuleName, sdk.Bech32MainPrefix,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			farmerAddr, _ := cmd.Flags().GetString(FlagFarmerAddr)
+			stakingCoinDenom, _ := cmd.Flags().GetString(FlagStakingCoinDenom)
+
+			queryClient := types.NewQueryClient(clientCtx)
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			resp, err := queryClient.Stakings(cmd.Context(), &types.QueryStakingsRequest{
+				Farmer:           farmerAddr,
+				StakingCoinDenom: stakingCoinDenom,
+				Pagination:       pageReq,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(resp)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(flagSetStaking())
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "stakings")
+
+	return cmd
+}
+func GetCmdQueryStaking() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "staking [staking-id]",
+		Args:  cobra.NoArgs,
+		Short: "Query a specific staking",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query details about a specific plan.
+
+Example:
+$ %s query %s staking 1
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -180,19 +236,15 @@ $ %s query %s stakings stake
 				return err
 			}
 
-			queryClient := types.NewQueryClient(clientCtx)
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			stakingId, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
-				return err
+				return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "staking-id %s is not valid", args[0])
 			}
 
-			if err := sdk.ValidateDenom(args[0]); err != nil {
-				return err
-			}
+			queryClient := types.NewQueryClient(clientCtx)
 
-			resp, err := queryClient.Stakings(cmd.Context(), &types.QueryStakingsRequest{
-				StakingCoinDenom: args[0],
-				Pagination:       pageReq,
+			resp, err := queryClient.Staking(cmd.Context(), &types.QueryStakingRequest{
+				StakingId: stakingId,
 			})
 			if err != nil {
 				return err
@@ -203,22 +255,27 @@ $ %s query %s stakings stake
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "stakings")
 
 	return cmd
 }
 
 func GetCmdQueryRewards() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rewards [farmer-addr]",
-		Args:  cobra.ExactArgs(1),
-		Short: "Query for all rewards from a farmer",
+		Use:   "rewards",
+		Args:  cobra.NoArgs,
+		Short: "Query for all rewards",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query rewards that are accumulated on a network from a farmer.
+			fmt.Sprintf(`Query rewards that are accumulated on a network.
 
 Example:
-$ %s query %s rewards %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query %s rewards
+$ %s query %s rewards --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
+$ %s query %s rewards --staking-coin-denom stake
+$ %s query %s rewards --staking-coin-denom stake --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
 `,
+				version.AppName, types.ModuleName,
+				version.AppName, types.ModuleName,
+				version.AppName, types.ModuleName, sdk.Bech32MainPrefix,
 				version.AppName, types.ModuleName, sdk.Bech32MainPrefix,
 			),
 		),
@@ -228,24 +285,18 @@ $ %s query %s rewards %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 				return err
 			}
 
+			farmerAddr, _ := cmd.Flags().GetString(FlagFarmerAddr)
+			stakingCoinDenom, _ := cmd.Flags().GetString(FlagStakingCoinDenom)
+
 			queryClient := types.NewQueryClient(clientCtx)
 			pageReq, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
 				return err
 			}
 
-			farmerAcc, err := sdk.ValAddressFromBech32(args[0])
-			if err != nil {
-				return err
-			}
-
-			if err := sdk.ValidateDenom(args[0]); err != nil {
-				return err
-			}
-
 			resp, err := queryClient.Rewards(cmd.Context(), &types.QueryRewardsRequest{
-				Farmer:           farmerAcc.String(),
-				StakingCoinDenom: args[0],
+				Farmer:           farmerAddr,
+				StakingCoinDenom: stakingCoinDenom,
 				Pagination:       pageReq,
 			})
 			if err != nil {
@@ -256,6 +307,7 @@ $ %s query %s rewards %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 		},
 	}
 
+	cmd.Flags().AddFlagSet(flagSetRewards())
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "rewards")
 
