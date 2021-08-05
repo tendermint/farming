@@ -67,6 +67,7 @@ $BINARY start
     * [Stakings](#Stakings)
     * [Staking](#Staking)
     * [Rewards](#Rewards)
+
 ## Transaction
 
 +++ https://github.com/tendermint/farming/blob/master/proto/tendermint/farming/v1beta1/tx.proto#L13-L29
@@ -500,10 +501,11 @@ farmingd q farming params --output json
 farmingd q farming plans --output json
 
 # Query for all farmings plans with the given plan type
+# plan type must be either public or private
 farmingd q farming plans --plan-type private --output json
 
 # Query for all farmings plans with the given farming pool address
-farmingd q farming plans--farming-pool-addr cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v --output json
+farmingd q farming plans --farming-pool-addr cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v --output json
 
 # Query for all farmings plans with the given reward pool address
 farmingd q farming plans --reward-pool-addr cosmos1gshap5099dwjdlxk2ym9z8u40jtkm7hvux45pze8em08fwarww6qc0tvl0 --output json

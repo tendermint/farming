@@ -114,22 +114,46 @@ $ %s query %s plans --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C3
 			terminationAddr, _ := cmd.Flags().GetString(FlagTerminationAddr)
 			stakingCoinDenom, _ := cmd.Flags().GetString(FlagStakingCoinDenom)
 
+			var resp *types.QueryPlansResponse
+
 			queryClient := types.NewQueryClient(clientCtx)
 			pageReq, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
 				return err
 			}
 
-			resp, err := queryClient.Plans(cmd.Context(), &types.QueryPlansRequest{
-				Type:               planType,
-				FarmingPoolAddress: farmingPoolAddr,
-				RewardPoolAddress:  rewardPoolAddr,
-				TerminationAddress: terminationAddr,
-				StakingCoinDenom:   stakingCoinDenom,
-				Pagination:         pageReq,
-			})
-			if err != nil {
-				return err
+			if planType != "" {
+				var pType types.PlanType
+				if planType == "public" {
+					pType = types.PlanTypePublic
+				} else if planType == "private" {
+					pType = types.PlanTypePrivate
+				} else {
+					return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "plan type must be either public or private")
+				}
+
+				resp, err = queryClient.Plans(cmd.Context(), &types.QueryPlansRequest{
+					Type:               pType.String(),
+					FarmingPoolAddress: farmingPoolAddr,
+					RewardPoolAddress:  rewardPoolAddr,
+					TerminationAddress: terminationAddr,
+					StakingCoinDenom:   stakingCoinDenom,
+					Pagination:         pageReq,
+				})
+				if err != nil {
+					return err
+				}
+			} else {
+				resp, err = queryClient.Plans(cmd.Context(), &types.QueryPlansRequest{
+					FarmingPoolAddress: farmingPoolAddr,
+					RewardPoolAddress:  rewardPoolAddr,
+					TerminationAddress: terminationAddr,
+					StakingCoinDenom:   stakingCoinDenom,
+					Pagination:         pageReq,
+				})
+				if err != nil {
+					return err
+				}
 			}
 
 			return clientCtx.PrintProto(resp)
