@@ -88,7 +88,17 @@ func GetCmdQueryPlans() *cobra.Command {
 
 Example:
 $ %s query %s plans
+$ %s query %s plans --plan-type private
+$ %s query %s plans --farming-pool-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
+$ %s query %s plans --reward-pool-addr %s1gshap5099dwjdlxk2ym9z8u40jtkm7hvux45pze8em08fwarww6qc0tvl0
+$ %s query %s plans --termination-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
+$ %s query %s plans --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4
 `,
+				version.AppName, types.ModuleName,
+				version.AppName, types.ModuleName,
+				version.AppName, types.ModuleName, sdk.Bech32MainPrefix,
+				version.AppName, types.ModuleName, sdk.Bech32MainPrefix,
+				version.AppName, types.ModuleName, sdk.Bech32MainPrefix,
 				version.AppName, types.ModuleName,
 			),
 		),
@@ -98,6 +108,12 @@ $ %s query %s plans
 				return err
 			}
 
+			planType, _ := cmd.Flags().GetString(FlagPlanType)
+			farmingPoolAddr, _ := cmd.Flags().GetString(FlagFarmingPoolAddr)
+			rewardPoolAddr, _ := cmd.Flags().GetString(FlagRewardPoolAddr)
+			terminationAddr, _ := cmd.Flags().GetString(FlagTerminationAddr)
+			stakingCoinDenom, _ := cmd.Flags().GetString(FlagStakingCoinDenom)
+
 			queryClient := types.NewQueryClient(clientCtx)
 			pageReq, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
@@ -105,7 +121,12 @@ $ %s query %s plans
 			}
 
 			resp, err := queryClient.Plans(cmd.Context(), &types.QueryPlansRequest{
-				Pagination: pageReq,
+				Type:               planType,
+				FarmingPoolAddress: farmingPoolAddr,
+				RewardPoolAddress:  rewardPoolAddr,
+				TerminationAddress: terminationAddr,
+				StakingCoinDenom:   stakingCoinDenom,
+				Pagination:         pageReq,
 			})
 			if err != nil {
 				return err
@@ -115,6 +136,7 @@ $ %s query %s plans
 		},
 	}
 
+	cmd.Flags().AddFlagSet(flagSetPlans())
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "plans")
 
@@ -175,7 +197,7 @@ func GetCmdQueryStakings() *cobra.Command {
 Example:
 $ %s query %s stakings
 $ %s query %s stakings --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
-$ %s query %s stakings --staking-coin-denom stake
+$ %s query %s stakings --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4
 `,
 				version.AppName, types.ModuleName,
 				version.AppName, types.ModuleName,
@@ -271,8 +293,8 @@ func GetCmdQueryRewards() *cobra.Command {
 Example:
 $ %s query %s rewards
 $ %s query %s rewards --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
-$ %s query %s rewards --staking-coin-denom stake
-$ %s query %s rewards --staking-coin-denom stake --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
+$ %s query %s rewards --staking-coin-denom uatom
+$ %s query %s rewards --staking-coin-denom uatom --farmer-addr %s1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v
 `,
 				version.AppName, types.ModuleName,
 				version.AppName, types.ModuleName,

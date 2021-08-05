@@ -65,6 +65,7 @@ $BINARY start
     * [Plans](#Plans)
     * [Plan](#Plan)
     * [Stakings](#Stakings)
+    * [Staking](#Staking)
     * [Rewards](#Rewards)
 ## Transaction
 
@@ -492,12 +493,26 @@ farmingd q farming params --output json
   "farming_fee_collector": "cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x"
 }
 ```
-
 ### Plans 
 
 ```bash
-# Query for all farmings plans
+# Query for all farmings plans on a network
 farmingd q farming plans --output json
+
+# Query for all farmings plans with the given plan type
+farmingd q farming plans --plan-type private --output json
+
+# Query for all farmings plans with the given farming pool address
+farmingd q farming plans--farming-pool-addr cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v --output json
+
+# Query for all farmings plans with the given reward pool address
+farmingd q farming plans --reward-pool-addr cosmos1gshap5099dwjdlxk2ym9z8u40jtkm7hvux45pze8em08fwarww6qc0tvl0 --output json
+
+# Query for all farmings plans with the given termination address
+farmingd q farming plans --termination-addr cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v --output json
+
+# Query for all farmings plans with the given staking coin denom
+farmingd q farming plans --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4 --output json
 ```
 
 ```json
@@ -676,11 +691,23 @@ farmingd q farming staking 1 --output json
 }
 ```
 
-### Rewards 
+### Rewards
 
 ```bash
+# Query for all rewards on a network
+farmingd q farming rewards
+
 # Query for all rewards with the given farmer address
-farmingd q farming rewards cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v --output json
+farmingd q farming rewards --farmer-addr cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v --output json
+
+# Query for all rewards with the given staking coin denom
+farmingd q farming rewards --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4 --output json
+
+# Query for all rewards with the given params
+farmingd q farming rewards \
+--staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4 \
+--farmer-addr cosmos1zaavvzxez0elundtn32qnk9lkm8kmcszzsv80v \
+--output json
 ```
 
 ```json
