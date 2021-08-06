@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -132,8 +133,14 @@ func (plan BasePlan) Validate() error {
 	if len(plan.Name) > MaxNameLength {
 		return sdkerrors.Wrapf(ErrInvalidNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
+	if plan.StakingCoinWeights.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "staking coin weights must not be empty")
+	}
 	if err := plan.StakingCoinWeights.Validate(); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)
+	}
+	if ok := ValidateStakingCoinTotalWeights(plan.StakingCoinWeights); !ok {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "total weight must be 1")
 	}
 	if !plan.EndTime.After(plan.StartTime) {
 		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", plan.EndTime, plan.StartTime)
@@ -247,9 +254,41 @@ func ValidateRatioPlans(i interface{}) error {
 
 	for _, farmerRatio := range totalEpochRatio {
 		if farmerRatio.GT(sdk.NewDec(1)) {
-			return sdkerrors.Wrap(ErrInvalidPlanEpochRatio, "total epoch ratio must be lower than 1")
+			return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "total epoch ratio must be lower than 1")
 		}
 	}
 
 	return nil
+}
+
+// UnpackPlan converts Any to PlanI.
+func UnpackPlan(any *codectypes.Any) (PlanI, error) {
+	v := any.GetCachedValue()
+	p, ok := v.(PlanI)
+	if !ok {
+		return nil, fmt.Errorf("expected PlanI, got %T", v)
+	}
+	return p, nil
+}
+
+// UnpackPlans converts Any slice to PlanIs.
+func UnpackPlans(plansAny []*codectypes.Any) ([]PlanI, error) {
+	plans := make([]PlanI, len(plansAny))
+	for i, any := range plansAny {
+		p, err := UnpackPlan(any)
+		if err != nil {
+			return nil, err
+		}
+		plans[i] = p
+	}
+	return plans, nil
+}
+
+// ValidateStakingCoinTotalWeights validates the total staking coin weights must be equal to 1.
+func ValidateStakingCoinTotalWeights(weights sdk.DecCoins) bool {
+	totalWeight := sdk.ZeroDec()
+	for _, w := range weights {
+		totalWeight = totalWeight.Add(w.Amount)
+	}
+	return totalWeight.Equal(sdk.NewDec(1))
 }
