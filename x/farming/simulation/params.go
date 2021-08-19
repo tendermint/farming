@@ -13,12 +13,22 @@ import (
 )
 
 // ParamChanges defines the parameters that can be modified by param change proposals
-// on the simulation
+// on the simulation.
 func ParamChanges(r *rand.Rand) []simtypes.ParamChange {
 	return []simtypes.ParamChange{
 		simulation.NewSimParamChange(types.ModuleName, string(types.KeyPrivatePlanCreationFee),
 			func(r *rand.Rand) string {
 				return fmt.Sprintf("\"%s\"", GenPrivatePlanCreationFee(r))
+			},
+		),
+		simulation.NewSimParamChange(types.ModuleName, string(types.KeyStakingCreationFee),
+			func(r *rand.Rand) string {
+				return fmt.Sprintf("\"%s\"", GenStakingCreationFee(r))
+			},
+		),
+		simulation.NewSimParamChange(types.ModuleName, string(types.KeyEpochDays),
+			func(r *rand.Rand) string {
+				return fmt.Sprintf("\"%d\"", GenEpochDays(r))
 			},
 		),
 	}
