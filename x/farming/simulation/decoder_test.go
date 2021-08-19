@@ -1,49 +1,61 @@
 package simulation_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/types/kv"
 
 	"github.com/tendermint/farming/x/farming/simulation"
+	"github.com/tendermint/farming/x/farming/types"
 )
 
 func TestDecodeFarmingStore(t *testing.T) {
+	cdc := simapp.MakeTestEncodingConfig().Marshaler
+	dec := simulation.NewDecodeStore(cdc)
 
-	cdc := simapp.MakeTestEncodingConfig()
-	_ = simulation.NewDecodeStore(cdc.Marshaler)
+	basePlan := types.BasePlan{}
+	staking := types.Staking{}
+	reward := types.Reward{}
 
-	// TODO: not implemented yet
+	kvPairs := kv.Pairs{
+		Pairs: []kv.Pair{
+			{Key: types.PlanKeyPrefix, Value: cdc.MustMarshal(&basePlan)},
+			{Key: types.PlansByFarmerIndexKeyPrefix, Value: cdc.MustMarshal(&basePlan)},
+			{Key: types.StakingKeyPrefix, Value: cdc.MustMarshal(&staking)},
+			{Key: types.StakingByFarmerIndexKeyPrefix, Value: cdc.MustMarshal(&staking)},
+			{Key: types.StakingsByStakingCoinDenomIndexKeyPrefix, Value: cdc.MustMarshal(&staking)},
+			{Key: types.RewardKeyPrefix, Value: cdc.MustMarshal(&reward)},
+			{Key: types.RewardsByFarmerIndexKeyPrefix, Value: cdc.MustMarshal(&reward)},
+			{Key: []byte{0x99}, Value: []byte{0x99}},
+		},
+	}
 
-	// liquidityPool := types.Pool{}
-	// liquidityPool.Id = 1
-	// liquidityPoolBatch := types.NewPoolBatch(1, 1)
-
-	// kvPairs := kv.Pairs{
-	// 	Pairs: []kv.Pair{
-	// 		{Key: types.PoolKeyPrefix, Value: cdc.MustMarshalBinaryBare(&liquidityPool)},
-	// 		{Key: types.PoolBatchKeyPrefix, Value: cdc.MustMarshalBinaryBare(&liquidityPoolBatch)},
-	// 		{Key: []byte{0x99}, Value: []byte{0x99}},
-	// 	},
-	// }
-
-	// tests := []struct {
-	// 	name        string
-	// 	expectedLog string
-	// }{
-	// 	{"Pool", fmt.Sprintf("%v\n%v", liquidityPool, liquidityPool)},
-	// 	{"PoolBatch", fmt.Sprintf("%v\n%v", liquidityPoolBatch, liquidityPoolBatch)},
-	// 	{"other", ""},
-	// }
-	// for i, tt := range tests {
-	// 	i, tt := i, tt
-	// 	t.Run(tt.name, func(t *testing.T) {
-	// 		switch i {
-	// 		case len(tests) - 1:
-	// 			require.Panics(t, func() { dec(kvPairs.Pairs[i], kvPairs.Pairs[i]) }, tt.name)
-	// 		default:
-	// 			require.Equal(t, tt.expectedLog, dec(kvPairs.Pairs[i], kvPairs.Pairs[i]), tt.name)
-	// 		}
-	// 	})
-	// }
+	tests := []struct {
+		name        string
+		expectedLog string
+	}{
+		{"Plan", fmt.Sprintf("%v\n%v", basePlan, basePlan)},
+		{"Plans", fmt.Sprintf("%v\n%v", basePlan, basePlan)},
+		{"Staking", fmt.Sprintf("%v\n%v", staking, staking)},
+		{"StakingByFarmer", fmt.Sprintf("%v\n%v", staking, staking)},
+		{"Stakings", fmt.Sprintf("%v\n%v", staking, staking)},
+		{"Reward", fmt.Sprintf("%v\n%v", reward, reward)},
+		{"Rewards", fmt.Sprintf("%v\n%v", reward, reward)},
+		{"other", ""},
+	}
+	for i, tt := range tests {
+		i, tt := i, tt
+		t.Run(tt.name, func(t *testing.T) {
+			switch i {
+			case len(tests) - 1:
+				require.Panics(t, func() { dec(kvPairs.Pairs[i], kvPairs.Pairs[i]) }, tt.name)
+			default:
+				require.Equal(t, tt.expectedLog, dec(kvPairs.Pairs[i], kvPairs.Pairs[i]), tt.name)
+			}
+		})
+	}
 }

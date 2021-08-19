@@ -22,13 +22,16 @@ func NewDecodeStore(cdc codec.Codec) func(kvA, kvB kv.Pair) string {
 			cdc.MustUnmarshal(kvA.Value, &pB)
 			return fmt.Sprintf("%v\n%v", pA, pB)
 
-		case bytes.Equal(kvA.Key[:1], types.StakingKeyPrefix):
+		case bytes.Equal(kvA.Key[:1], types.StakingKeyPrefix),
+			bytes.Equal(kvA.Key[:1], types.StakingByFarmerIndexKeyPrefix),
+			bytes.Equal(kvA.Key[:1], types.StakingsByStakingCoinDenomIndexKeyPrefix):
 			var sA, sB types.Staking
 			cdc.MustUnmarshal(kvA.Value, &sA)
 			cdc.MustUnmarshal(kvA.Value, &sB)
 			return fmt.Sprintf("%v\n%v", sA, sB)
 
-		case bytes.Equal(kvA.Key[:1], types.RewardKeyPrefix):
+		case bytes.Equal(kvA.Key[:1], types.RewardKeyPrefix),
+			bytes.Equal(kvA.Key[:1], types.RewardsByFarmerIndexKeyPrefix):
 			var rA, rB types.Reward
 			cdc.MustUnmarshal(kvA.Value, &rA)
 			return fmt.Sprintf("%v\n%v", rA, rB)
