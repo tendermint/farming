@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/simapp/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -14,16 +15,16 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
-// Simulation operation weights constants
+// Simulation operation weights constants.
 const (
 	OpWeightMsgCreateFixedAmountPlan = "op_weight_msg_create_fixed_amount_plan"
 	OpWeightMsgCreateRatioPlan       = "op_weight_msg_create_ratio_plan"
 	OpWeightMsgStake                 = "op_weight_msg_stake"
 	OpWeightMsgUnstake               = "op_weight_msg_unstake"
-	OpWeightMsgClaim                 = "op_weight_msg_claim"
+	OpWeightMsgHarvest               = "op_weight_msg_harvest"
 )
 
-// WeightedOperations returns all the operations from the module with their respective weights
+// WeightedOperations returns all the operations from the module with their respective weights.
 func WeightedOperations(
 	appParams simtypes.AppParams, cdc codec.JSONCodec, ak types.AccountKeeper,
 	bk types.BankKeeper, k keeper.Keeper,
@@ -57,10 +58,10 @@ func WeightedOperations(
 		},
 	)
 
-	var weightMsgClaim int
-	appParams.GetOrGenerate(cdc, OpWeightMsgClaim, &weightMsgClaim, nil,
+	var weightMsgHarvest int
+	appParams.GetOrGenerate(cdc, OpWeightMsgHarvest, &weightMsgHarvest, nil,
 		func(_ *rand.Rand) {
-			weightMsgClaim = params.DefaultWeightMsgHarvest
+			weightMsgHarvest = params.DefaultWeightMsgHarvest
 		},
 	)
 
@@ -82,8 +83,8 @@ func WeightedOperations(
 			SimulateMsgUnstake(ak, bk, k),
 		),
 		simulation.NewWeightedOperation(
-			weightMsgClaim,
-			SimulateMsgClaim(ak, bk, k),
+			weightMsgHarvest,
+			SimulateMsgHarvest(ak, bk, k),
 		),
 	}
 }
@@ -94,8 +95,37 @@ func SimulateMsgCreateFixedAmountPlan(ak types.AccountKeeper, bk types.BankKeepe
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		// TODO: not implemented yet
-		return simtypes.OperationMsg{}, nil, nil
+		simAccount, _ := simtypes.RandomAcc(r, accs)
+
+		account := ak.GetAccount(ctx, simAccount.Address)
+		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
+
+		fees, err := simtypes.RandomFees(r, ctx, spendableCoins)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "unable to generate fees"), nil, err
+		}
+
+		txGen := params.MakeTestEncodingConfig().TxConfig
+		tx, err := helpers.GenTx(
+			txGen,
+			[]sdk.Msg{msg},
+			fees,
+			helpers.DefaultGenTxGas,
+			chainID,
+			[]uint64{account.GetAccountNumber()},
+			[]uint64{account.GetSequence()},
+			simAccount.PrivKey,
+		)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate mock tx"), nil, err
+		}
+
+		_, _, err = app.Deliver(txGen.TxEncoder(), tx)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
+		}
+
+		return simtypes.NewOperationMsg(msg, true, ""), nil, nil
 	}
 }
 
@@ -132,9 +162,9 @@ func SimulateMsgUnstake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 	}
 }
 
-// SimulateMsgClaim generates a MsgClaim with random values
+// SimulateMsgHarvest generates a MsgHarvest with random values
 // nolint: interfacer
-func SimulateMsgClaim(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.Operation {
+func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {

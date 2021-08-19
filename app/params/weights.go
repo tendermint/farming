@@ -2,9 +2,9 @@ package params
 
 const (
 	// TODO: farming determine the weights
-	DefaultWeightMsgCreateFixedAmountPlan int = 0
-	DefaultWeightMsgCreateRatioPlan       int = 0
-	DefaultWeightMsgStake                 int = 0
-	DefaultWeightMsgUnstake               int = 0
-	DefaultWeightMsgHarvest               int = 0
+	DefaultWeightMsgCreateFixedAmountPlan int = 10
+	DefaultWeightMsgCreateRatioPlan       int = 10
+	DefaultWeightMsgStake                 int = 85
+	DefaultWeightMsgUnstake               int = 50
+	DefaultWeightMsgHarvest               int = 30
 )
