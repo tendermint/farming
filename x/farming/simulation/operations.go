@@ -297,7 +297,9 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		if len(rewards) == 0 {
 			ctx = ctx.WithBlockTime(ctx.BlockTime().AddDate(0, 0, 1))
 			k.ProcessQueuedCoins(ctx)
-			k.DistributeRewards(ctx)
+			if err := k.DistributeRewards(ctx); err != nil {
+				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "unable to distribute rewards"), nil, err
+			}
 			k.SetLastEpochTime(ctx, ctx.BlockTime())
 
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "no rewards to harvest"), nil, nil

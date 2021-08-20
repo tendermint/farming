@@ -209,11 +209,12 @@ func TestSimulateMsgHarvest(t *testing.T) {
 
 	// set staking and the amount must be greater than the randomized value range for unharvest
 	amount := sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simtypes.RandIntBetween(r, 100_000_000, 1000_000_000))))
-	app.FarmingKeeper.Stake(ctx, accounts[0].Address, amount)
-	app.FarmingKeeper.ProcessQueuedCoins(ctx)
+	_, err := app.FarmingKeeper.Stake(ctx, accounts[0].Address, amount)
+	require.NoError(t, err)
 
+	app.FarmingKeeper.ProcessQueuedCoins(ctx)
 	ctx = ctx.WithBlockTime(mustParseRFC3339("2021-08-20T00:00:00Z"))
-	err := app.FarmingKeeper.DistributeRewards(ctx)
+	err = app.FarmingKeeper.DistributeRewards(ctx)
 	require.NoError(t, err)
 
 	// begin a new block
