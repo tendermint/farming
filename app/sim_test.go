@@ -56,7 +56,8 @@ func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
 
 // interBlockCacheOpt returns a BaseApp option function that sets the persistent
 // inter-block write-through cache.
-func interBlockCacheOpt() func(*baseapp.BaseApp) { // nolint:unused
+// nolint:deadcode,unused,varcheck
+func interBlockCacheOpt() func(*baseapp.BaseApp) {
 	return baseapp.SetInterBlockCache(store.NewCommitKVStoreCacheManager())
 }
 
