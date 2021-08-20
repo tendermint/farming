@@ -1,17 +1,22 @@
 package types
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // NewGenesisState returns new GenesisState.
-func NewGenesisState(params Params, planRecords []PlanRecord, stakings []Staking, rewards []Reward) *GenesisState {
+func NewGenesisState(params Params, planRecords []PlanRecord, stakings []Staking, rewards []Reward, stakingReserveCoins, rewardPoolCoins sdk.Coins, globalLastEpochTime time.Time) *GenesisState {
 	return &GenesisState{
-		Params:      params,
-		PlanRecords: planRecords,
-		Stakings:    stakings,
-		Rewards:     rewards,
+		Params:              params,
+		PlanRecords:         planRecords,
+		Stakings:            stakings,
+		Rewards:             rewards,
+		StakingReserveCoins: stakingReserveCoins,
+		RewardPoolCoins:     rewardPoolCoins,
+		GlobalLastEpochTime: globalLastEpochTime,
 	}
 }
 
@@ -22,6 +27,10 @@ func DefaultGenesisState() *GenesisState {
 		[]PlanRecord{},
 		[]Staking{},
 		[]Reward{},
+		// TODO: zero or nil
+		nil,
+		sdk.Coins{},
+		time.Time{},
 	)
 }
 
@@ -30,11 +39,22 @@ func ValidateGenesis(data GenesisState) error {
 	if err := data.Params.Validate(); err != nil {
 		return err
 	}
+	var plans []PlanI
 	for _, record := range data.PlanRecords {
 		if err := record.Validate(); err != nil {
 			return err
 		}
+		plan, err := UnpackPlan(&record.Plan)
+		if err != nil {
+			return err
+		}
+		plans = append(plans, plan)
 	}
+	err := ValidateRatioPlans(plans)
+	if err != nil {
+		return err
+	}
+
 	for _, staking := range data.Stakings {
 		if err := staking.Validate(); err != nil {
 			return err
@@ -45,18 +65,10 @@ func ValidateGenesis(data GenesisState) error {
 			return err
 		}
 	}
-	return nil
-}
-
-// Validate validates PlanRecord.
-func (r PlanRecord) Validate() error {
-	if err := r.FarmingPoolCoins.Validate(); err != nil {
+	if err := data.RewardPoolCoins.Validate(); err != nil {
 		return err
 	}
-	if err := r.RewardPoolCoins.Validate(); err != nil {
-		return err
-	}
-	if err := r.StakingReserveCoins.Validate(); err != nil {
+	if err := data.StakingReserveCoins.Validate(); err != nil {
 		return err
 	}
 	return nil
@@ -79,6 +91,21 @@ func (s Staking) Validate() error {
 // Validate validates Reward.
 func (r Reward) Validate() error {
 	if err := r.RewardCoins.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Validate validates Reward.
+func (record PlanRecord) Validate() error {
+	plan, err := UnpackPlan(&record.Plan)
+	if err != nil {
+		return err
+	}
+	if err := plan.Validate(); err != nil {
+		return err
+	}
+	if err := record.FarmingPoolCoins.Validate(); err != nil {
 		return err
 	}
 	return nil
