@@ -36,7 +36,7 @@ func TestWeightedOperations(t *testing.T) {
 
 	s := rand.NewSource(1)
 	r := rand.New(s)
-	accs := simtypes.RandomAccounts(r, 3)
+	accs := getTestingAccounts(t, r, app, ctx, 1)
 
 	expected := []struct {
 		weight     int
@@ -237,7 +237,7 @@ func TestSimulateMsgHarvest(t *testing.T) {
 }
 
 func createTestApp(isCheckTx bool) (*farmingapp.FarmingApp, sdk.Context) {
-	app := farmingapp.Setup(false)
+	app := farmingapp.Setup(isCheckTx)
 
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.MintKeeper.SetParams(ctx, minttypes.DefaultParams())

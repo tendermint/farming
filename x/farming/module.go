@@ -22,7 +22,6 @@ import (
 	//"github.com/tendermint/farming/x/farming/client/rest"
 	"github.com/tendermint/farming/x/farming/client/cli"
 	"github.com/tendermint/farming/x/farming/keeper"
-
 	"github.com/tendermint/farming/x/farming/simulation"
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -187,6 +186,12 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	simulation.RandomizedGenState(simState)
 }
 
+// ProposalContents returns all the farming content functions used to
+// simulate governance proposals.
+func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
+	return simulation.ProposalContents(am.keeper)
+}
+
 // RandomizedParams creates randomized farming param changes for the simulator.
 func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return simulation.ParamChanges(r)
@@ -195,14 +200,6 @@ func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 // RegisterStoreDecoder registers a decoder for farming module's types
 func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 	sdr[types.StoreKey] = simulation.NewDecodeStore(am.cdc)
-}
-
-// ProposalContents returns all the farming content functions used to
-// simulate governance proposals.
-func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
-	// TODO: implement
-	// return simulation.ProposalContents(am.keeper)
-	return nil
 }
 
 // WeightedOperations returns the all the gov module operations with their respective weights.

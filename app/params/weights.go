@@ -1,7 +1,7 @@
 package params
 
 const (
-	// TODO: farming determine the weights
+	// farming module simulation operation weights for messages
 	DefaultWeightMsgCreateFixedAmountPlan int = 10
 	DefaultWeightMsgCreateRatioPlan       int = 10
 	DefaultWeightMsgStake                 int = 85
