@@ -1,7 +1,6 @@
 package simulation
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -103,10 +102,9 @@ func SimulateMsgCreateFixedAmountPlan(ak types.AccountKeeper, bk types.BankKeepe
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
 		params := k.GetParams(ctx)
-		coins, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
+		_, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
 		if hasNeg {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "lower balance"),
-				nil, fmt.Errorf("spendable %s is lower than plan creation fee %s", spendable.String(), coins.String())
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "insufficient balance for plan creation fee"), nil, nil
 		}
 
 		name := "simulation"
@@ -151,10 +149,9 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
 		params := k.GetParams(ctx)
-		coins, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
+		_, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
 		if hasNeg {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateRatioPlan, "lower balance"),
-				nil, fmt.Errorf("spendable %s is lower than plan creation fee %s", spendable.String(), coins.String())
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateRatioPlan, "insufficient balance for plan creation fee"), nil, nil
 		}
 
 		name := "simulation"
@@ -196,17 +193,16 @@ func SimulateMsgStake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keep
 		account := ak.GetAccount(ctx, simAccount.Address)
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
-		params := k.GetParams(ctx)
-		coins, hasNeg := spendable.SafeSub(params.StakingCreationFee)
-		if hasNeg {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgStake, "lower balance"),
-				nil, fmt.Errorf("spendable %s is lower than staking creation fee %s", spendable.String(), coins.String())
-		}
-
 		farmer := account.GetAddress()
 		stakingCoins := sdk.NewCoins(
 			sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simtypes.RandIntBetween(r, 1_000_000, 100_000_000))),
 		)
+
+		params := k.GetParams(ctx)
+		_, hasNeg := spendable.SafeSub(params.StakingCreationFee.Add(stakingCoins...))
+		if hasNeg {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgStake, "insufficient balance for staking creation fee"), nil, nil
+		}
 
 		msg := types.NewMsgStake(farmer, stakingCoins)
 
@@ -248,13 +244,11 @@ func SimulateMsgUnstake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		// staking must exist in order to unharvest
 		staking, found := k.GetStakingByFarmer(ctx, farmer)
 		if !found {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "unable to find staking"),
-				nil, fmt.Errorf("staking by %s not found", farmer)
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "unable to find staking"), nil, nil
 		}
 
 		if !staking.StakedCoins.Add(staking.QueuedCoins...).IsAllGTE(unstakingCoins) {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "insufficient funds"),
-				nil, fmt.Errorf("%s is smaller than %s", staking.StakedCoins.Add(staking.QueuedCoins...).String(), unstakingCoins.String())
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "insufficient funds"), nil, nil
 		}
 
 		msg := types.NewMsgUnstake(farmer, unstakingCoins)
@@ -298,7 +292,7 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 			ctx = ctx.WithBlockTime(ctx.BlockTime().AddDate(0, 0, 1))
 			k.ProcessQueuedCoins(ctx)
 			if err := k.DistributeRewards(ctx); err != nil {
-				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "unable to distribute rewards"), nil, err
+				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "unable to distribute rewards"), nil, nil
 			}
 			k.SetLastEpochTime(ctx, ctx.BlockTime())
 

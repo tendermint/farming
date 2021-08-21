@@ -9,8 +9,8 @@ import (
 	"github.com/tendermint/farming/x/farming/keeper"
 )
 
-// OpWeightSubmitCommunitySpendProposal app params key for community spend proposal
-const OpWeightSubmitCommunitySpendProposal = "op_weight_submit_community_spend_proposal"
+// OpWeightSubmitPublicPlanProposals app params key for public plan proposals
+const OpWeightSubmitPublicPlanProposals = "op_weight_submit_public_plan_proposals"
 
 // ProposalContents defines the module weighted proposals' contents
 func ProposalContents(k keeper.Keeper) []simtypes.WeightedProposalContent {
@@ -18,15 +18,15 @@ func ProposalContents(k keeper.Keeper) []simtypes.WeightedProposalContent {
 	return nil
 	// return []simtypes.WeightedProposalContent{
 	// 	simulation.NewWeightedProposalContent(
-	// 		OpWeightSubmitCommunitySpendProposal,
-	// 		simappparams.DefaultWeightCommunitySpendProposal,
+	// 		OpWeightSubmitPublicPlanProposals,
+	// 		simappparams.DefaultWeightPublicPlanProposals,
 	// 		SimulateCommunityPoolSpendProposalContent(k),
 	// 	),
 	// }
 }
 
-// SimulateCommunityPoolSpendProposalContent generates random community-pool-spend proposal content
-func SimulateCommunityPoolSpendProposalContent(k keeper.Keeper) simtypes.ContentSimulatorFn {
+// SimulatePublicPlanProposalsProposalContent generates random public plan proposals proposal content
+func SimulatePublicPlanProposalsProposalContent(k keeper.Keeper) simtypes.ContentSimulatorFn {
 	return func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) simtypes.Content {
 		// TODO: not implemented yet
 		return nil

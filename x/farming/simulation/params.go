@@ -18,17 +18,30 @@ func ParamChanges(r *rand.Rand) []simtypes.ParamChange {
 	return []simtypes.ParamChange{
 		simulation.NewSimParamChange(types.ModuleName, string(types.KeyPrivatePlanCreationFee),
 			func(r *rand.Rand) string {
-				return fmt.Sprintf("\"%s\"", GenPrivatePlanCreationFee(r))
+				bz, err := GenPrivatePlanCreationFee(r).MarshalJSON()
+				if err != nil {
+					panic(err)
+				}
+				return string(bz)
 			},
 		),
 		simulation.NewSimParamChange(types.ModuleName, string(types.KeyStakingCreationFee),
 			func(r *rand.Rand) string {
-				return fmt.Sprintf("\"%s\"", GenStakingCreationFee(r))
+				bz, err := GenPrivatePlanCreationFee(r).MarshalJSON()
+				if err != nil {
+					panic(err)
+				}
+				return string(bz)
 			},
 		),
 		simulation.NewSimParamChange(types.ModuleName, string(types.KeyEpochDays),
 			func(r *rand.Rand) string {
-				return fmt.Sprintf("\"%d\"", GenEpochDays(r))
+				return fmt.Sprintf("%d", GenEpochDays(r))
+			},
+		),
+		simulation.NewSimParamChange(types.ModuleName, string(types.KeyFarmingFeeCollector),
+			func(r *rand.Rand) string {
+				return fmt.Sprintf("\"%s\"", GenFarmingFeeCollector(r))
 			},
 		),
 	}

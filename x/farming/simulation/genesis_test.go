@@ -43,10 +43,12 @@ func TestRandomizedGenState(t *testing.T) {
 	dec1 := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(336122540)))
 	dec2 := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(208240456)))
 	dec3 := uint32(1)
+	dec4 := "cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x"
 
 	require.Equal(t, dec1, genState.Params.PrivatePlanCreationFee)
 	require.Equal(t, dec2, genState.Params.StakingCreationFee)
 	require.Equal(t, dec3, genState.Params.EpochDays)
+	require.Equal(t, dec4, genState.Params.FarmingFeeCollector)
 }
 
 // TestRandomizedGenState tests abnormal scenarios of applying RandomizedGenState.

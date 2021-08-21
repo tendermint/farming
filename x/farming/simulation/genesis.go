@@ -19,6 +19,7 @@ const (
 	PrivatePlanCreationFee = "private_plan_creation_fee"
 	StakingCreationFee     = "staking_creation_fee"
 	EpochDays              = "epoch_days"
+	FarmingFeeCollector    = "farming_fee_collector"
 )
 
 // GenPrivatePlanCreationFee return randomized private plan creation fee.
@@ -33,7 +34,12 @@ func GenStakingCreationFee(r *rand.Rand) sdk.Coins {
 
 // GenEpochDays return default EpochDays.
 func GenEpochDays(r *rand.Rand) uint32 {
-	return types.DefaultEpochDays
+	return uint32(simulation.RandIntBetween(r, int(types.DefaultEpochDays), 10))
+}
+
+// GenFarmingFeeCollector returns default farming fee collector.
+func GenFarmingFeeCollector(r *rand.Rand) string {
+	return types.DefaultFarmingFeeCollector
 }
 
 // RandomizedGenState generates a random GenesisState for farming.
@@ -56,11 +62,18 @@ func RandomizedGenState(simState *module.SimulationState) {
 		func(r *rand.Rand) { epochDays = GenEpochDays(r) },
 	)
 
+	var feeCollector string
+	simState.AppParams.GetOrGenerate(
+		simState.Cdc, FarmingFeeCollector, &feeCollector, simState.Rand,
+		func(r *rand.Rand) { feeCollector = GenFarmingFeeCollector(r) },
+	)
+
 	farmingGenesis := types.GenesisState{
 		Params: types.Params{
 			PrivatePlanCreationFee: privatePlanCreationFee,
 			StakingCreationFee:     stakingCreationFee,
 			EpochDays:              epochDays,
+			FarmingFeeCollector:    feeCollector,
 		},
 	}
 
