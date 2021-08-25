@@ -139,6 +139,19 @@ The parameters of the Staking state are:
 - StakingByFarmerAddrIndex: `0x22 | FarmerAddrLen (1 byte) | FarmerAddr -> BigEndian(Id)`
 - StakingByStakingCoinDenomIdIndex: `0x23 | StakingCoinDenomLen (1 byte) | StakingCoinDenom | BigEndian(Id) -> nil`
 
+## Accumulated Unit Reward(AUR)
+```go
+// Store AUR for every staking coin and every block height
+type AccumulatedUnitReward struct {
+    StakingCoinDenom    string
+    Height              uint64
+    AccumulatedReward   sdk.Coins
+}
+```
+
+- New `AccumulatedUnitReward` struct should be created and managed every block height when new staking coin is introduced from new plan.
+- `AccumulatedReward` can be calculated from total block rewards for this staking coin from all existing plan.
+
 
 ## Examples
 
