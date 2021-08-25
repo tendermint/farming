@@ -114,18 +114,44 @@ The parameters of the Plan state are:
 
 ## Epoch
 
-- GlobalLastEpochTime: `[]byte("globalLastEpochTime") -> ProtocolBuffer(Timestamp)`
+```go
+// meta data for epoch eras
+type EpochEra struct {
+    EpochEraId  uint64
+    EpochPeriod uint64
+    StartHeight uint64
+    EndHeight   uint64
+}
+```
+- `CurrentEpochEraId` : `EpochEraId` of current epoch era
+- `EndHeight` can be 0 if the epoch era is the current one
+- new `EpochEra` is created if `EpochPeriod` change proposal is passed
+- `EndHeight` is modified when new `EpochEra` is introduced
+
+
+```go
+// meta data for epochs
+type Epoch struct {
+    EpochEraId  uint64
+    EpochId     uint64
+    StartHeight uint64
+    EndHeight   uint64
+}
+```
+- `CurrentEpochId` : `EpochId` of current epoch
+- `EpochId` is always increasing, even if new epoch era starts
+- new `Epoch` is created when new epoch starts
 
 ## Staking
 
 ```go
 // Staking stores farmer's staking position status.
 type Staking struct {
-    Id          uint64
-    Farmer      string
-    StakedCoins sdk.Coins
-    QueuedCoins sdk.Coins
-    StartHeight uint64
+    Id              uint64
+    Farmer          string
+    StakedCoins     sdk.Coins
+    QueuedCoins     sdk.Coins
+    StartEpochId    uint64
 }
 ```
 
@@ -140,17 +166,18 @@ The parameters of the Staking state are:
 - StakingByStakingCoinDenomIdIndex: `0x23 | StakingCoinDenomLen (1 byte) | StakingCoinDenom | BigEndian(Id) -> nil`
 
 ## Accumulated Unit Reward(AUR)
+
 ```go
 // Store AUR for every staking coin and every block height
 type AccumulatedUnitReward struct {
     StakingCoinDenom    string
-    Height              uint64
+    UntilEpochId        uint64
     AccumulatedReward   sdk.Coins
 }
 ```
 
-- New `AccumulatedUnitReward` struct should be created and managed every block height when new staking coin is introduced from new plan.
-- `AccumulatedReward` can be calculated from total block rewards for this staking coin from all existing plan.
+- New `AccumulatedUnitReward` struct should be created and managed every start of epoch when new staking coin is introduced from new plan.
+- `AccumulatedReward` can be calculated from total block rewards for this staking coin from all existing plan, plus last `AccumulatedReward`
 
 
 ## Examples
