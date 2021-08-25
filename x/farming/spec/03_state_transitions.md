@@ -47,9 +47,32 @@ const (
 - `QueuedCoins` : newly staked coins are in this status until end of current epoch, and then migrated to `StakedCoins` at the end of current epoch.
 - When a farmer unstakes, `QueuedCoins` are unstaked first, and then `StakedCoins`.
 
-## Reward
+## Reward Withdrawal
+- To assume constant staking amount for reward withdrawal, automatic withdrawal is designed as below
+- Add staking position : When there exists `QueuedCoins` in `Staking` at the end of current epoch
+  - accumulated rewards until current epoch are automatically withdrawn
+  - `StartHeight` is modified to the block height of start of next epoch
+  - `QueuedCoins` is migrated to `StakedCoins`
+- Remove staking position : When a farmer remove stakings from `StakedCoins`
+  - accumulated rewards until last epoch are immediately withdrawn
+  - `StartHeight` is modified to the block height of start of current epoch
+  - unstake executed immediately and `StakedCoins` are reduced accordingly
+- Manual reward withdrawal : When a farmer request a reward withdrawal
+  - accumulated rewards until last epoch are immediately withdrawn
+  - `StartHeight` is modified to the block height of start of current epoch
 
-- At every end of epoch, `Reward` are created or updated by the calculation from each `Plan` and corresponding `Staking`.
-- Every `StakedCoins` in `Staking` which is eligible for any alive `Plan` accumulates rewards in `RewardCoins`.
-- Reward for specific `Plan` and `StakingCoinDenom` = total_reward_of_the_plan_for_this_epoch _ weight_for_this_staking_coin _ (this_denom_staked_coins_for_this_farmer)/(this_denom_total_staked_coins)
-- Accumulated `RewardCoins` are withdrawable anytime when the farmer request the withdrawal from the `Reward`.
+## Accumulated Reward Calculation
+
+- Accumulated Unit Reward : AUR represents accumulated rewards(for each staking coin) of a staking position with amount 1.
+- AUR for each staking coin for each block height can be calculated as below
+  - ![](https://latex.codecogs.com/svg.latex?\Large&space;\sum_{i=0}^{now}\frac{TR_i}{TS_i})
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;i) : heights
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;now) : current height
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TS_i) : total staking amount of the staking coin at height i
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TR_i) : total reward amount of the staking coin at height i
+- Accumulated rewards from any staking position can be calculated from AUR and the staking amount of the position as below
+  - ![](https://latex.codecogs.com/svg.latex?\Large&space;x*\(\sum_{i=0}^{now}\frac{TR_i}{TS_i}-\sum_{i=0}^{start}\frac{TR_i}{TS_i}\))
+    - assuming constant staking amount for the staking period
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;x) : staking amount for the staking period
+
+
