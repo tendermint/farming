@@ -125,6 +125,7 @@ type Staking struct {
     Farmer      string
     StakedCoins sdk.Coins
     QueuedCoins sdk.Coins
+    StartHeight uint64
 }
 ```
 
@@ -138,21 +139,6 @@ The parameters of the Staking state are:
 - StakingByFarmerAddrIndex: `0x22 | FarmerAddrLen (1 byte) | FarmerAddr -> BigEndian(Id)`
 - StakingByStakingCoinDenomIdIndex: `0x23 | StakingCoinDenomLen (1 byte) | StakingCoinDenom | BigEndian(Id) -> nil`
 
-## Reward
-
-```go
-// Reward defines a record of farming rewards for query result and exported state.
-type Reward struct {
-    Farmer           string
-    StakingCoinDenom string
-    RewardCoins      sdk.Coins
-}
-```
-
-The parameters of the Reward state are:
-
-- Reward: `0x31 | StakingCoinDenomLen (1 byte) | StakingCoinDenom | FarmerAddrLen (1 byte) | FarmerAddr -> ProtocolBuffer(sdk.Coins) RewardCoins`
-- RewardByFarmerAddrIndex: `0x32 | FarmerAddrLen (1 byte) | FarmerAddr | StakingCoinDenomLen (1 byte) | StakingCoinDenom -> nil`
 
 ## Examples
 
