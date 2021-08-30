@@ -31,6 +31,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	}
 	for _, staking := range genState.Stakings {
 		k.SetStaking(ctx, staking)
+		k.SetStakingIndex(ctx, staking)
 	}
 	for _, reward := range genState.Rewards {
 		k.SetReward(ctx, reward.StakingCoinDenom, reward.GetFarmer(), reward.RewardCoins)
