@@ -50,7 +50,7 @@ func ValidateGenesis(data GenesisState) error {
 			return err
 		}
 		if plan.GetId() < id {
-			fmt.Errorf("pool records must be sorted")
+			return fmt.Errorf("pool records must be sorted")
 		}
 		plans = append(plans, plan)
 	}
