@@ -59,7 +59,7 @@ message PlanRecord {
   option (gogoproto.goproto_getters) = false;
 
   // plan specifies the plan interface; it can be FixedAmountPlan or RatioPlan
-  google.protobuf.Any plan = 1 [(gogoproto.nullable) = false];
+  google.protobuf.Any plan = 1 [(gogoproto.nullable) = false, (cosmos_proto.accepts_interface) = "PlanI"];
 
   // farming_pool_coins specifies balance of the farming pool for the plan
   // this param is needed for import/export validation

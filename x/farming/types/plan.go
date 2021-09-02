@@ -292,11 +292,7 @@ func ValidateRatioPlans(i interface{}) error {
 
 // PackPlan converts PlanI to Any
 func PackPlan(plan PlanI) (*codectypes.Any, error) {
-	msg, ok := plan.(proto.Message)
-	if !ok {
-		return nil, fmt.Errorf("cannot proto marshal %T", plan)
-	}
-	any, err := codectypes.NewAnyWithValue(msg)
+	any, err := codectypes.NewAnyWithValue(plan)
 	if err != nil {
 		return nil, err
 	}

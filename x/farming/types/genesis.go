@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,8 +28,7 @@ func DefaultGenesisState() *GenesisState {
 		[]PlanRecord{},
 		[]Staking{},
 		[]Reward{},
-		// TODO: zero or nil
-		nil,
+		sdk.Coins{},
 		sdk.Coins{},
 		time.Time{},
 	)
@@ -39,6 +39,7 @@ func ValidateGenesis(data GenesisState) error {
 	if err := data.Params.Validate(); err != nil {
 		return err
 	}
+	id := uint64(0)
 	var plans []PlanI
 	for _, record := range data.PlanRecords {
 		if err := record.Validate(); err != nil {
@@ -47,6 +48,9 @@ func ValidateGenesis(data GenesisState) error {
 		plan, err := UnpackPlan(&record.Plan)
 		if err != nil {
 			return err
+		}
+		if plan.GetId() < id {
+			fmt.Errorf("pool records must be sorted")
 		}
 		plans = append(plans, plan)
 	}
