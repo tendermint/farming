@@ -3,32 +3,41 @@ package simulation
 import (
 	"math/rand"
 
+	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/cosmos-sdk/x/simulation"
 
 	"github.com/tendermint/farming/x/farming/keeper"
 )
 
-// OpWeightSubmitPublicPlanProposals app params key for public plan proposals
-const OpWeightSubmitPublicPlanProposals = "op_weight_submit_public_plan_proposals"
+// Simulation operation weights constants.
+const (
+	OpWeightSubmitPublicFixedAmountPlanProposal = "op_weight_submit_public_fixed_amount_plan_proposal"
+	OpWeightSubmitPublicRatioPlanProposal       = "op_weight_submit_public_ratio_plan_proposal"
+)
 
 // ProposalContents defines the module weighted proposals' contents
 func ProposalContents(k keeper.Keeper) []simtypes.WeightedProposalContent {
-	// TODO: not implemented yet
-	return nil
-	// return []simtypes.WeightedProposalContent{
-	// 	simulation.NewWeightedProposalContent(
-	// 		OpWeightSubmitPublicPlanProposals,
-	// 		simappparams.DefaultWeightPublicPlanProposals,
-	// 		SimulateCommunityPoolSpendProposalContent(k),
-	// 	),
-	// }
+	return []simtypes.WeightedProposalContent{
+		simulation.NewWeightedProposalContent(
+			OpWeightSubmitPublicFixedAmountPlanProposal,
+			simappparams.DefaultWeightTextProposal,
+			SimulateTextProposalContent,
+		),
+		// simulation.NewWeightedProposalContent(
+		// 	OpWeightSubmitPublicRatioPlanProposal,
+		// 	simappparams.DefaultWeightTextProposal,
+		// 	SimulateTextProposalContent(k),
+		// ),
+	}
 }
 
-// SimulatePublicPlanProposalsProposalContent generates random public plan proposals proposal content
-func SimulatePublicPlanProposalsProposalContent(k keeper.Keeper) simtypes.ContentSimulatorFn {
-	return func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) simtypes.Content {
-		// TODO: not implemented yet
-		return nil
-	}
+// SimulateTextProposalContent returns a random text proposal content.
+func SimulateTextProposalContent(r *rand.Rand, _ sdk.Context, _ []simtypes.Account) simtypes.Content {
+	return govtypes.NewTextProposal(
+		simtypes.RandStringOfLength(r, 140),
+		simtypes.RandStringOfLength(r, 5000),
+	)
 }
