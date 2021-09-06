@@ -24,15 +24,15 @@ const (
 
 // GenPrivatePlanCreationFee return randomized private plan creation fee.
 func GenPrivatePlanCreationFee(r *rand.Rand) sdk.Coins {
-	return sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simulation.RandIntBetween(r, 0, 1_000_000_000))))
+	return sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simulation.RandIntBetween(r, 0, 100_000_000))))
 }
 
 // GenStakingCreationFee return randomized staking creation fee.
 func GenStakingCreationFee(r *rand.Rand) sdk.Coins {
-	return sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simulation.RandIntBetween(r, 0, 1_000_000_000))))
+	return sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simulation.RandIntBetween(r, 0, 100_000_000))))
 }
 
-// GenEpochDays return default EpochDays.
+// GenEpochDays return default epoch days.
 func GenEpochDays(r *rand.Rand) uint32 {
 	return uint32(simulation.RandIntBetween(r, int(types.DefaultEpochDays), 10))
 }

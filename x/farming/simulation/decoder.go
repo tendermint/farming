@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 
 	"github.com/tendermint/farming/x/farming/types"
@@ -15,26 +16,27 @@ import (
 func NewDecodeStore(cdc codec.Codec) func(kvA, kvB kv.Pair) string {
 	return func(kvA, kvB kv.Pair) string {
 		switch {
-		case bytes.Equal(kvA.Key[:1], types.PlanKeyPrefix),
-			bytes.Equal(kvA.Key[:1], types.PlansByFarmerIndexKeyPrefix):
+		case bytes.Equal(kvA.Key[:1], types.PlanKeyPrefix):
 			var pA, pB types.BasePlan
 			cdc.MustUnmarshal(kvA.Value, &pA)
 			cdc.MustUnmarshal(kvA.Value, &pB)
 			return fmt.Sprintf("%v\n%v", pA, pB)
 
-		case bytes.Equal(kvA.Key[:1], types.StakingKeyPrefix),
-			bytes.Equal(kvA.Key[:1], types.StakingByFarmerIndexKeyPrefix),
-			bytes.Equal(kvA.Key[:1], types.StakingsByStakingCoinDenomIndexKeyPrefix):
+		case bytes.Equal(kvA.Key[:1], types.StakingKeyPrefix):
 			var sA, sB types.Staking
 			cdc.MustUnmarshal(kvA.Value, &sA)
 			cdc.MustUnmarshal(kvA.Value, &sB)
 			return fmt.Sprintf("%v\n%v", sA, sB)
 
-		case bytes.Equal(kvA.Key[:1], types.RewardKeyPrefix),
-			bytes.Equal(kvA.Key[:1], types.RewardsByFarmerIndexKeyPrefix):
+		case bytes.Equal(kvA.Key[:1], types.RewardKeyPrefix):
 			var rA, rB types.Reward
 			cdc.MustUnmarshal(kvA.Value, &rA)
 			return fmt.Sprintf("%v\n%v", rA, rB)
+
+		case bytes.Equal(kvA.Key[:1], types.PlansByFarmerIndexKeyPrefix),
+			bytes.Equal(kvA.Key[:1], types.StakingByFarmerIndexKeyPrefix),
+			bytes.Equal(kvA.Key[:1], types.RewardsByFarmerIndexKeyPrefix):
+			return fmt.Sprintf("%v\n%v", sdk.AccAddress(kvA.Value), sdk.AccAddress(kvB.Value))
 
 		default:
 			panic(fmt.Sprintf("invalid farming key prefix %X", kvA.Key[:1]))
