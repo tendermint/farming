@@ -1,7 +1,6 @@
 package simulation
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -355,44 +354,6 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		}
 
 		return simulation.GenAndDeliverTxWithRandFees(txCtx)
-	}
-}
-
-// SimulateMsgSubmitFixedAmountPlanProposal simulates creating a msg CreateFixedAmountPlan Proposal
-// voting on the proposal, and subsequently slashing the proposal. It is implemented using
-// future operations.
-func SimulateMsgSubmitFixedAmountPlanProposal(
-	ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper, contentSim simtypes.ContentSimulatorFn,
-) simtypes.Operation {
-	// The states are:
-	// column 1: All validators vote
-	// column 2: 90% vote
-	// column 3: 75% vote
-	// column 4: 40% vote
-	// column 5: 15% vote
-	// column 6: noone votes
-	// All columns sum to 100 for simplicity, values chosen by @valardragon semi-arbitrarily,
-	// feel free to change.
-	numVotesTransitionMatrix, _ := simulation.CreateTransitionMatrix([][]int{
-		{20, 10, 0, 0, 0, 0},
-		{55, 50, 20, 10, 0, 0},
-		{25, 25, 30, 25, 30, 15},
-		{0, 15, 30, 25, 30, 30},
-		{0, 0, 20, 30, 30, 30},
-		{0, 0, 0, 10, 10, 25},
-	})
-
-	statePercentageArray := []float64{1, .9, .75, .4, .15, 0}
-	curNumVotesState := 1
-
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
-		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		fmt.Println("numVotesTransitionMatrix: ", numVotesTransitionMatrix)
-		fmt.Println("statePercentageArray: ", statePercentageArray)
-		fmt.Println("curNumVotesState: ", curNumVotesState)
-		return simtypes.OperationMsg{}, nil, nil
 	}
 }
 

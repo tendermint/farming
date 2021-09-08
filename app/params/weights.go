@@ -7,4 +7,6 @@ const (
 	DefaultWeightMsgStake                 int = 85
 	DefaultWeightMsgUnstake               int = 30
 	DefaultWeightMsgHarvest               int = 30
+
+	DefaultWeightPublicPlanProposal int = 5
 )
