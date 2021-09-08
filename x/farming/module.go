@@ -189,7 +189,7 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 // ProposalContents returns all the farming content functions used to
 // simulate governance proposals.
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
-	return simulation.ProposalContents(am.keeper)
+	return simulation.ProposalContents(am.accountKeeper, am.bankKeeper, am.keeper)
 }
 
 // RandomizedParams creates randomized farming param changes for the simulator.

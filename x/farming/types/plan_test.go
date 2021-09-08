@@ -13,7 +13,56 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
-func TestRatioPlans(t *testing.T) {
+func TestPlanName(t *testing.T) {
+	name := "testPlan1"
+	farmingPoolAddr1 := sdk.AccAddress("farmingPoolAddr1")
+	terminationAddr1 := sdk.AccAddress("terminationAddr1")
+	stakingCoinWeights := sdk.NewDecCoins(
+		sdk.DecCoin{Denom: "testFarmStakingCoinDenom", Amount: sdk.MustNewDecFromStr("1.0")},
+	)
+	startTime := time.Now().UTC()
+	endTime := startTime.AddDate(1, 0, 0)
+
+	testCases := []struct {
+		plans       []types.PlanI
+		expectedErr error
+	}{
+		{
+			[]types.PlanI{
+				types.NewRatioPlan(
+					types.NewBasePlan(1, name, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
+					sdk.NewDec(1),
+				),
+			},
+			nil,
+		},
+		{
+			[]types.PlanI{
+				types.NewRatioPlan(
+					types.NewBasePlan(1, name, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
+					sdk.NewDec(1),
+				),
+				types.NewRatioPlan(
+					types.NewBasePlan(1, name, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
+					sdk.NewDec(1),
+				),
+			},
+			sdkerrors.Wrap(types.ErrDuplicatePlanName, name),
+		},
+	}
+
+	for _, tc := range testCases {
+		err := types.ValidateName(tc.plans)
+		if tc.expectedErr == nil {
+			require.NoError(t, err)
+		} else {
+			require.Error(t, err)
+			require.Equal(t, tc.expectedErr.Error(), err.Error())
+		}
+	}
+}
+
+func TestTotalEpochRatio(t *testing.T) {
 	name1 := "testPlan1"
 	name2 := "testPlan2"
 	farmingPoolAddr1 := sdk.AccAddress("farmingPoolAddr1")
@@ -44,19 +93,6 @@ func TestRatioPlans(t *testing.T) {
 					sdk.NewDec(1),
 				),
 				types.NewRatioPlan(
-					types.NewBasePlan(1, name1, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
-					sdk.NewDec(1),
-				),
-			},
-			sdkerrors.Wrap(types.ErrDuplicatePlanName, name1),
-		},
-		{
-			[]types.PlanI{
-				types.NewRatioPlan(
-					types.NewBasePlan(1, name1, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
-					sdk.NewDec(1),
-				),
-				types.NewRatioPlan(
 					types.NewBasePlan(1, name2, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
 					sdk.NewDec(1),
 				),
@@ -66,7 +102,7 @@ func TestRatioPlans(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		err := types.ValidateRatioPlans(tc.plans)
+		err := types.ValidateTotalEpochRatio(tc.plans)
 		if tc.expectedErr == nil {
 			require.NoError(t, err)
 		} else {

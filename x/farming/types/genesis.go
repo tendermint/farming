@@ -39,7 +39,9 @@ func ValidateGenesis(data GenesisState) error {
 	if err := data.Params.Validate(); err != nil {
 		return err
 	}
+
 	id := uint64(0)
+
 	var plans []PlanI
 	for _, record := range data.PlanRecords {
 		if err := record.Validate(); err != nil {
@@ -54,8 +56,12 @@ func ValidateGenesis(data GenesisState) error {
 		}
 		plans = append(plans, plan)
 	}
-	err := ValidateRatioPlans(plans)
-	if err != nil {
+
+	if err := ValidateName(plans); err != nil {
+		return err
+	}
+
+	if err := ValidateTotalEpochRatio(plans); err != nil {
 		return err
 	}
 
@@ -64,17 +70,21 @@ func ValidateGenesis(data GenesisState) error {
 			return err
 		}
 	}
+
 	for _, reward := range data.Rewards {
 		if err := reward.Validate(); err != nil {
 			return err
 		}
 	}
+
 	if err := data.RewardPoolCoins.Validate(); err != nil {
 		return err
 	}
+
 	if err := data.StakingReserveCoins.Validate(); err != nil {
 		return err
 	}
+
 	return nil
 }
 

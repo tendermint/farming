@@ -111,7 +111,7 @@ func SimulateMsgCreateFixedAmountPlan(ak types.AccountKeeper, bk types.BankKeepe
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "unable to mint pool coins"), nil, nil
 		}
 
-		name := "simulation"
+		name := "simulation-test-" + simtypes.RandStringOfLength(r, 5) // name must be unique
 		creatorAcc := account.GetAddress()
 		stakingCoinWeights := sdk.NewDecCoins(sdk.NewInt64DecCoin(sdk.DefaultBondDenom, 1))
 		startTime := ctx.BlockTime()
@@ -170,7 +170,7 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "unable to mint pool coins"), nil, nil
 		}
 
-		name := "simulation"
+		name := "simulation-test-" + simtypes.RandStringOfLength(r, 5) // name must be unique
 		creatorAcc := account.GetAddress()
 		stakingCoinWeights := sdk.NewDecCoins(sdk.NewInt64DecCoin(sdk.DefaultBondDenom, 1))
 		startTime := ctx.BlockTime()
