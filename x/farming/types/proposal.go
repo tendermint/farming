@@ -26,7 +26,7 @@ func NewPublicPlanProposal(
 	addReq []*AddRequestProposal,
 	updateReq []*UpdateRequestProposal,
 	deleteReq []*DeleteRequestProposal,
-) gov.Content {
+) *PublicPlanProposal {
 	return &PublicPlanProposal{
 		Title:                  title,
 		Description:            description,

@@ -12,22 +12,46 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
+/*
+[TODO]:
+	We need to come up with better ways to simulate public plan proposals.
+	Currently, the details are igored and only basic logics are written to simulate.
+
+	These are some of the following considerations that i think need to be discussed and addressed:
+	1. Randomize staking coin weights (single or multiple denoms)
+	2. Simulate multiple proposals (add new weighted proposal content for multiple plans?)
+*/
+
 // Simulation operation weights constants.
-const OpWeightSimulatePublicPlanProposal = "op_weight_public_plan_proposal"
+const (
+	OpWeightSimulateAddPublicPlanProposal    = "op_weight_add_public_plan_proposal"
+	OpWeightSimulateUpdatePublicPlanProposal = "op_weight_update_public_plan_proposal"
+	OpWeightSimulateDeletePublicPlanProposal = "op_weight_delete_public_plan_proposal"
+)
 
 // ProposalContents defines the module weighted proposals' contents
 func ProposalContents(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) []simtypes.WeightedProposalContent {
 	return []simtypes.WeightedProposalContent{
 		simulation.NewWeightedProposalContent(
-			OpWeightSimulatePublicPlanProposal,
-			params.DefaultWeightPublicPlanProposal,
-			SimulatePublicPlanProposal(ak, bk, k),
+			OpWeightSimulateAddPublicPlanProposal,
+			params.DefaultWeightAddPublicPlanProposal,
+			SimulateAddPublicPlanProposal(ak, bk, k),
+		),
+		simulation.NewWeightedProposalContent(
+			OpWeightSimulateUpdatePublicPlanProposal,
+			params.DefaultWeightUpdatePublicPlanProposal,
+			SimulateUpdatePublicPlanProposal(ak, bk, k),
+		),
+		simulation.NewWeightedProposalContent(
+			OpWeightSimulateDeletePublicPlanProposal,
+			params.DefaultWeightDeletePublicPlanProposal,
+			SimulateDeletePublicPlanProposal(ak, bk, k),
 		),
 	}
 }
 
-// SimulatePublicPlanProposal generates random public plan proposal content
-func SimulatePublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.ContentSimulatorFn {
+// SimulateAddPublicPlanProposal generates random public plan proposal content
+func SimulateAddPublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.ContentSimulatorFn {
 	return func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) simtypes.Content {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 
@@ -45,8 +69,7 @@ func SimulatePublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, k k
 			return nil
 		}
 
-		// create add request proposal
-		// TODO: randomized values of the fields
+		// add request proposal
 		req := &types.AddRequestProposal{
 			Name:               "simulation-test-" + simtypes.RandStringOfLength(r, 5),
 			FarmingPoolAddress: simAccount.Address.String(),
@@ -59,20 +82,120 @@ func SimulatePublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, k k
 		}
 		addRequests := []*types.AddRequestProposal{req}
 
-		// TODO
-		// create update request proposal
-		// updating plan can only be allowed (owner)
-
-		// TODO
-		// create delete request proposal
-		// deleting plan can only be allowed
-
 		return types.NewPublicPlanProposal(
 			simtypes.RandStringOfLength(r, 10),
 			simtypes.RandStringOfLength(r, 100),
 			addRequests,
 			[]*types.UpdateRequestProposal{},
 			[]*types.DeleteRequestProposal{},
+		)
+	}
+}
+
+// SimulateUpdatePublicPlanProposal generates random public plan proposal content
+func SimulateUpdatePublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.ContentSimulatorFn {
+	return func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) simtypes.Content {
+		simAccount, _ := simtypes.RandomAcc(r, accs)
+
+		account := ak.GetAccount(ctx, simAccount.Address)
+		spendable := bk.SpendableCoins(ctx, account.GetAddress())
+
+		params := k.GetParams(ctx)
+		_, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
+		if hasNeg {
+			return nil
+		}
+
+		poolCoins, err := mintPoolCoins(ctx, r, bk, simAccount)
+		if err != nil {
+			return nil
+		}
+
+		req := &types.UpdateRequestProposal{}
+
+		// TODO: decide which values of fields to randomize
+		plans := k.GetAllPlans(ctx)
+		for _, p := range plans {
+			if p.GetType() == types.PlanTypePublic {
+				startTime := ctx.BlockTime()
+				endTime := startTime.AddDate(0, 1, 0)
+
+				switch plan := p.(type) {
+				case *types.FixedAmountPlan:
+					req.PlanId = plan.GetId()
+					req.Name = plan.GetName()
+					req.FarmingPoolAddress = plan.GetFarmingPoolAddress().String()
+					req.TerminationAddress = plan.GetTerminationAddress().String()
+					req.StakingCoinWeights = plan.GetStakingCoinWeights()
+					req.StartTime = &startTime
+					req.EndTime = &endTime
+					req.EpochAmount = sdk.NewCoins(sdk.NewInt64Coin(poolCoins[r.Intn(3)].Denom, int64(simtypes.RandIntBetween(r, 10_000_000, 1_000_000_000))))
+				case *types.RatioPlan:
+					req.PlanId = plan.GetId()
+					req.Name = plan.GetName()
+					req.FarmingPoolAddress = plan.GetFarmingPoolAddress().String()
+					req.TerminationAddress = plan.GetTerminationAddress().String()
+					req.StakingCoinWeights = plan.GetStakingCoinWeights()
+					req.StartTime = &startTime
+					req.EndTime = &endTime
+					req.EpochRatio = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 10)), 1)
+				}
+				break
+			}
+		}
+
+		if req.PlanId == 0 {
+			return nil
+		}
+
+		updateRequests := []*types.UpdateRequestProposal{req}
+
+		return types.NewPublicPlanProposal(
+			simtypes.RandStringOfLength(r, 10),
+			simtypes.RandStringOfLength(r, 100),
+			[]*types.AddRequestProposal{},
+			updateRequests,
+			[]*types.DeleteRequestProposal{},
+		)
+	}
+}
+
+// SimulateDeletePublicPlanProposal generates random public plan proposal content
+func SimulateDeletePublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.ContentSimulatorFn {
+	return func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) simtypes.Content {
+		simAccount, _ := simtypes.RandomAcc(r, accs)
+
+		account := ak.GetAccount(ctx, simAccount.Address)
+		spendable := bk.SpendableCoins(ctx, account.GetAddress())
+
+		params := k.GetParams(ctx)
+		_, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
+		if hasNeg {
+			return nil
+		}
+
+		req := &types.DeleteRequestProposal{}
+
+		plans := k.GetAllPlans(ctx)
+		for _, p := range plans {
+			if p.GetType() == types.PlanTypePublic {
+				req.PlanId = p.GetId()
+				break
+			}
+		}
+
+		if req.PlanId == 0 {
+			return nil
+		}
+
+		deleteRequest := []*types.DeleteRequestProposal{req}
+
+		return types.NewPublicPlanProposal(
+			simtypes.RandStringOfLength(r, 10),
+			simtypes.RandStringOfLength(r, 100),
+			[]*types.AddRequestProposal{},
+			[]*types.UpdateRequestProposal{},
+			deleteRequest,
 		)
 	}
 }

@@ -1,7 +1,6 @@
 package simulation_test
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -273,10 +272,6 @@ func TestSimulateMsgHarvest(t *testing.T) {
 	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
-	fmt.Println("operationMsg: ", operationMsg)
-	fmt.Println("futureOperations: ", futureOperations)
-	fmt.Println("err: ", err)
-
 	var msg types.MsgHarvest
 	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
@@ -322,77 +317,3 @@ func mustParseRFC3339(s string) time.Time {
 	}
 	return t
 }
-
-//
-// test
-//
-// func TestHarvest(t *testing.T) {
-// 	app, ctx := createTestApp(false)
-
-// 	// setup a single account
-// 	s := rand.NewSource(1)
-// 	r := rand.New(s)
-
-// 	accounts := getTestingAccounts(t, r, app, ctx, 1)
-
-// 	// mint
-// 	var mintCoins sdk.Coins
-// 	for _, denom := range []string{
-// 		"pool93E069B333B5ECEBFE24C6E1437E814003248E0DD7FF8B9F82119F4587449BA5",
-// 	} {
-// 		mintCoins = mintCoins.Add(sdk.NewInt64Coin(denom, int64(simtypes.RandIntBetween(r, 1e14, 1e15))))
-// 	}
-
-// 	err := app.BankKeeper.MintCoins(ctx, types.ModuleName, mintCoins)
-// 	require.NoError(t, err)
-
-// 	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, accounts[0].Address, mintCoins)
-// 	require.NoError(t, err)
-
-// 	// setup epoch days to 1
-// 	params := app.FarmingKeeper.GetParams(ctx)
-// 	params.EpochDays = 1
-// 	app.FarmingKeeper.SetParams(ctx, params)
-
-// 	// setup a fixed amount plan
-// 	msgPlan := &types.MsgCreateFixedAmountPlan{
-// 		Name:    "simulation",
-// 		Creator: accounts[0].Address.String(),
-// 		StakingCoinWeights: sdk.NewDecCoins(
-// 			sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, sdk.NewDecWithPrec(10, 1)), // 100%
-// 		),
-// 		StartTime:   ctx.BlockTime(),
-// 		EndTime:     ctx.BlockTime().AddDate(0, 1, 0),
-// 		EpochAmount: sdk.NewCoins(sdk.NewInt64Coin("pool93E069B333B5ECEBFE24C6E1437E814003248E0DD7FF8B9F82119F4587449BA5", 1)),
-// 	}
-
-//  _, err := app.FarmingKeeper.CreateFixedAmountPlan(
-// 		ctx,
-// 		msgPlan,
-// 		accounts[0].Address,
-// 		accounts[0].Address,
-// 		types.PlanTypePrivate,
-// 	)
-//  require.NoError(t, err)
-
-// 	// staking must exist in order to simulate unstake
-// 	_, err = app.FarmingKeeper.Stake(ctx, accounts[0].Address, sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 100_000_000)))
-// 	require.NoError(t, err)
-
-// 	// increase epoch days and distribute rewards
-// 	app.FarmingKeeper.ProcessQueuedCoins(ctx)
-// 	ctx = ctx.WithBlockTime(ctx.BlockTime().AddDate(0, 0, 5))
-// 	err = app.FarmingKeeper.DistributeRewards(ctx)
-// 	require.NoError(t, err)
-// 	app.FarmingKeeper.SetLastEpochTime(ctx, ctx.BlockTime())
-
-// 	plans := app.FarmingKeeper.GetAllPlans(ctx)
-// 	stakings := app.FarmingKeeper.GetAllStakings(ctx)
-// 	rewards := app.FarmingKeeper.GetAllRewards(ctx)
-// 	fmt.Println("<plan>")
-// 	fmt.Println(plans[0])
-// 	fmt.Println("<staking>")
-// 	fmt.Println(stakings[0])
-// 	fmt.Println("<rewards>")
-// 	fmt.Println(rewards)
-// }
