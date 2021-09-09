@@ -15,31 +15,6 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
-// case bytes.Equal(kvA.Key[:1], types.PlanKeyPrefix):
-// 	var pA, pB types.BasePlan
-// 	cdc.MustUnmarshal(kvA.Value, &pA)
-// 	cdc.MustUnmarshal(kvA.Value, &pB)
-// 	return fmt.Sprintf("%v\n%v", pA, pB)
-
-// case bytes.Equal(kvA.Key[:1], types.PlansByFarmerIndexKeyPrefix),
-// 	bytes.Equal(kvA.Key[:1], types.StakingByFarmerIndexKeyPrefix),
-// 	bytes.Equal(kvA.Key[:1], types.RewardsByFarmerIndexKeyPrefix):
-// 	return fmt.Sprintf("%v\n%v", sdk.AccAddress(kvA.Value), sdk.AccAddress(kvB.Value))
-
-// case bytes.Equal(kvA.Key[:1], types.StakingKeyPrefix):
-// 	var sA, sB types.Staking
-// 	cdc.MustUnmarshal(kvA.Value, &sA)
-// 	cdc.MustUnmarshal(kvA.Value, &sB)
-// 	return fmt.Sprintf("%v\n%v", sA, sB)
-
-// case bytes.Equal(kvA.Key[:1], types.StakingsByStakingCoinDenomIndexKeyPrefix):
-// 	return fmt.Sprintf("%s\n%s", kvA.Value, kvB.Value)
-
-// case bytes.Equal(kvA.Key[:1], types.RewardKeyPrefix):
-// 	var rA, rB types.Reward
-// 	cdc.MustUnmarshal(kvA.Value, &rA)
-// 	return fmt.Sprintf("%v\n%v", rA, rB)
-
 var (
 	pk1         = ed25519.GenPrivKey().PubKey()
 	farmerAddr1 = sdk.AccAddress(pk1.Address())

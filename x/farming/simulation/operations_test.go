@@ -1,6 +1,7 @@
 package simulation_test
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -222,7 +223,7 @@ func TestSimulateMsgHarvest(t *testing.T) {
 
 	accounts := getTestingAccounts(t, r, app, ctx, 1)
 
-	// setup epoch days to 1
+	// setup epoch days to 1 to ease the test
 	params := app.FarmingKeeper.GetParams(ctx)
 	params.EpochDays = 1
 	app.FarmingKeeper.SetParams(ctx, params)
@@ -251,7 +252,7 @@ func TestSimulateMsgHarvest(t *testing.T) {
 	// begin a new block
 	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
 
-	// set staking and the amount must be greater than the randomized value range for unharvest
+	// set staking
 	stakingCoins := sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 100_000_000))
 	_, err = app.FarmingKeeper.Stake(ctx, accounts[0].Address, stakingCoins)
 	require.NoError(t, err)
@@ -271,6 +272,10 @@ func TestSimulateMsgHarvest(t *testing.T) {
 	op := simulation.SimulateMsgHarvest(app.AccountKeeper, app.BankKeeper, app.FarmingKeeper)
 	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
+
+	fmt.Println("operationMsg: ", operationMsg)
+	fmt.Println("futureOperations: ", futureOperations)
+	fmt.Println("err: ", err)
 
 	var msg types.MsgHarvest
 	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)

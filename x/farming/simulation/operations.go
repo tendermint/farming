@@ -106,6 +106,7 @@ func SimulateMsgCreateFixedAmountPlan(ak types.AccountKeeper, bk types.BankKeepe
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "insufficient balance for plan creation fee"), nil, nil
 		}
 
+		// mint pool coins to simulate the real-world cases
 		poolCoins, err := mintPoolCoins(ctx, r, bk, simAccount)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "unable to mint pool coins"), nil, nil
@@ -165,6 +166,7 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateRatioPlan, "insufficient balance for plan creation fee"), nil, nil
 		}
 
+		// mint pool coins to simulate the real-world cases
 		_, err := mintPoolCoins(ctx, r, bk, simAccount)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "unable to mint pool coins"), nil, nil
@@ -205,7 +207,7 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 	}
 }
 
-// SimulateMsgStake generates a MsgCreateFixedAmountPlan with random values
+// SimulateMsgStake generates a MsgStake with random values
 // nolint: interfacer
 func SimulateMsgStake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(
@@ -264,7 +266,7 @@ func SimulateMsgUnstake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 			sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simtypes.RandIntBetween(r, 1_000_000, 100_000_000))),
 		)
 
-		// staking must exist in order to unharvest
+		// staking must exist in order to unstake
 		staking, found := k.GetStakingByFarmer(ctx, farmer)
 		if !found {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "unable to find staking"), nil, nil
@@ -307,15 +309,22 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		//
 		// TODO: not fully implemented yet. It needs debugging why
 		// there are no rewards although it processes queued coins and distribute rewards
-		stakings := k.GetAllStakings(ctx)
-		if len(stakings) == 0 {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "unable to find any staking"), nil, nil
-		}
+		//
 
 		var simAccount simtypes.Account
-		simAccount.Address = stakings[r.Intn(len(stakings))].GetFarmer()
+
+		// find staking from the simulated accounts
+		var ranStaking types.Staking
+		for _, acc := range accs {
+			if staking, found := k.GetStakingByFarmer(ctx, acc.Address); found {
+				simAccount = acc
+				ranStaking = staking
+				break
+			}
+		}
 
 		// process queued coins and distribute rewards relative to the current epoch days
 		params := k.GetParams(ctx)
@@ -336,7 +345,7 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		account := ak.GetAccount(ctx, simAccount.Address)
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
-		msg := types.NewMsgHarvest(simAccount.Address, []string{sdk.DefaultBondDenom})
+		msg := types.NewMsgHarvest(simAccount.Address, ranStaking.StakingCoinDenoms())
 
 		txCtx := simulation.OperationInput{
 			R:               r,

@@ -19,8 +19,8 @@ func TestParamChanges(t *testing.T) {
 		simValue    string
 		subspace    string
 	}{
-		{"farming/PrivatePlanCreationFee", "PrivatePlanCreationFee", "[{\"denom\":\"stake\",\"amount\":\"298498081\"}]", "farming"},
-		{"farming/StakingCreationFee", "StakingCreationFee", "[{\"denom\":\"stake\",\"amount\":\"427131847\"}]", "farming"},
+		{"farming/PrivatePlanCreationFee", "PrivatePlanCreationFee", "[{\"denom\":\"stake\",\"amount\":\"98498081\"}]", "farming"},
+		{"farming/StakingCreationFee", "StakingCreationFee", "[{\"denom\":\"stake\",\"amount\":\"19727887\"}]", "farming"},
 		{"farming/EpochDays", "EpochDays", "3", "farming"},
 		{"farming/FarmingFeeCollector", "FarmingFeeCollector", "\"cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x\"", "farming"},
 	}
