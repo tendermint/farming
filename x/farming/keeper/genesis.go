@@ -9,6 +9,7 @@ import (
 // InitGenesis initializes the farming module's state from a given genesis state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	ctx, applyCache := ctx.CacheContext()
+
 	k.SetParams(ctx, genState.Params)
 	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
@@ -26,31 +27,35 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		k.SetPlan(ctx, plan)
 		k.SetGlobalPlanId(ctx, plan.GetId())
 	}
+
 	for _, staking := range genState.Stakings {
 		k.SetStaking(ctx, staking)
 		k.SetStakingIndex(ctx, staking)
 	}
+
 	for _, reward := range genState.Rewards {
 		k.SetReward(ctx, reward.StakingCoinDenom, reward.GetFarmer(), reward.RewardCoins)
 	}
+
 	if err := k.ValidateRemainingRewardsAmount(ctx); err != nil {
 		panic(err)
 	}
+
 	if err := k.ValidateStakingReservedAmount(ctx); err != nil {
 		panic(err)
 	}
+
 	applyCache()
 }
 
 // ExportGenesis returns the farming module's genesis state.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	params := k.GetParams(ctx)
-	var planRecords []types.PlanRecord
-
 	plans := k.GetAllPlans(ctx)
 	stakings := k.GetAllStakings(ctx)
 	rewards := k.GetAllRewards(ctx)
 
+	var planRecords []types.PlanRecord
 	for _, plan := range plans {
 		any, err := types.PackPlan(plan)
 		if err != nil {
@@ -63,5 +68,14 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	}
 
 	epochTime, _ := k.GetLastEpochTime(ctx)
-	return types.NewGenesisState(params, planRecords, stakings, rewards, k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc), k.bankKeeper.GetAllBalances(ctx, types.RewardsReserveAcc), epochTime)
+
+	return types.NewGenesisState(
+		params,
+		planRecords,
+		stakings,
+		rewards,
+		k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc),
+		k.bankKeeper.GetAllBalances(ctx, types.RewardsReserveAcc),
+		epochTime,
+	)
 }
