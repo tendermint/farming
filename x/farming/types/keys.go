@@ -21,9 +21,11 @@ const (
 	QuerierRoute = ModuleName
 )
 
+// keys for farming store prefixes
 var (
-	GlobalPlanIdKey        = []byte("globalPlanId")
-	GlobalLastEpochTimeKey = []byte("globalLastEpochTime")
+	GlobalPlanIdKey           = []byte("globalPlanId")
+	GlobalLastEpochTimeKey    = []byte("globalLastEpochTime")
+	GlobalCurrentEpochDaysKey = []byte("globalCurrentEpochDays")
 
 	PlanKeyPrefix               = []byte{0x11}
 	PlansByFarmerIndexKeyPrefix = []byte{0x12}
