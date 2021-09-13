@@ -26,7 +26,7 @@ func (suite *KeeperTestSuite) TestFirstEpoch() {
 	// than epoch_days parameter on the first epoch.
 
 	params := suite.keeper.GetParams(suite.ctx)
-	suite.Require().Equal(uint32(1), params.EpochDays)
+	suite.Require().Equal(uint32(1), params.NextEpochDays)
 
 	suite.ctx = suite.ctx.WithBlockTime(mustParseRFC3339("2021-08-11T23:59:59Z"))
 	farming.EndBlocker(suite.ctx, suite.keeper)
@@ -45,7 +45,7 @@ func (suite *KeeperTestSuite) TestEpochDays() {
 			suite.SetupTest()
 
 			params := suite.keeper.GetParams(suite.ctx)
-			params.EpochDays = epochDays
+			params.NextEpochDays = epochDays
 			suite.keeper.SetParams(suite.ctx, params)
 
 			t := mustParseRFC3339("2021-08-11T00:00:00Z")

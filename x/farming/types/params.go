@@ -13,11 +13,11 @@ import (
 // Parameter store keys
 var (
 	KeyPrivatePlanCreationFee = []byte("PrivatePlanCreationFee")
-	KeyEpochDays              = []byte("EpochDays")
+	KeyNextEpochDays          = []byte("NextEpochDays")
 	KeyFarmingFeeCollector    = []byte("FarmingFeeCollector")
 
 	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000_000)))
-	DefaultEpochDays              = uint32(1)
+	DefaultNextEpochDays          = uint32(1)
 	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
 	StakingReserveAcc             = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
 	RewardsReserveAcc             = sdk.AccAddress(address.Module(ModuleName, []byte("RewardsReserveAcc")))
@@ -34,7 +34,7 @@ func ParamKeyTable() paramstypes.KeyTable {
 func DefaultParams() Params {
 	return Params{
 		PrivatePlanCreationFee: DefaultPrivatePlanCreationFee,
-		EpochDays:              DefaultEpochDays,
+		NextEpochDays:          DefaultNextEpochDays,
 		FarmingFeeCollector:    DefaultFarmingFeeCollector,
 	}
 }
@@ -43,7 +43,7 @@ func DefaultParams() Params {
 func (p *Params) ParamSetPairs() paramstypes.ParamSetPairs {
 	return paramstypes.ParamSetPairs{
 		paramstypes.NewParamSetPair(KeyPrivatePlanCreationFee, &p.PrivatePlanCreationFee, validatePrivatePlanCreationFee),
-		paramstypes.NewParamSetPair(KeyEpochDays, &p.EpochDays, validateEpochDays),
+		paramstypes.NewParamSetPair(KeyNextEpochDays, &p.NextEpochDays, validateEpochDays),
 		paramstypes.NewParamSetPair(KeyFarmingFeeCollector, &p.FarmingFeeCollector, validateFarmingFeeCollector),
 	}
 }
@@ -61,7 +61,7 @@ func (p Params) Validate() error {
 		validator func(interface{}) error
 	}{
 		{p.PrivatePlanCreationFee, validatePrivatePlanCreationFee},
-		{p.EpochDays, validateEpochDays},
+		{p.NextEpochDays, validateEpochDays},
 		{p.FarmingFeeCollector, validateFarmingFeeCollector},
 	} {
 		if err := v.validator(v.value); err != nil {

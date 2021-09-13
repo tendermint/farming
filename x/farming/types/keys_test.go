@@ -137,9 +137,9 @@ func (s *keysTestSuite) TestGetStakingIndexKey() {
 		key := types.GetStakingIndexKey(tc.farmerAcc, tc.stakingCoinDenom)
 		s.Require().Equal(tc.expected, key)
 
-		stakingCoinDenom, farmerAcc := types.ParseStakingIndexKey(key)
-		s.Require().Equal(tc.stakingCoinDenom, stakingCoinDenom)
+		farmerAcc, stakingCoinDenom := types.ParseStakingIndexKey(key)
 		s.Require().Equal(tc.farmerAcc, farmerAcc)
+		s.Require().Equal(tc.stakingCoinDenom, stakingCoinDenom)
 	}
 }
 
