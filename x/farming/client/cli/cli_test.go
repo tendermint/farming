@@ -121,8 +121,8 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 	case5 := cli.PrivateFixedPlanRequest{
 		Name:               name,
 		StakingCoinWeights: coinWeights,
-		StartTime:          mustParseRFC3339("0001-01-01T00:00:00Z"),
-		EndTime:            mustParseRFC3339("9999-01-01T00:00:00Z"),
+		StartTime:          mustParseRFC3339("2021-08-13T00:00:00Z"),
+		EndTime:            mustParseRFC3339("2021-08-06T00:00:00Z"),
 		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 100_000_000)),
 	}
 
@@ -510,6 +510,8 @@ func (s *IntegrationTestSuite) TestNewUnstakeCmd() {
 				s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), tc.respType), out.String())
 
 				txResp := tc.respType.(*sdk.TxResponse)
+				fmt.Println(txResp)
+				fmt.Println(out.String())
 				s.Require().Equal(tc.expectedCode, txResp.Code, out.String())
 			}
 		})
