@@ -8,7 +8,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/simapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 
 	"github.com/tendermint/farming/x/farming/simulation"
@@ -17,7 +16,6 @@ import (
 
 var (
 	pk1         = ed25519.GenPrivKey().PubKey()
-	farmerAddr1 = sdk.AccAddress(pk1.Address())
 )
 
 func TestDecodeFarmingStore(t *testing.T) {

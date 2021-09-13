@@ -190,7 +190,8 @@ func TestSimulateMsgUnstake(t *testing.T) {
 
 	// begin a new block
 	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
-	app.FarmingKeeper.AdvanceEpoch(ctx)
+	err = app.FarmingKeeper.AdvanceEpoch(ctx)
+	require.NoError(t, err)
 
 	// execute operation
 	op := simulation.SimulateMsgUnstake(app.AccountKeeper, app.BankKeeper, app.FarmingKeeper)
@@ -259,7 +260,8 @@ func TestSimulateMsgHarvest(t *testing.T) {
 
 	// begin a new block
 	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
-	app.FarmingKeeper.AdvanceEpoch(ctx)
+	err = app.FarmingKeeper.AdvanceEpoch(ctx)
+	require.NoError(t, err)
 
 	// check that queue coins are moved to staked coins
 	staking, found := app.FarmingKeeper.GetStaking(ctx, sdk.DefaultBondDenom, accounts[0].Address)
@@ -270,7 +272,8 @@ func TestSimulateMsgHarvest(t *testing.T) {
 
 	// begin a new block
 	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
-	app.FarmingKeeper.AdvanceEpoch(ctx)
+	err = app.FarmingKeeper.AdvanceEpoch(ctx)
+	require.NoError(t, err)
 
 	// execute operation
 	op := simulation.SimulateMsgHarvest(app.AccountKeeper, app.BankKeeper, app.FarmingKeeper)
