@@ -222,9 +222,11 @@ func SimulateMsgStake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keep
 		stakingCoins := sdk.NewCoins(
 			sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simtypes.RandIntBetween(r, 1_000_000, 1_000_000_000))),
 		)
+		if !spendable.IsAllGTE(stakingCoins) {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "insufficient funds"), nil, nil
+		}
 
 		msg := types.NewMsgStake(farmer, stakingCoins)
-
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,

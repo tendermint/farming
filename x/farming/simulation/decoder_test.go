@@ -6,16 +6,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 
 	"github.com/tendermint/farming/x/farming/simulation"
 	"github.com/tendermint/farming/x/farming/types"
-)
-
-var (
-	pk1         = ed25519.GenPrivKey().PubKey()
 )
 
 func TestDecodeFarmingStore(t *testing.T) {
