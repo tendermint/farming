@@ -223,12 +223,6 @@ func SimulateMsgStake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keep
 			sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simtypes.RandIntBetween(r, 1_000_000, 1_000_000_000))),
 		)
 
-		params := k.GetParams(ctx)
-		_, hasNeg := spendable.SafeSub(stakingCoins.Add(params.StakingCreationFee...))
-		if hasNeg {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgStake, "insufficient balance for staking creation fee"), nil, nil
-		}
-
 		msg := types.NewMsgStake(farmer, stakingCoins)
 
 		txCtx := simulation.OperationInput{
@@ -267,13 +261,25 @@ func SimulateMsgUnstake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		)
 
 		// staking must exist in order to unstake
-		staking, found := k.GetStakingByFarmer(ctx, farmer)
-		if !found {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "unable to find staking"), nil, nil
+		staking, sf := k.GetStaking(ctx, sdk.DefaultBondDenom, farmer)
+		if !sf {
+			staking = types.Staking{
+				Amount: sdk.ZeroInt(),
+			}
 		}
-
+		queuedStaking, qsf := k.GetQueuedStaking(ctx, sdk.DefaultBondDenom, farmer)
+		if !qsf {
+			if !qsf {
+				queuedStaking = types.QueuedStaking{
+					Amount: sdk.ZeroInt(),
+				}
+			}
+		}
+		if !sf && !qsf {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "unable to find staking and queued staking"), nil, nil
+		}
 		// sum of staked and queued coins must be greater than unstaking coins
-		if !staking.StakedCoins.Add(staking.QueuedCoins...).IsAllGTE(unstakingCoins) {
+		if !staking.Amount.Add(queuedStaking.Amount).GTE(unstakingCoins[0].Amount) {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnstake, "insufficient funds"), nil, nil
 		}
 
@@ -283,7 +289,6 @@ func SimulateMsgUnstake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		}
 
 		msg := types.NewMsgUnstake(farmer, unstakingCoins)
-
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
@@ -298,7 +303,6 @@ func SimulateMsgUnstake(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 			ModuleName:      types.ModuleName,
 			CoinsSpentInMsg: spendable,
 		}
-
 		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
@@ -317,35 +321,38 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		var simAccount simtypes.Account
 
 		// find staking from the simulated accounts
-		var ranStaking types.Staking
+		var ranStaking sdk.Coins
 		for _, acc := range accs {
-			if staking, found := k.GetStakingByFarmer(ctx, acc.Address); found {
+			staking := k.GetAllStakingsByFarmer(ctx, acc.Address)
+			if !staking.IsZero() {
 				simAccount = acc
 				ranStaking = staking
 				break
 			}
 		}
 
-		// process queued coins and distribute rewards relative to the current epoch days
-		params := k.GetParams(ctx)
-		k.ProcessQueuedCoins(ctx)
-		ctx = ctx.WithBlockTime(ctx.BlockTime().AddDate(0, 0, int(params.EpochDays)))
-		for i := 0; i < int(params.EpochDays); i++ {
-			if err := k.DistributeRewards(ctx); err != nil {
-				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "unable to distribute rewards"), nil, nil
-			}
+		var stakingCoinDenoms []string
+		for _, coin := range ranStaking {
+			stakingCoinDenoms = append(stakingCoinDenoms, coin.Denom)
 		}
-		k.SetLastEpochTime(ctx, ctx.BlockTime())
 
-		rewards := k.GetRewardsByFarmer(ctx, simAccount.Address)
-		if len(rewards) == 0 {
+		var totalRewards sdk.Coins
+		for _, denom := range stakingCoinDenoms {
+			rewards, err := k.WithdrawRewards(ctx, simAccount.Address, denom)
+			if err != nil {
+				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "unable to withdraw rewards"), nil, nil
+			}
+			totalRewards = totalRewards.Add(rewards...)
+		}
+
+		if totalRewards.IsZero() {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "no rewards to harvest"), nil, nil
 		}
 
 		account := ak.GetAccount(ctx, simAccount.Address)
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
-		msg := types.NewMsgHarvest(simAccount.Address, ranStaking.StakingCoinDenoms())
+		msg := types.NewMsgHarvest(simAccount.Address, stakingCoinDenoms)
 
 		txCtx := simulation.OperationInput{
 			R:               r,

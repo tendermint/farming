@@ -25,15 +25,6 @@ func ParamChanges(r *rand.Rand) []simtypes.ParamChange {
 				return string(bz)
 			},
 		),
-		simulation.NewSimParamChange(types.ModuleName, string(types.KeyStakingCreationFee),
-			func(r *rand.Rand) string {
-				bz, err := GenPrivatePlanCreationFee(r).MarshalJSON()
-				if err != nil {
-					panic(err)
-				}
-				return string(bz)
-			},
-		),
 		simulation.NewSimParamChange(types.ModuleName, string(types.KeyEpochDays),
 			func(r *rand.Rand) string {
 				return fmt.Sprintf("%d", GenEpochDays(r))

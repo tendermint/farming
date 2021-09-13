@@ -26,16 +26,14 @@ func TestDecodeFarmingStore(t *testing.T) {
 
 	basePlan := types.BasePlan{}
 	staking := types.Staking{}
-	reward := types.Reward{}
+	queuedStaking := types.QueuedStaking{}
 
 	kvPairs := kv.Pairs{
 		Pairs: []kv.Pair{
 			{Key: types.PlanKeyPrefix, Value: cdc.MustMarshal(&basePlan)},
 			{Key: types.StakingKeyPrefix, Value: cdc.MustMarshal(&staking)},
-			{Key: types.RewardKeyPrefix, Value: cdc.MustMarshal(&reward)},
-			{Key: types.PlansByFarmerIndexKeyPrefix, Value: farmerAddr1.Bytes()},
-			{Key: types.StakingByFarmerIndexKeyPrefix, Value: farmerAddr1.Bytes()},
-			{Key: types.RewardsByFarmerIndexKeyPrefix, Value: farmerAddr1.Bytes()},
+			{Key: types.QueuedStakingKeyPrefix, Value: cdc.MustMarshal(&queuedStaking)},
+			// TODO: f1 structs, indexes
 			{Key: []byte{0x99}, Value: []byte{0x99}},
 		},
 	}
@@ -46,10 +44,7 @@ func TestDecodeFarmingStore(t *testing.T) {
 	}{
 		{"Plan", fmt.Sprintf("%v\n%v", basePlan, basePlan)},
 		{"Staking", fmt.Sprintf("%v\n%v", staking, staking)},
-		{"Reward", fmt.Sprintf("%v\n%v", reward, reward)},
-		{"PlansByFarmerIndex", fmt.Sprintf("%v\n%v", farmerAddr1, farmerAddr1)},
-		{"StakingByFarmerIndex", fmt.Sprintf("%v\n%v", farmerAddr1, farmerAddr1)},
-		{"RewardsByFarmerIndex", fmt.Sprintf("%v\n%v", farmerAddr1, farmerAddr1)},
+		{"QueuedStaking", fmt.Sprintf("%v\n%v", queuedStaking, queuedStaking)},
 		{"other", ""},
 	}
 	for i, tt := range tests {

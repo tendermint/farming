@@ -146,9 +146,7 @@ func TestSimulateMsgStake(t *testing.T) {
 	accounts := getTestingAccounts(t, r, app, ctx, 1)
 
 	// setup randomly generated staking creation fees
-	feeCoins := simulation.GenStakingCreationFee(r)
 	params := app.FarmingKeeper.GetParams(ctx)
-	params.StakingCreationFee = feeCoins
 	app.FarmingKeeper.SetParams(ctx, params)
 
 	// begin a new block
@@ -166,7 +164,7 @@ func TestSimulateMsgStake(t *testing.T) {
 	require.True(t, operationMsg.OK)
 	require.Equal(t, types.TypeMsgStake, msg.Type())
 	require.Equal(t, "cosmos1tnh2q55v8wyygtt9srz5safamzdengsnqeycj3", msg.Farmer)
-	require.Equal(t, "476941318stake", msg.StakingCoins.String())
+	require.Equal(t, "912902081stake", msg.StakingCoins.String())
 	require.Len(t, futureOperations, 0)
 }
 
@@ -182,18 +180,17 @@ func TestSimulateMsgUnstake(t *testing.T) {
 	accounts := getTestingAccounts(t, r, app, ctx, 1)
 
 	// setup randomly generated staking creation fees
-	feeCoins := simulation.GenStakingCreationFee(r)
 	params := app.FarmingKeeper.GetParams(ctx)
-	params.StakingCreationFee = feeCoins
 	app.FarmingKeeper.SetParams(ctx, params)
 
 	// staking must exist in order to simulate unstake
 	stakingCoins := sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 100_000_000))
-	_, err := app.FarmingKeeper.Stake(ctx, accounts[0].Address, stakingCoins)
+	err := app.FarmingKeeper.Stake(ctx, accounts[0].Address, stakingCoins)
 	require.NoError(t, err)
 
 	// begin a new block
 	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
+	app.FarmingKeeper.AdvanceEpoch(ctx)
 
 	// execute operation
 	op := simulation.SimulateMsgUnstake(app.AccountKeeper, app.BankKeeper, app.FarmingKeeper)
@@ -207,7 +204,7 @@ func TestSimulateMsgUnstake(t *testing.T) {
 	require.True(t, operationMsg.OK)
 	require.Equal(t, types.TypeMsgUnstake, msg.Type())
 	require.Equal(t, "cosmos1tnh2q55v8wyygtt9srz5safamzdengsnqeycj3", msg.Farmer)
-	require.Equal(t, "89941318stake", msg.UnstakingCoins.String())
+	require.Equal(t, "21902081stake", msg.UnstakingCoins.String())
 	require.Len(t, futureOperations, 0)
 }
 
@@ -234,8 +231,8 @@ func TestSimulateMsgHarvest(t *testing.T) {
 		StakingCoinWeights: sdk.NewDecCoins(
 			sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, sdk.NewDecWithPrec(10, 1)), // 100%
 		),
-		StartTime:   mustParseRFC3339("2021-08-01T00:00:00Z"),
-		EndTime:     mustParseRFC3339("2021-08-31T00:00:00Z"),
+		StartTime:   mustParseRFC3339("0001-01-01T00:00:00Z"),
+		EndTime:     mustParseRFC3339("9999-01-01T00:00:00Z"),
 		EpochAmount: sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 200_000_000)),
 	}
 
@@ -253,19 +250,27 @@ func TestSimulateMsgHarvest(t *testing.T) {
 
 	// set staking
 	stakingCoins := sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 100_000_000))
-	_, err = app.FarmingKeeper.Stake(ctx, accounts[0].Address, stakingCoins)
+	err = app.FarmingKeeper.Stake(ctx, accounts[0].Address, stakingCoins)
 	require.NoError(t, err)
 
-	app.FarmingKeeper.ProcessQueuedCoins(ctx)
-	ctx = ctx.WithBlockTime(mustParseRFC3339("2021-08-20T00:00:00Z"))
-	err = app.FarmingKeeper.DistributeRewards(ctx)
-	require.NoError(t, err)
+	queuedStaking, found := app.FarmingKeeper.GetQueuedStaking(ctx, sdk.DefaultBondDenom, accounts[0].Address)
+	require.Equal(t, true, found)
+	require.Equal(t, true, queuedStaking.Amount.IsPositive())
+
+	// begin a new block
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
+	app.FarmingKeeper.AdvanceEpoch(ctx)
 
 	// check that queue coins are moved to staked coins
-	staking, found := app.FarmingKeeper.GetStaking(ctx, uint64(1))
+	staking, found := app.FarmingKeeper.GetStaking(ctx, sdk.DefaultBondDenom, accounts[0].Address)
 	require.Equal(t, true, found)
-	require.Equal(t, true, staking.QueuedCoins.IsZero())
-	require.Equal(t, true, staking.StakedCoins.IsAllPositive())
+	require.Equal(t, true, staking.Amount.IsPositive())
+	queuedStaking, found = app.FarmingKeeper.GetQueuedStaking(ctx, sdk.DefaultBondDenom, accounts[0].Address)
+	require.Equal(t, false, found)
+
+	// begin a new block
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1, AppHash: app.LastCommitID().Hash}})
+	app.FarmingKeeper.AdvanceEpoch(ctx)
 
 	// execute operation
 	op := simulation.SimulateMsgHarvest(app.AccountKeeper, app.BankKeeper, app.FarmingKeeper)

@@ -17,18 +17,12 @@ import (
 // Simulation parameter constants.
 const (
 	PrivatePlanCreationFee = "private_plan_creation_fee"
-	StakingCreationFee     = "staking_creation_fee"
 	EpochDays              = "epoch_days"
 	FarmingFeeCollector    = "farming_fee_collector"
 )
 
 // GenPrivatePlanCreationFee return randomized private plan creation fee.
 func GenPrivatePlanCreationFee(r *rand.Rand) sdk.Coins {
-	return sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simulation.RandIntBetween(r, 0, 100_000_000))))
-}
-
-// GenStakingCreationFee return randomized staking creation fee.
-func GenStakingCreationFee(r *rand.Rand) sdk.Coins {
 	return sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, int64(simulation.RandIntBetween(r, 0, 100_000_000))))
 }
 
@@ -48,12 +42,6 @@ func RandomizedGenState(simState *module.SimulationState) {
 	simState.AppParams.GetOrGenerate(
 		simState.Cdc, PrivatePlanCreationFee, &privatePlanCreationFee, simState.Rand,
 		func(r *rand.Rand) { privatePlanCreationFee = GenPrivatePlanCreationFee(r) },
-	)
-
-	var stakingCreationFee sdk.Coins
-	simState.AppParams.GetOrGenerate(
-		simState.Cdc, StakingCreationFee, &stakingCreationFee, simState.Rand,
-		func(r *rand.Rand) { stakingCreationFee = GenStakingCreationFee(r) },
 	)
 
 	var epochDays uint32

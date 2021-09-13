@@ -60,6 +60,15 @@ func (k Keeper) IterateStakingsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddres
 	}
 }
 
+func (k Keeper) GetAllStakingsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
+	stakedCoins := sdk.NewCoins()
+	k.IterateStakingsByFarmer(ctx, farmerAcc, func(stakingCoinDenom string, staking types.Staking) (stop bool) {
+		stakedCoins = stakedCoins.Add(sdk.NewCoin(stakingCoinDenom, staking.Amount))
+		return false
+	})
+	return stakedCoins
+}
+
 func (k Keeper) GetQueuedStaking(ctx sdk.Context, stakingCoinDenom string, farmerAcc sdk.AccAddress) (queuedStaking types.QueuedStaking, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetQueuedStakingKey(stakingCoinDenom, farmerAcc))
@@ -69,6 +78,15 @@ func (k Keeper) GetQueuedStaking(ctx sdk.Context, stakingCoinDenom string, farme
 	k.cdc.MustUnmarshal(bz, &queuedStaking)
 	found = true
 	return
+}
+
+func (k Keeper) GetAllQueuedStakingsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
+	stakedCoins := sdk.NewCoins()
+	k.IterateQueuedStakingsByFarmer(ctx, farmerAcc, func(stakingCoinDenom string, queuedStaking types.QueuedStaking) (stop bool) {
+		stakedCoins = stakedCoins.Add(sdk.NewCoin(stakingCoinDenom, queuedStaking.Amount))
+		return false
+	})
+	return stakedCoins
 }
 
 func (k Keeper) SetQueuedStaking(ctx sdk.Context, stakingCoinDenom string, farmerAcc sdk.AccAddress, queuedStaking types.QueuedStaking) {

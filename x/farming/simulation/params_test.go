@@ -20,13 +20,12 @@ func TestParamChanges(t *testing.T) {
 		subspace    string
 	}{
 		{"farming/PrivatePlanCreationFee", "PrivatePlanCreationFee", "[{\"denom\":\"stake\",\"amount\":\"98498081\"}]", "farming"},
-		{"farming/StakingCreationFee", "StakingCreationFee", "[{\"denom\":\"stake\",\"amount\":\"19727887\"}]", "farming"},
-		{"farming/EpochDays", "EpochDays", "3", "farming"},
+		{"farming/EpochDays", "EpochDays", "7", "farming"},
 		{"farming/FarmingFeeCollector", "FarmingFeeCollector", "\"cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x\"", "farming"},
 	}
 
 	paramChanges := simulation.ParamChanges(r)
-	require.Len(t, paramChanges, 4)
+	require.Len(t, paramChanges, 3)
 
 	for i, p := range paramChanges {
 		require.Equal(t, expected[i].composedKey, p.ComposedKey())
