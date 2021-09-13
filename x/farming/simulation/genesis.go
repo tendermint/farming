@@ -71,7 +71,6 @@ func RandomizedGenState(simState *module.SimulationState) {
 	farmingGenesis := types.GenesisState{
 		Params: types.Params{
 			PrivatePlanCreationFee: privatePlanCreationFee,
-			StakingCreationFee:     stakingCreationFee,
 			EpochDays:              epochDays,
 			FarmingFeeCollector:    feeCollector,
 		},
