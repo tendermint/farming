@@ -80,5 +80,4 @@ func TestProposalContents(t *testing.T) {
 	require.Equal(t, "MBcObErwgTDNGWnwQMUgFFSKtPDMEoEQCTKVREqrXZSGLqwTMcxHfWotDllNkIJPMbXzjDVjPOOjCFuIvTyhXKLyhUScOXvYthRX", content2.GetDescription())
 	require.Equal(t, "farming", content2.ProposalRoute())
 	require.Equal(t, "PublicPlan", content2.ProposalType())
-
 }

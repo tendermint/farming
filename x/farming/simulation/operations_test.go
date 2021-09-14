@@ -222,7 +222,7 @@ func TestSimulateMsgHarvest(t *testing.T) {
 
 	// setup epoch days to 1 to ease the test
 	params := app.FarmingKeeper.GetParams(ctx)
-	params.EpochDays = 1
+	params.NextEpochDays = 1
 	app.FarmingKeeper.SetParams(ctx, params)
 
 	// setup a fixed amount plan
