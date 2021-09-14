@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	fmt "fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -328,8 +327,4 @@ func (s *keysTestSuite) TestLengthPrefix() {
 		s.Require().Equal(tc.length, int(bz[0]))
 		s.Require().Equal(tc.expected, bz)
 	}
-
-	t1 := sdk.AccAddress(crypto.AddressHash([]byte("farmer2")))
-	fmt.Println("t1: ", t1)
-	fmt.Println("len: ", len(t1))
 }
