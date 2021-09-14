@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/tendermint/farming/x/farming"
+
+	_ "github.com/stretchr/testify/suite"
 )
 
 func (suite *KeeperTestSuite) TestLastEpochTime() {

@@ -21,18 +21,23 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 	}
 
-	params := k.GetParams(ctx)
+	currentEpochDays := k.GetGlobalCurrentEpochDays(ctx)
 
 	lastEpochTime, found := k.GetLastEpochTime(ctx)
 	if !found {
 		k.SetLastEpochTime(ctx, ctx.BlockTime())
 	} else {
-		y, m, d := lastEpochTime.AddDate(0, 0, int(params.NextEpochDays)).Date()
+		y, m, d := lastEpochTime.AddDate(0, 0, int(currentEpochDays)).Date()
 		y2, m2, d2 := ctx.BlockTime().Date()
 		if y == y2 && m == m2 && d == d2 {
 			if err := k.AdvanceEpoch(ctx); err != nil {
 				panic(err)
 			}
 		}
+	}
+
+	params := k.GetParams(ctx)
+	if params.NextEpochDays != currentEpochDays {
+		k.SetGlobalCurrentEpochDays(ctx, params.NextEpochDays)
 	}
 }

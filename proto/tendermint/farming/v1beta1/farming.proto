@@ -22,8 +22,9 @@ message Params {
     (gogoproto.nullable)     = false
   ];
 
-  // The universal epoch length in number of days. Every process for staking and
-  // reward distribution is executed with this next_epoch_days frequency
+  // next_epoch_days is the epoch length in number of days
+  // it updates internal parameter called GlobalCurrentEpochDays that is used to process
+  // staking and reward distribution in end blocker
   uint32 next_epoch_days = 2 [(gogoproto.moretags) = "yaml:\"next_epoch_days\""];
 
   // farming_fee_collector is the module account address to collect fees within the farming module
