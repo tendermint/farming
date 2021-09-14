@@ -140,26 +140,97 @@ func TestMsgStake(t *testing.T) {
 }
 
 func TestMsgUnstake(t *testing.T) {
-	// app, ctx, addrs := createTestInput()
+	app, ctx, addrs := createTestInput()
 
-	// err := app.FarmingKeeper.Stake(ctx, addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 10_000_000)))
-	// require.NoError(t, err)
+	// stake some amount
+	err := app.FarmingKeeper.Stake(ctx, addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 10_000_000)))
+	require.NoError(t, err)
 
-	// _, found := app.FarmingKeeper.GetQueuedStaking(ctx, denom1, addrs[0])
-	// require.Equal(t, true, found)
+	_, found := app.FarmingKeeper.GetQueuedStaking(ctx, denom1, addrs[0])
+	require.Equal(t, true, found)
 
-	// msg := types.NewMsgUnstake(
-	// 	addrs[0],
-	// 	sdk.NewCoins(sdk.NewInt64Coin(denom1, 5_000_000)),
-	// )
+	// check balance before unstake
+	balanceBefore := app.BankKeeper.GetBalance(ctx, addrs[0], denom1)
+	require.Equal(t, sdk.NewInt(990_000_000), balanceBefore.Amount)
 
-	// handler := farming.NewHandler(app.FarmingKeeper)
-	// _, err = handler(ctx, msg)
-	// require.NoError(t, err)
+	msg := types.NewMsgUnstake(
+		addrs[0],
+		sdk.NewCoins(sdk.NewInt64Coin(denom1, 5_000_000)),
+	)
+
+	handler := farming.NewHandler(app.FarmingKeeper)
+	_, err = handler(ctx, msg)
+	require.NoError(t, err)
+
+	// check balance after unstake
+	balanceAfter := app.BankKeeper.GetBalance(ctx, addrs[0], denom1)
+	require.Equal(t, sdk.NewInt(995_000_000), balanceAfter.Amount)
 }
 
 func TestMsgHarvest(t *testing.T) {
-	// TODO: not implemented yet
+	app, ctx, addrs := createTestInput()
+	creator := addrs[0] // use addrs[0] to create a fixed amount plan
+	staker := addrs[1]  // use addrs[1] to stake some amount with staking coin denom
+
+	planMsg := types.NewMsgCreateFixedAmountPlan(
+		"handler-test",
+		creator,
+		sdk.NewDecCoins(
+			sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(10, 1)), // 100%
+		),
+		mustParseRFC3339("2021-08-02T00:00:00Z"),
+		mustParseRFC3339("2021-08-10T00:00:00Z"),
+		sdk.NewCoins(sdk.NewInt64Coin(denom3, 77_000_000)),
+	)
+
+	// create a fixed amount plan
+	plan, err := app.FarmingKeeper.CreateFixedAmountPlan(
+		ctx,
+		planMsg,
+		creator,
+		creator,
+		types.PlanTypePrivate,
+	)
+	require.NoError(t, err)
+
+	_, found := app.FarmingKeeper.GetPlan(ctx, plan.GetId())
+	require.Equal(t, true, found)
+
+	// stake some amount
+	err = app.FarmingKeeper.Stake(
+		ctx,
+		staker,
+		sdk.NewCoins(sdk.NewInt64Coin(denom1, 10_000_000)),
+	)
+	require.NoError(t, err)
+
+	_, found = app.FarmingKeeper.GetQueuedStaking(ctx, denom1, staker)
+	require.Equal(t, true, found)
+
+	// move queued coins into staked coins
+	app.FarmingKeeper.ProcessQueuedCoins(ctx)
+
+	_, found = app.FarmingKeeper.GetStaking(ctx, denom1, staker)
+	require.Equal(t, true, found)
+
+	// check balances before unstake
+	balanceBefore := app.BankKeeper.GetBalance(ctx, staker, denom3)
+	require.Equal(t, sdk.NewInt(1_000_000_000), balanceBefore.Amount)
+
+	// allocate rewards
+	ctx = ctx.WithBlockTime(mustParseRFC3339("2021-08-05T00:00:00Z"))
+	err = app.FarmingKeeper.AllocateRewards(ctx)
+	require.NoError(t, err)
+
+	// harvest
+	msg := types.NewMsgHarvest(staker, []string{denom1})
+	handler := farming.NewHandler(app.FarmingKeeper)
+	_, err = handler(ctx, msg)
+	require.NoError(t, err)
+
+	// check balances after unstake
+	balanceAfter := app.BankKeeper.GetBalance(ctx, staker, denom3)
+	require.Equal(t, sdk.NewInt(1_077_000_000), balanceAfter.Amount)
 }
 
 func mustParseRFC3339(s string) time.Time {
