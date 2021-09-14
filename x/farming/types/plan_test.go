@@ -144,6 +144,16 @@ func TestUnpackPlan(t *testing.T) {
 	any, err := types.PackPlan(plan[0])
 	require.NoError(t, err)
 
+	marshaled, err := any.Marshal()
+	require.NoError(t, err)
+
+	any.Value = []byte{}
+	err = any.Unmarshal(marshaled)
+	require.NoError(t, err)
+
+	reMarshal, err := any.Marshal()
+	require.Equal(t, marshaled, reMarshal)
+
 	planRecord := types.PlanRecord{
 		Plan:             *any,
 		FarmingPoolCoins: sdk.NewCoins(),

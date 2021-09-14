@@ -60,7 +60,7 @@ func (k Keeper) IterateStakingsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddres
 	}
 }
 
-func (k Keeper) GetAllStakingsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
+func (k Keeper) GetAllStakedCoinsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
 	stakedCoins := sdk.NewCoins()
 	k.IterateStakingsByFarmer(ctx, farmerAcc, func(stakingCoinDenom string, staking types.Staking) (stop bool) {
 		stakedCoins = stakedCoins.Add(sdk.NewCoin(stakingCoinDenom, staking.Amount))
@@ -80,7 +80,7 @@ func (k Keeper) GetQueuedStaking(ctx sdk.Context, stakingCoinDenom string, farme
 	return
 }
 
-func (k Keeper) GetAllQueuedStakingsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
+func (k Keeper) GetAllQueuedStakedCoinsByFarmer(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
 	stakedCoins := sdk.NewCoins()
 	k.IterateQueuedStakingsByFarmer(ctx, farmerAcc, func(stakingCoinDenom string, queuedStaking types.QueuedStaking) (stop bool) {
 		stakedCoins = stakedCoins.Add(sdk.NewCoin(stakingCoinDenom, queuedStaking.Amount))

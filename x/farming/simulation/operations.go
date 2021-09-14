@@ -325,7 +325,7 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		// find staking from the simulated accounts
 		var ranStaking sdk.Coins
 		for _, acc := range accs {
-			staking := k.GetAllStakingsByFarmer(ctx, acc.Address)
+			staking := k.GetAllStakedCoinsByFarmer(ctx, acc.Address)
 			if !staking.IsZero() {
 				simAccount = acc
 				ranStaking = staking

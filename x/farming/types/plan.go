@@ -256,13 +256,13 @@ func ValidateName(i interface{}) error {
 		return sdkerrors.Wrapf(ErrInvalidPlanType, "invalid plan type %T", i)
 	}
 
-	names := make(map[string]bool)
+	names := map[string]struct{}{}
 
 	for _, plan := range plans {
 		if _, ok := names[plan.GetName()]; ok {
 			return sdkerrors.Wrap(ErrDuplicatePlanName, plan.GetName())
 		}
-		names[plan.GetName()] = true
+		names[plan.GetName()] = struct{}{}
 	}
 
 	return nil
