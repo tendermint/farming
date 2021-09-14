@@ -152,6 +152,7 @@ func TestUnpackPlan(t *testing.T) {
 	require.NoError(t, err)
 
 	reMarshal, err := any.Marshal()
+	require.NoError(t, err)
 	require.Equal(t, marshaled, reMarshal)
 
 	planRecord := types.PlanRecord{
