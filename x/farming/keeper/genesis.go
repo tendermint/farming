@@ -11,6 +11,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	ctx, applyCache := ctx.CacheContext()
 
 	k.SetParams(ctx, genState.Params)
+	k.SetGlobalCurrentEpochDays(ctx, genState.Params.NextEpochDays)
 	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
 

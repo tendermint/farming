@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/tendermint/farming/x/farming"
+	"github.com/tendermint/farming/x/farming/types"
 
 	_ "github.com/stretchr/testify/suite"
 )
@@ -13,7 +14,7 @@ func (suite *KeeperTestSuite) TestLastEpochTime() {
 	_, found := suite.keeper.GetLastEpochTime(suite.ctx)
 	suite.Require().False(found)
 
-	t := mustParseRFC3339("2021-07-23T05:01:02Z")
+	t := types.ParseTime("2021-07-23T05:01:02Z")
 	suite.keeper.SetLastEpochTime(suite.ctx, t)
 
 	t2, found := suite.keeper.GetLastEpochTime(suite.ctx)
@@ -30,12 +31,12 @@ func (suite *KeeperTestSuite) TestFirstEpoch() {
 	params := suite.keeper.GetParams(suite.ctx)
 	suite.Require().Equal(uint32(1), params.NextEpochDays)
 
-	suite.ctx = suite.ctx.WithBlockTime(mustParseRFC3339("2021-08-11T23:59:59Z"))
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-08-11T23:59:59Z"))
 	farming.EndBlocker(suite.ctx, suite.keeper)
 	lastEpochTime, found := suite.keeper.GetLastEpochTime(suite.ctx)
 	suite.Require().True(found)
 
-	suite.ctx = suite.ctx.WithBlockTime(mustParseRFC3339("2021-08-12T00:00:00Z"))
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-08-12T00:00:00Z"))
 	farming.EndBlocker(suite.ctx, suite.keeper)
 	t, _ := suite.keeper.GetLastEpochTime(suite.ctx)
 	suite.Require().True(t.After(lastEpochTime)) // Indicating that the epoch advanced.
@@ -50,7 +51,7 @@ func (suite *KeeperTestSuite) TestEpochDays() {
 			params.NextEpochDays = epochDays
 			suite.keeper.SetParams(suite.ctx, params)
 
-			t := mustParseRFC3339("2021-08-11T00:00:00Z")
+			t := types.ParseTime("2021-08-11T00:00:00Z")
 			suite.ctx = suite.ctx.WithBlockTime(t)
 			farming.EndBlocker(suite.ctx, suite.keeper)
 

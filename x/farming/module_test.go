@@ -2,7 +2,6 @@ package farming_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -70,8 +69,8 @@ func (suite *ModuleTestSuite) SetupTest() {
 					sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)), // 30%
 					sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)), // 70%
 				),
-				mustParseRFC3339("2021-08-02T00:00:00Z"),
-				mustParseRFC3339("2021-08-10T00:00:00Z"),
+				types.ParseTime("2021-08-02T00:00:00Z"),
+				types.ParseTime("2021-09-02T00:00:00Z"),
 			),
 			sdk.NewCoins(sdk.NewInt64Coin(denom3, 1_000_000)),
 		),
@@ -85,8 +84,8 @@ func (suite *ModuleTestSuite) SetupTest() {
 				sdk.NewDecCoins(
 					sdk.NewDecCoinFromDec(denom1, sdk.OneDec()), // 100%
 				),
-				mustParseRFC3339("2021-08-04T00:00:00Z"),
-				mustParseRFC3339("2021-08-12T00:00:00Z"),
+				types.ParseTime("2021-08-04T00:00:00Z"),
+				types.ParseTime("2021-08-12T00:00:00Z"),
 			),
 			sdk.NewCoins(sdk.NewInt64Coin(denom3, 2_000_000)),
 		),
@@ -103,8 +102,8 @@ func (suite *ModuleTestSuite) SetupTest() {
 					sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(5, 1)), // 50%
 					sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(5, 1)), // 50%
 				),
-				mustParseRFC3339("2021-08-01T00:00:00Z"),
-				mustParseRFC3339("2021-08-09T00:00:00Z"),
+				types.ParseTime("2021-08-01T00:00:00Z"),
+				types.ParseTime("2021-08-09T00:00:00Z"),
 			),
 			sdk.NewDecWithPrec(4, 2), // 4%
 		),
@@ -118,8 +117,8 @@ func (suite *ModuleTestSuite) SetupTest() {
 				sdk.NewDecCoins(
 					sdk.NewDecCoinFromDec(denom2, sdk.OneDec()), // 100%
 				),
-				mustParseRFC3339("2021-08-03T00:00:00Z"),
-				mustParseRFC3339("2021-08-07T00:00:00Z"),
+				types.ParseTime("2021-08-03T00:00:00Z"),
+				types.ParseTime("2021-08-07T00:00:00Z"),
 			),
 			sdk.NewDecWithPrec(3, 2), // 3%
 		),
@@ -143,12 +142,4 @@ func (suite *ModuleTestSuite) Rewards(farmerAcc sdk.AccAddress) sdk.Coins {
 
 func coinsEq(exp, got sdk.Coins) (bool, string, string, string) {
 	return exp.IsEqual(got), "expected:\t%v\ngot:\t\t%v", exp.String(), got.String()
-}
-
-func mustParseRFC3339(s string) time.Time {
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		panic(err)
-	}
-	return t
 }

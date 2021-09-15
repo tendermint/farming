@@ -17,8 +17,8 @@ func (suite *ModuleTestSuite) TestMsgCreateFixedAmountPlan() {
 			sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)), // 30%
 			sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)), // 70%
 		),
-		mustParseRFC3339("2021-08-02T00:00:00Z"),
-		mustParseRFC3339("2021-08-10T00:00:00Z"),
+		types.ParseTime("2021-08-02T00:00:00Z"),
+		types.ParseTime("2021-08-10T00:00:00Z"),
 		sdk.NewCoins(sdk.NewInt64Coin(denom3, 10_000_000)),
 	)
 
@@ -33,8 +33,8 @@ func (suite *ModuleTestSuite) TestMsgCreateFixedAmountPlan() {
 	suite.Require().Equal(msg.Creator, plan.GetTerminationAddress().String())
 	suite.Require().Equal(msg.StakingCoinWeights, plan.GetStakingCoinWeights())
 	suite.Require().Equal(types.PrivatePlanFarmingPoolAddress(msg.Name, 1), plan.GetFarmingPoolAddress())
-	suite.Require().Equal(mustParseRFC3339("2021-08-02T00:00:00Z"), plan.GetStartTime())
-	suite.Require().Equal(mustParseRFC3339("2021-08-10T00:00:00Z"), plan.GetEndTime())
+	suite.Require().Equal(types.ParseTime("2021-08-02T00:00:00Z"), plan.GetStartTime())
+	suite.Require().Equal(types.ParseTime("2021-08-10T00:00:00Z"), plan.GetEndTime())
 	suite.Require().Equal(msg.EpochAmount, plan.(*types.FixedAmountPlan).EpochAmount)
 }
 
@@ -46,8 +46,8 @@ func (suite *ModuleTestSuite) TestMsgCreateRatioPlan() {
 			sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)), // 30%
 			sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)), // 70%
 		),
-		mustParseRFC3339("2021-08-02T00:00:00Z"),
-		mustParseRFC3339("2021-08-10T00:00:00Z"),
+		types.ParseTime("2021-08-02T00:00:00Z"),
+		types.ParseTime("2021-08-10T00:00:00Z"),
 		sdk.NewDecWithPrec(4, 2), // 4%,
 	)
 
@@ -62,8 +62,8 @@ func (suite *ModuleTestSuite) TestMsgCreateRatioPlan() {
 	suite.Require().Equal(msg.Creator, plan.GetTerminationAddress().String())
 	suite.Require().Equal(msg.StakingCoinWeights, plan.GetStakingCoinWeights())
 	suite.Require().Equal(types.PrivatePlanFarmingPoolAddress(msg.Name, 1), plan.GetFarmingPoolAddress())
-	suite.Require().Equal(mustParseRFC3339("2021-08-02T00:00:00Z"), plan.GetStartTime())
-	suite.Require().Equal(mustParseRFC3339("2021-08-10T00:00:00Z"), plan.GetEndTime())
+	suite.Require().Equal(types.ParseTime("2021-08-02T00:00:00Z"), plan.GetStartTime())
+	suite.Require().Equal(types.ParseTime("2021-08-10T00:00:00Z"), plan.GetEndTime())
 	suite.Require().Equal(msg.EpochRatio, plan.(*types.RatioPlan).EpochRatio)
 }
 
@@ -120,7 +120,7 @@ func (suite *ModuleTestSuite) TestMsgHarvest() {
 
 	balancesBefore := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
 
-	suite.ctx = suite.ctx.WithBlockTime(mustParseRFC3339("2021-08-05T00:00:00Z"))
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-08-05T00:00:00Z"))
 	err := suite.keeper.AllocateRewards(suite.ctx)
 	suite.Require().NoError(err)
 
