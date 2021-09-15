@@ -21,9 +21,11 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 	}
 
-	// GlobalCurrentEpochDays is used here to proceed the next logics instead of
-	// global parameter NextEpochDays to prevent from affecting the epoch days when allocating farming rewards
-	// NextEpochDays can be changed through governance proposal during the allocation
+	// GlobalCurrentEpochDays is used here instead of global parameter NextEpochDays
+	// to prevent from affecting the epoch days for farming rewards allocation.
+	// Suppose NextEpochDays is 7 days now and it is proposed to change it to 1 day through governance proposal.
+	// Although the proposal is passed, farming rewards allocation must continue
+	// to proceed with 7 days first and then it gets updated.
 	currentEpochDays := k.GetGlobalCurrentEpochDays(ctx)
 
 	lastEpochTime, found := k.GetLastEpochTime(ctx)
