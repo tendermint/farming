@@ -72,3 +72,14 @@ func (suite *KeeperTestSuite) TestEpochDays() {
 		})
 	}
 }
+
+func (suite *KeeperTestSuite) TestCurrentEpochDays() {
+	currentEpochDays := suite.keeper.GetCurrentEpochDays(suite.ctx)
+	suite.Require().Equal(uint32(1), currentEpochDays)
+
+	nextEpochDays := uint32(3)
+	suite.keeper.SetCurrentEpochDays(suite.ctx, nextEpochDays)
+
+	currentEpochDays = suite.keeper.GetCurrentEpochDays(suite.ctx)
+	suite.Require().Equal(uint32(3), currentEpochDays)
+}
