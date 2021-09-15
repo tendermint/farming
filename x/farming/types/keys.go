@@ -23,9 +23,9 @@ const (
 
 // keys for farming store prefixes
 var (
-	GlobalPlanIdKey           = []byte("globalPlanId")
-	GlobalLastEpochTimeKey    = []byte("globalLastEpochTime")
-	GlobalCurrentEpochDaysKey = []byte("globalCurrentEpochDays")
+	GlobalPlanIdKey        = []byte("globalPlanId")
+	GlobalLastEpochTimeKey = []byte("globalLastEpochTime")
+	CurrentEpochDaysKey    = []byte("currentEpochDays")
 
 	PlanKeyPrefix = []byte{0x11}
 

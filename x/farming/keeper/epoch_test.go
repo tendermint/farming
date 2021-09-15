@@ -43,12 +43,12 @@ func (suite *KeeperTestSuite) TestFirstEpoch() {
 }
 
 func (suite *KeeperTestSuite) TestEpochDays() {
-	for _, epochDays := range []uint32{1, 2, 3} {
-		suite.Run(fmt.Sprintf("epoch days = %d", epochDays), func() {
+	for _, nextEpochDays := range []uint32{1, 2, 3} {
+		suite.Run(fmt.Sprintf("next epoch days = %d", nextEpochDays), func() {
 			suite.SetupTest()
 
 			params := suite.keeper.GetParams(suite.ctx)
-			params.NextEpochDays = epochDays
+			params.NextEpochDays = nextEpochDays
 			suite.keeper.SetParams(suite.ctx, params)
 
 			t := types.ParseTime("2021-08-11T00:00:00Z")
@@ -56,6 +56,7 @@ func (suite *KeeperTestSuite) TestEpochDays() {
 			farming.EndBlocker(suite.ctx, suite.keeper)
 
 			lastEpochTime, _ := suite.keeper.GetLastEpochTime(suite.ctx)
+			currentEpochDays := suite.keeper.GetCurrentEpochDays(suite.ctx)
 
 			for i := 0; i < 10000; i++ {
 				t = t.Add(5 * time.Minute)
@@ -64,7 +65,7 @@ func (suite *KeeperTestSuite) TestEpochDays() {
 
 				t2, _ := suite.keeper.GetLastEpochTime(suite.ctx)
 				if t2.After(lastEpochTime) {
-					suite.Require().GreaterOrEqual(t2.Sub(lastEpochTime).Hours(), float64(epochDays*24))
+					suite.Require().GreaterOrEqual(t2.Sub(lastEpochTime).Hours(), float64(currentEpochDays*24))
 					lastEpochTime = t2
 				}
 			}

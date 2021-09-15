@@ -68,7 +68,7 @@ type Params struct {
 	// this fee prevents from spamming and it is collected in the community pool
 	PrivatePlanCreationFee github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,1,rep,name=private_plan_creation_fee,json=privatePlanCreationFee,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"private_plan_creation_fee" yaml:"private_plan_creation_fee"`
 	// next_epoch_days is the epoch length in number of days
-	// it updates internal parameter called GlobalCurrentEpochDays that is used to process
+	// it updates internal parameter called CurrentEpochDays that is used to process
 	// staking and reward distribution in end blocker
 	NextEpochDays uint32 `protobuf:"varint,2,opt,name=next_epoch_days,json=nextEpochDays,proto3" json:"next_epoch_days,omitempty" yaml:"next_epoch_days"`
 	// farming_fee_collector is the module account address to collect fees within the farming module

@@ -23,7 +23,7 @@ message Params {
   ];
 
   // next_epoch_days is the epoch length in number of days
-  // it updates internal parameter called GlobalCurrentEpochDays that is used to process
+  // it updates internal parameter called CurrentEpochDays that is used to process
   // staking and reward distribution in end blocker
   uint32 next_epoch_days = 2 [(gogoproto.moretags) = "yaml:\"next_epoch_days\""];
 

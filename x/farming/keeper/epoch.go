@@ -45,11 +45,11 @@ func (k Keeper) AdvanceEpoch(ctx sdk.Context) error {
 	return nil
 }
 
-// GetGlobalCurrentEpochDays returns the global current epoch days.
-func (k Keeper) GetGlobalCurrentEpochDays(ctx sdk.Context) uint32 {
+// GetCurrentEpochDays returns the  current epoch days.
+func (k Keeper) GetCurrentEpochDays(ctx sdk.Context) uint32 {
 	var epochDays uint32
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GlobalCurrentEpochDaysKey)
+	bz := store.Get(types.CurrentEpochDaysKey)
 	if bz == nil {
 		// initialize the current epoch days
 		epochDays = 1
@@ -63,9 +63,9 @@ func (k Keeper) GetGlobalCurrentEpochDays(ctx sdk.Context) uint32 {
 	return epochDays
 }
 
-// SetGlobalCurrentEpochDays sets the global current epoch days.
-func (k Keeper) SetGlobalCurrentEpochDays(ctx sdk.Context, epochDays uint32) {
+// SetCurrentEpochDays sets the  current epoch days.
+func (k Keeper) SetCurrentEpochDays(ctx sdk.Context, epochDays uint32) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&gogotypes.UInt32Value{Value: epochDays})
-	store.Set(types.GlobalCurrentEpochDaysKey, bz)
+	store.Set(types.CurrentEpochDaysKey, bz)
 }

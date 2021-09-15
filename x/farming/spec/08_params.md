@@ -16,7 +16,7 @@ Fee paid for to create a Private type Farming plan. This fee prevents spamming a
 
 ## NextEpochDays
 
-`NextEpochDays` is the epoch length in number of days. Internally, the farming module uses `GlobalCurrentEpochDays` to process staking and reward distribution in end blocker because using `NextEpochDays` directly will affect farming rewards allocation.
+`NextEpochDays` is the epoch length in number of days. Internally, the farming module uses `CurrentEpochDays` parameter to process staking and reward distribution in end blocker because using `NextEpochDays` directly will affect farming rewards allocation.
 
 ## FarmingFeeCollector
 
