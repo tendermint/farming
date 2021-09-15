@@ -1,65 +1,18 @@
 package farming_test
 
 import (
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/require"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	simapp "github.com/tendermint/farming/app"
 	"github.com/tendermint/farming/x/farming"
-	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
+
+	_ "github.com/stretchr/testify/suite"
 )
 
-const (
-	denom1 = "denom1"
-	denom2 = "denom2"
-	denom3 = "denom3"
-)
-
-var (
-	initialBalances = sdk.NewCoins(
-		sdk.NewInt64Coin(sdk.DefaultBondDenom, 1_000_000_000),
-		sdk.NewInt64Coin(denom1, 1_000_000_000),
-		sdk.NewInt64Coin(denom2, 1_000_000_000),
-		sdk.NewInt64Coin(denom3, 1_000_000_000))
-)
-
-// createTestInput returns a simapp with custom FarmingKeeper
-// to avoid messing with the hooks.
-func createTestInput() (*simapp.FarmingApp, sdk.Context, []sdk.AccAddress) {
-	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
-	app.FarmingKeeper = keeper.NewKeeper(
-		app.AppCodec(),
-		app.GetKey(types.StoreKey),
-		app.GetSubspace(types.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		map[string]bool{},
-	)
-
-	addrs := simapp.AddTestAddrs(app, ctx, 6, sdk.ZeroInt())
-	for _, addr := range addrs {
-		if err := simapp.FundAccount(app.BankKeeper, ctx, addr, initialBalances); err != nil {
-			panic(err)
-		}
-	}
-
-	return app, ctx, addrs
-}
-
-func TestMsgCreateFixedAmountPlan(t *testing.T) {
-	app, ctx, addrs := createTestInput()
-
+func (suite *ModuleTestSuite) TestMsgCreateFixedAmountPlan() {
 	msg := types.NewMsgCreateFixedAmountPlan(
-		"handler-test",
-		addrs[0],
+		"handlerTestPlan1",
+		suite.addrs[0],
 		sdk.NewDecCoins(
 			sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)), // 30%
 			sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)), // 70%
@@ -69,28 +22,26 @@ func TestMsgCreateFixedAmountPlan(t *testing.T) {
 		sdk.NewCoins(sdk.NewInt64Coin(denom3, 10_000_000)),
 	)
 
-	handler := farming.NewHandler(app.FarmingKeeper)
-	_, err := handler(ctx, msg)
-	require.NoError(t, err)
+	handler := farming.NewHandler(suite.keeper)
+	_, err := handler(suite.ctx, msg)
+	suite.Require().NoError(err)
 
-	plan, found := app.FarmingKeeper.GetPlan(ctx, 1)
-	require.Equal(t, true, found)
+	plan, found := suite.keeper.GetPlan(suite.ctx, 1)
+	suite.Require().Equal(true, found)
 
-	require.Equal(t, msg.Name, plan.GetName())
-	require.Equal(t, msg.Creator, plan.GetTerminationAddress().String())
-	require.Equal(t, msg.StakingCoinWeights, plan.GetStakingCoinWeights())
-	require.Equal(t, types.PrivatePlanFarmingPoolAddress(msg.Name, 1), plan.GetFarmingPoolAddress())
-	require.Equal(t, mustParseRFC3339("2021-08-02T00:00:00Z"), plan.GetStartTime())
-	require.Equal(t, mustParseRFC3339("2021-08-10T00:00:00Z"), plan.GetEndTime())
-	require.Equal(t, msg.EpochAmount, plan.(*types.FixedAmountPlan).EpochAmount)
+	suite.Require().Equal(msg.Name, plan.GetName())
+	suite.Require().Equal(msg.Creator, plan.GetTerminationAddress().String())
+	suite.Require().Equal(msg.StakingCoinWeights, plan.GetStakingCoinWeights())
+	suite.Require().Equal(types.PrivatePlanFarmingPoolAddress(msg.Name, 1), plan.GetFarmingPoolAddress())
+	suite.Require().Equal(mustParseRFC3339("2021-08-02T00:00:00Z"), plan.GetStartTime())
+	suite.Require().Equal(mustParseRFC3339("2021-08-10T00:00:00Z"), plan.GetEndTime())
+	suite.Require().Equal(msg.EpochAmount, plan.(*types.FixedAmountPlan).EpochAmount)
 }
 
-func TestMsgCreateRatioPlan(t *testing.T) {
-	app, ctx, addrs := createTestInput()
-
+func (suite *ModuleTestSuite) TestMsgCreateRatioPlan() {
 	msg := types.NewMsgCreateRatioPlan(
-		"handler-test",
-		addrs[0],
+		"handlerTestPlan2",
+		suite.addrs[0],
 		sdk.NewDecCoins(
 			sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)), // 30%
 			sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)), // 70%
@@ -100,143 +51,89 @@ func TestMsgCreateRatioPlan(t *testing.T) {
 		sdk.NewDecWithPrec(4, 2), // 4%,
 	)
 
-	handler := farming.NewHandler(app.FarmingKeeper)
-	_, err := handler(ctx, msg)
-	require.NoError(t, err)
+	handler := farming.NewHandler(suite.keeper)
+	_, err := handler(suite.ctx, msg)
+	suite.Require().NoError(err)
 
-	plan, found := app.FarmingKeeper.GetPlan(ctx, 1)
-	require.Equal(t, true, found)
+	plan, found := suite.keeper.GetPlan(suite.ctx, 1)
+	suite.Require().Equal(true, found)
 
-	require.Equal(t, msg.Name, plan.GetName())
-	require.Equal(t, msg.Creator, plan.GetTerminationAddress().String())
-	require.Equal(t, msg.StakingCoinWeights, plan.GetStakingCoinWeights())
-	require.Equal(t, types.PrivatePlanFarmingPoolAddress(msg.Name, 1), plan.GetFarmingPoolAddress())
-	require.Equal(t, mustParseRFC3339("2021-08-02T00:00:00Z"), plan.GetStartTime())
-	require.Equal(t, mustParseRFC3339("2021-08-10T00:00:00Z"), plan.GetEndTime())
-	require.Equal(t, msg.EpochRatio, plan.(*types.RatioPlan).EpochRatio)
+	suite.Require().Equal(msg.Name, plan.GetName())
+	suite.Require().Equal(msg.Creator, plan.GetTerminationAddress().String())
+	suite.Require().Equal(msg.StakingCoinWeights, plan.GetStakingCoinWeights())
+	suite.Require().Equal(types.PrivatePlanFarmingPoolAddress(msg.Name, 1), plan.GetFarmingPoolAddress())
+	suite.Require().Equal(mustParseRFC3339("2021-08-02T00:00:00Z"), plan.GetStartTime())
+	suite.Require().Equal(mustParseRFC3339("2021-08-10T00:00:00Z"), plan.GetEndTime())
+	suite.Require().Equal(msg.EpochRatio, plan.(*types.RatioPlan).EpochRatio)
 }
 
-func TestMsgStake(t *testing.T) {
-	app, ctx, addrs := createTestInput()
-
+func (suite *ModuleTestSuite) TestMsgStake() {
 	msg := types.NewMsgStake(
-		addrs[0],
+		suite.addrs[0],
 		sdk.NewCoins(sdk.NewInt64Coin(denom1, 10_000_000)),
 	)
 
-	handler := farming.NewHandler(app.FarmingKeeper)
-	_, err := handler(ctx, msg)
-	require.NoError(t, err)
+	handler := farming.NewHandler(suite.keeper)
+	_, err := handler(suite.ctx, msg)
+	suite.Require().NoError(err)
 
-	_, found := app.FarmingKeeper.GetQueuedStaking(ctx, denom1, addrs[0])
-	require.Equal(t, true, found)
+	_, found := suite.keeper.GetQueuedStaking(suite.ctx, denom1, suite.addrs[0])
+	suite.Require().Equal(true, found)
 
 	queuedCoins := sdk.NewCoins()
-	app.FarmingKeeper.IterateQueuedStakingsByFarmer(ctx, addrs[0], func(stakingCoinDenom string, queuedStaking types.QueuedStaking) (stop bool) {
-		queuedCoins = queuedCoins.Add(sdk.NewCoin(stakingCoinDenom, queuedStaking.Amount))
-		return false
-	})
-	require.Equal(t, msg.StakingCoins, queuedCoins)
+	suite.keeper.IterateQueuedStakingsByFarmer(suite.ctx, suite.addrs[0],
+		func(stakingCoinDenom string, queuedStaking types.QueuedStaking) (stop bool) {
+			queuedCoins = queuedCoins.Add(sdk.NewCoin(stakingCoinDenom, queuedStaking.Amount))
+			return false
+		},
+	)
+	suite.Require().Equal(msg.StakingCoins, queuedCoins)
 }
 
-func TestMsgUnstake(t *testing.T) {
-	app, ctx, addrs := createTestInput()
+func (suite *ModuleTestSuite) TestMsgUnstake() {
+	stakeCoin := sdk.NewInt64Coin(denom1, 10_000_000)
+	suite.Stake(suite.addrs[0], sdk.NewCoins(stakeCoin))
 
-	// stake some amount
-	err := app.FarmingKeeper.Stake(ctx, addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 10_000_000)))
-	require.NoError(t, err)
+	_, found := suite.keeper.GetQueuedStaking(suite.ctx, denom1, suite.addrs[0])
+	suite.Require().Equal(true, found)
 
-	_, found := app.FarmingKeeper.GetQueuedStaking(ctx, denom1, addrs[0])
-	require.Equal(t, true, found)
+	balancesBefore := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
 
-	// check balance before unstake
-	balanceBefore := app.BankKeeper.GetBalance(ctx, addrs[0], denom1)
-	require.Equal(t, sdk.NewInt(990_000_000), balanceBefore.Amount)
+	unstakeCoin := sdk.NewInt64Coin(denom1, 5_000_000)
+	msg := types.NewMsgUnstake(suite.addrs[0], sdk.NewCoins(unstakeCoin))
 
-	msg := types.NewMsgUnstake(
-		addrs[0],
-		sdk.NewCoins(sdk.NewInt64Coin(denom1, 5_000_000)),
-	)
+	handler := farming.NewHandler(suite.keeper)
+	_, err := handler(suite.ctx, msg)
+	suite.Require().NoError(err)
 
-	handler := farming.NewHandler(app.FarmingKeeper)
-	_, err = handler(ctx, msg)
-	require.NoError(t, err)
-
-	// check balance after unstake
-	balanceAfter := app.BankKeeper.GetBalance(ctx, addrs[0], denom1)
-	require.Equal(t, sdk.NewInt(995_000_000), balanceAfter.Amount)
+	balancesAfter := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+	suite.Require().True(coinsEq(balancesBefore.Add(unstakeCoin), balancesAfter))
 }
 
-func TestMsgHarvest(t *testing.T) {
-	app, ctx, addrs := createTestInput()
-	creator := addrs[0] // use addrs[0] to create a fixed amount plan
-	staker := addrs[1]  // use addrs[1] to stake some amount with staking coin denom
-
-	planMsg := types.NewMsgCreateFixedAmountPlan(
-		"handler-test",
-		creator,
-		sdk.NewDecCoins(
-			sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(10, 1)), // 100%
-		),
-		mustParseRFC3339("2021-08-02T00:00:00Z"),
-		mustParseRFC3339("2021-08-10T00:00:00Z"),
-		sdk.NewCoins(sdk.NewInt64Coin(denom3, 77_000_000)),
-	)
-
-	// create a fixed amount plan
-	plan, err := app.FarmingKeeper.CreateFixedAmountPlan(
-		ctx,
-		planMsg,
-		creator,
-		creator,
-		types.PlanTypePrivate,
-	)
-	require.NoError(t, err)
-
-	_, found := app.FarmingKeeper.GetPlan(ctx, plan.GetId())
-	require.Equal(t, true, found)
-
-	// stake some amount
-	err = app.FarmingKeeper.Stake(
-		ctx,
-		staker,
-		sdk.NewCoins(sdk.NewInt64Coin(denom1, 10_000_000)),
-	)
-	require.NoError(t, err)
-
-	_, found = app.FarmingKeeper.GetQueuedStaking(ctx, denom1, staker)
-	require.Equal(t, true, found)
-
-	// move queued coins into staked coins
-	app.FarmingKeeper.ProcessQueuedCoins(ctx)
-
-	_, found = app.FarmingKeeper.GetStaking(ctx, denom1, staker)
-	require.Equal(t, true, found)
-
-	// check balances before unstake
-	balanceBefore := app.BankKeeper.GetBalance(ctx, staker, denom3)
-	require.Equal(t, sdk.NewInt(1_000_000_000), balanceBefore.Amount)
-
-	// allocate rewards
-	ctx = ctx.WithBlockTime(mustParseRFC3339("2021-08-05T00:00:00Z"))
-	err = app.FarmingKeeper.AllocateRewards(ctx)
-	require.NoError(t, err)
-
-	// harvest
-	msg := types.NewMsgHarvest(staker, []string{denom1})
-	handler := farming.NewHandler(app.FarmingKeeper)
-	_, err = handler(ctx, msg)
-	require.NoError(t, err)
-
-	// check balances after unstake
-	balanceAfter := app.BankKeeper.GetBalance(ctx, staker, denom3)
-	require.Equal(t, sdk.NewInt(1_077_000_000), balanceAfter.Amount)
-}
-
-func mustParseRFC3339(s string) time.Time {
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		panic(err)
+func (suite *ModuleTestSuite) TestMsgHarvest() {
+	for _, plan := range suite.samplePlans {
+		suite.keeper.SetPlan(suite.ctx, plan)
 	}
-	return t
+
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom2, 10_000_000)))
+	suite.keeper.ProcessQueuedCoins(suite.ctx)
+
+	balancesBefore := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+
+	suite.ctx = suite.ctx.WithBlockTime(mustParseRFC3339("2021-08-05T00:00:00Z"))
+	err := suite.keeper.AllocateRewards(suite.ctx)
+	suite.Require().NoError(err)
+
+	rewards := suite.Rewards(suite.addrs[0])
+
+	msg := types.NewMsgHarvest(suite.addrs[0], []string{denom2})
+
+	handler := farming.NewHandler(suite.keeper)
+	_, err = handler(suite.ctx, msg)
+	suite.Require().NoError(err)
+
+	balancesAfter := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+	suite.Require().True(coinsEq(balancesBefore.Add(rewards...), balancesAfter))
+	suite.Require().True(suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.keeper.GetRewardsReservePoolAcc(suite.ctx)).IsZero())
+	suite.Require().True(suite.Rewards(suite.addrs[0]).IsZero())
 }
