@@ -11,7 +11,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	ctx, applyCache := ctx.CacheContext()
 
 	k.SetParams(ctx, genState.Params)
-	k.SetCurrentEpochDays(ctx, genState.Params.NextEpochDays)
+	k.SetCurrentEpochDays(ctx, genState.CurrentEpochDays)
 	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
 
@@ -109,5 +109,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		currentEpochs,
 		k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc),
 		k.bankKeeper.GetAllBalances(ctx, types.RewardsReserveAcc),
-		epochTime)
+		epochTime,
+		k.GetCurrentEpochDays(ctx),
+	)
 }

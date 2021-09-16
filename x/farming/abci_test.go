@@ -9,76 +9,56 @@ import (
 	_ "github.com/stretchr/testify/suite"
 )
 
-func (suite *ModuleTestSuite) TestEndBlockerEdgeCase1() {
-	suite.SetupTest()
+func (suite *ModuleTestSuite) TestEndBlockerEpochDaysTest() {
+	epochDaysTest := func(formerEpochDays, targetNextEpochDays uint32) {
+		suite.SetupTest()
 
-	nextEpochDays := uint32(7)
+		params := suite.keeper.GetParams(suite.ctx)
+		params.NextEpochDays = formerEpochDays
+		suite.keeper.SetParams(suite.ctx, params)
+		suite.keeper.SetCurrentEpochDays(suite.ctx, formerEpochDays)
 
-	params := suite.keeper.GetParams(suite.ctx)
-	params.NextEpochDays = nextEpochDays
-	suite.keeper.SetParams(suite.ctx, params)
-	suite.keeper.SetCurrentEpochDays(suite.ctx, params.NextEpochDays)
-
-	t := types.ParseTime("2021-08-01T00:00:00Z")
-	suite.ctx = suite.ctx.WithBlockTime(t)
-	farming.EndBlocker(suite.ctx, suite.keeper)
-
-	lastEpochTime, _ := suite.keeper.GetLastEpochTime(suite.ctx)
-
-	for i := 1; i < 200; i++ {
-		t = t.Add(1 * time.Hour)
+		t := types.ParseTime("2021-08-01T00:00:00Z")
 		suite.ctx = suite.ctx.WithBlockTime(t)
 		farming.EndBlocker(suite.ctx, suite.keeper)
 
-		if i == 120 { // 5 days passed
-			params := suite.keeper.GetParams(suite.ctx)
-			params.NextEpochDays = uint32(1)
-			suite.keeper.SetParams(suite.ctx, params)
-		}
+		lastEpochTime, _ := suite.keeper.GetLastEpochTime(suite.ctx)
 
-		currentEpochDays := suite.keeper.GetCurrentEpochDays(suite.ctx)
+		for i := 1; i < 200; i++ {
+			t = t.Add(1 * time.Hour)
+			suite.ctx = suite.ctx.WithBlockTime(t)
+			farming.EndBlocker(suite.ctx, suite.keeper)
 
-		t2, _ := suite.keeper.GetLastEpochTime(suite.ctx)
-		if t2.After(lastEpochTime) {
-			suite.Require().GreaterOrEqual(t2.Sub(lastEpochTime).Hours(), float64(nextEpochDays*24))
-			suite.Require().Equal(uint32(1), currentEpochDays)
-		}
-	}
-}
+			if i == 10 { // 10 hours passed
+				params := suite.keeper.GetParams(suite.ctx)
+				params.NextEpochDays = targetNextEpochDays
+				suite.keeper.SetParams(suite.ctx, params)
+			}
 
-func (suite *ModuleTestSuite) TestEndBlockerEdgeCase2() {
-	suite.SetupTest()
+			currentEpochDays := suite.keeper.GetCurrentEpochDays(suite.ctx)
+			t2, _ := suite.keeper.GetLastEpochTime(suite.ctx)
 
-	nextEpochDays := uint32(1)
+			if uint32(i) == formerEpochDays*24 {
+				suite.Require().True(t2.After(lastEpochTime))
+				suite.Require().Equal(t2.Sub(lastEpochTime).Hours(), float64(formerEpochDays*24))
+				suite.Require().Equal(targetNextEpochDays, currentEpochDays)
+			}
 
-	params := suite.keeper.GetParams(suite.ctx)
-	params.NextEpochDays = nextEpochDays
-	suite.keeper.SetParams(suite.ctx, params)
-	suite.keeper.SetCurrentEpochDays(suite.ctx, params.NextEpochDays)
+			if uint32(i) == formerEpochDays*24+targetNextEpochDays*24 {
+				suite.Require().Equal(t2.Sub(lastEpochTime).Hours(), float64(currentEpochDays*24))
+				suite.Require().Equal(targetNextEpochDays, currentEpochDays)
+			}
 
-	t := types.ParseTime("2021-08-01T00:00:00Z")
-	suite.ctx = suite.ctx.WithBlockTime(t)
-	farming.EndBlocker(suite.ctx, suite.keeper)
-
-	lastEpochTime, _ := suite.keeper.GetLastEpochTime(suite.ctx)
-
-	for i := 1; i < 50; i++ {
-		t = t.Add(1 * time.Hour)
-		suite.ctx = suite.ctx.WithBlockTime(t)
-		farming.EndBlocker(suite.ctx, suite.keeper)
-
-		if i == 10 { // 10 hours passed
-			params := suite.keeper.GetParams(suite.ctx)
-			params.NextEpochDays = uint32(7)
-			suite.keeper.SetParams(suite.ctx, params)
-		}
-
-		currentEpochDays := suite.keeper.GetCurrentEpochDays(suite.ctx)
-
-		t2, _ := suite.keeper.GetLastEpochTime(suite.ctx)
-		if t2.After(lastEpochTime) {
-			suite.Require().GreaterOrEqual(t2.Sub(lastEpochTime).Hours(), float64(nextEpochDays*24))
-			suite.Require().Equal(uint32(7), currentEpochDays)
+			lastEpochTime = t2
 		}
 	}
+
+	// increasing case
+	epochDaysTest(1, 7)
+
+	// decreasing case
+	epochDaysTest(7, 1)
+
+	// stay case
+	epochDaysTest(1, 1)
 }

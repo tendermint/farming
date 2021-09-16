@@ -51,8 +51,8 @@ func (k Keeper) GetCurrentEpochDays(ctx sdk.Context) uint32 {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.CurrentEpochDaysKey)
 	if bz == nil {
-		// initialize the current epoch days
-		epochDays = 1
+		// initialize with next epoch days
+		epochDays = k.GetParams(ctx).NextEpochDays
 	} else {
 		val := gogotypes.UInt32Value{}
 		if err := k.cdc.Unmarshal(bz, &val); err != nil {

@@ -57,6 +57,9 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"global_last_epoch_time\""
   ];
+
+  // current_epoch_days specifies the epoch used when allocating farming rewards in end blocker
+  uint32 current_epoch_days = 10;
 }
 
 // PlanRecord is used for import/export via genesis json.
