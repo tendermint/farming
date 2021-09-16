@@ -29,7 +29,7 @@ func TestValidateGenesis(t *testing.T) {
 				params.NextEpochDays = 0
 				genState.Params = params
 			},
-			"epoch days must be positive: 0",
+			"next epoch days must be positive: 0",
 		},
 	}
 	for _, tc := range testCases {

@@ -39,7 +39,7 @@ func DefaultGenesisState() *GenesisState {
 		sdk.Coins{},
 		sdk.Coins{},
 		time.Time{},
-		1,
+		DefaultCurrentEpochDays,
 	)
 }
 

@@ -17,6 +17,7 @@ var (
 	KeyFarmingFeeCollector    = []byte("FarmingFeeCollector")
 
 	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000_000)))
+	DefaultCurrentEpochDays       = uint32(1)
 	DefaultNextEpochDays          = uint32(1)
 	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
 	StakingReserveAcc             = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
@@ -43,7 +44,7 @@ func DefaultParams() Params {
 func (p *Params) ParamSetPairs() paramstypes.ParamSetPairs {
 	return paramstypes.ParamSetPairs{
 		paramstypes.NewParamSetPair(KeyPrivatePlanCreationFee, &p.PrivatePlanCreationFee, validatePrivatePlanCreationFee),
-		paramstypes.NewParamSetPair(KeyNextEpochDays, &p.NextEpochDays, validateEpochDays),
+		paramstypes.NewParamSetPair(KeyNextEpochDays, &p.NextEpochDays, validateNextEpochDays),
 		paramstypes.NewParamSetPair(KeyFarmingFeeCollector, &p.FarmingFeeCollector, validateFarmingFeeCollector),
 	}
 }
@@ -61,7 +62,7 @@ func (p Params) Validate() error {
 		validator func(interface{}) error
 	}{
 		{p.PrivatePlanCreationFee, validatePrivatePlanCreationFee},
-		{p.NextEpochDays, validateEpochDays},
+		{p.NextEpochDays, validateNextEpochDays},
 		{p.FarmingFeeCollector, validateFarmingFeeCollector},
 	} {
 		if err := v.validator(v.value); err != nil {
@@ -84,14 +85,14 @@ func validatePrivatePlanCreationFee(i interface{}) error {
 	return nil
 }
 
-func validateEpochDays(i interface{}) error {
+func validateNextEpochDays(i interface{}) error {
 	v, ok := i.(uint32)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	if v <= 0 {
-		return fmt.Errorf("epoch days must be positive: %d", v)
+		return fmt.Errorf("next epoch days must be positive: %d", v)
 	}
 
 	return nil

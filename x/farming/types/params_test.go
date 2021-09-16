@@ -42,11 +42,11 @@ func TestParamsValidate(t *testing.T) {
 			"",
 		},
 		{
-			"NegativeEpochDays",
+			"ZeroNextEpochDays",
 			func(params *types.Params) {
 				params.NextEpochDays = uint32(0)
 			},
-			"epoch days must be positive: 0",
+			"next epoch days must be positive: 0",
 		},
 		{
 			"EmptyFarmingFeeCollector",
