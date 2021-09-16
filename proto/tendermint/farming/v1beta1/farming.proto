@@ -159,8 +159,15 @@ message HistoricalRewards {
   option (gogoproto.goproto_getters) = false;
 
   repeated cosmos.base.v1beta1.DecCoin cumulative_unit_rewards = 1 [
-    (gogoproto.moretags)     = "yaml:\"cumulative_unit_rewards\"",
+    (gogoproto.moretags) = "yaml:\"cumulative_unit_rewards\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
-    (gogoproto.nullable)     = false
+    (gogoproto.nullable) = false
   ];
+}
+
+// OutstandingRewards represents outstanding(un-withdrawn) rewards
+// for a staking coin denom.
+message OutstandingRewards {
+  repeated cosmos.base.v1beta1.DecCoin rewards = 1
+  [(gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins", (gogoproto.nullable) = false];
 }
