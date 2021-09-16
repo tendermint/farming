@@ -34,6 +34,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryParams(),
 		GetCmdQueryPlans(),
 		GetCmdQueryPlan(),
+		GetCmdQueryCurrentEpochDays(),
 	)
 
 	return farmingQueryCmd
@@ -176,6 +177,42 @@ $ %s query %s plan
 			resp, err := queryClient.Plan(cmd.Context(), &types.QueryPlanRequest{
 				PlanId: planId,
 			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(resp)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdQueryCurrentEpochDays() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "current-epoch-days",
+		Args:  cobra.NoArgs,
+		Short: "Query the value of current epoch days",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query the value set as current epoch days.
+
+Example:
+$ %s query %s current-epoch-days
+`,
+				version.AppName, types.ModuleName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			resp, err := queryClient.CurrentEpochDays(context.Background(), &types.QueryCurrentEpochDaysRequest{})
 			if err != nil {
 				return err
 			}

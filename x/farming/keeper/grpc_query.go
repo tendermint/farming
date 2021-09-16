@@ -145,3 +145,15 @@ func (k Querier) Plan(c context.Context, req *types.QueryPlanRequest) (*types.Qu
 
 	return &types.QueryPlanResponse{Plan: any}, nil
 }
+
+// CurrentEpochDays queries current epoch days.
+func (k Querier) CurrentEpochDays(c context.Context, req *types.QueryCurrentEpochDaysRequest) (*types.QueryCurrentEpochDaysResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+	currentEpochDays := k.GetCurrentEpochDays(ctx)
+
+	return &types.QueryCurrentEpochDaysResponse{CurrentEpochDays: currentEpochDays}, nil
+}
