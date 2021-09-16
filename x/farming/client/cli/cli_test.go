@@ -1,3 +1,5 @@
+// +build norace
+
 package cli_test
 
 import (
@@ -19,8 +21,6 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 	farmingtypes "github.com/tendermint/farming/x/farming/types"
 )
-
-// // +build norace
 
 type IntegrationTestSuite struct {
 	suite.Suite
