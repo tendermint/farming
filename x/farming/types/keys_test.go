@@ -205,8 +205,8 @@ func (s *keysTestSuite) TestGetQueuedStakingByFarmerPrefix() {
 }
 
 func (s *keysTestSuite) TestGetTotalStakingKey() {
-	s.Require().Equal([]byte{0x25}, types.GetTotalStakingKey(""))
-	s.Require().Equal([]byte{0x25, 0x73, 0x74, 0x61, 0x6b, 0x65}, types.GetTotalStakingKey(sdk.DefaultBondDenom))
+	s.Require().Equal([]byte{0x25}, types.GetTotalStakingsKey(""))
+	s.Require().Equal([]byte{0x25, 0x73, 0x74, 0x61, 0x6b, 0x65}, types.GetTotalStakingsKey(sdk.DefaultBondDenom))
 }
 
 func (s *keysTestSuite) TestGetHistoricalRewardsKey() {
