@@ -199,7 +199,9 @@ func GetCmdQueryStakings() *cobra.Command {
 		Short: "Query stakings by a farmer",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query all stakings by a farmer.
+
 Optionally restrict coins for a staking coin denom.
+
 Example:
 $ %s query %s stakings %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 $ %s query %s stakings %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4
@@ -247,6 +249,7 @@ func GetCmdQueryTotalStakings() *cobra.Command {
 		Short: "Query total staking amount for a staking coin denom",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query total staking amount for a staking coin denom.
+
 Example:
 $ %s query %s total-stakings poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4
 `,
@@ -290,7 +293,9 @@ func GetCmdQueryRewards() *cobra.Command {
 		Short: "Query rewards for a farmer",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query all rewards for a farmer.
+
 Optionally restrict rewards for a staking coin denom.
+
 Example:
 $ %s query %s rewards %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 $ %s query %s rewards %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj --staking-coin-denom poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4
