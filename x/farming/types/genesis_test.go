@@ -39,7 +39,7 @@ func TestValidateGenesis(t *testing.T) {
 
 			err := types.ValidateGenesis(*genState)
 			if tc.expectedErr == "" {
-				require.Nil(t, err)
+				require.NoError(t, err)
 			} else {
 				require.EqualError(t, err, tc.expectedErr)
 			}
