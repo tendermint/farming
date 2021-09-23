@@ -103,6 +103,8 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", p.GetPlanId())
 		}
 
+		// TODO: handle chaing plan type here
+
 		switch plan := plan.(type) {
 		case *types.FixedAmountPlan:
 			if p.GetFarmingPoolAddress() != "" {
