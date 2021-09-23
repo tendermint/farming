@@ -95,8 +95,8 @@ func (suite *KeeperTestSuite) TestMarshalUnmarshalDefaultGenesis() {
 }
 
 func (suite *KeeperTestSuite) TestExportGenesis() {
-	for i := range suite.samplePlans {
-		plan := suite.samplePlans[len(suite.samplePlans)-i-1]
+	for i := range suite.sampleFixedAmtPlans {
+		plan := suite.sampleFixedAmtPlans[len(suite.sampleFixedAmtPlans)-i-1]
 		suite.keeper.SetPlan(suite.ctx, plan)
 	}
 
@@ -133,7 +133,7 @@ func (suite *KeeperTestSuite) TestExportGenesis() {
 		{
 			"PlanRecords",
 			func() {
-				suite.Require().Len(genState.PlanRecords, len(suite.samplePlans))
+				suite.Require().Len(genState.PlanRecords, len(suite.sampleFixedAmtPlans))
 				for _, record := range genState.PlanRecords {
 					err := record.Validate()
 					suite.Require().NoError(err)
@@ -193,31 +193,71 @@ func (suite *KeeperTestSuite) TestExportGenesis() {
 		},
 		{
 			"HistoricalRewards",
-			func() {},
+			func() {
+				suite.Require().Len(genState.HistoricalRewardsRecords, 2)
+				for _, record := range genState.HistoricalRewardsRecords {
+					suite.Require().Equal(uint64(0), record.Epoch)
+					suite.Require().Contains([]string{denom1, denom2}, record.StakingCoinDenom)
+					suite.Require().False(record.HistoricalRewards.CumulativeUnitRewards.IsZero())
+					// TODO: need to check actual value?
+				}
+			},
 		},
 		{
 			"OutstandingRewards",
-			func() {},
+			func() {
+				suite.Require().Len(genState.OutstandingRewardsRecords, 2)
+				for _, record := range genState.OutstandingRewardsRecords {
+					switch record.StakingCoinDenom {
+					case denom1:
+						suite.Require().True(decCoinsEq(
+							sdk.NewDecCoins(sdk.NewInt64DecCoin(denom3, 2300000)),
+							record.OutstandingRewards.Rewards))
+					case denom2:
+						suite.Require().True(decCoinsEq(
+							sdk.NewDecCoins(sdk.NewInt64DecCoin(denom3, 700000)),
+							record.OutstandingRewards.Rewards))
+					}
+				}
+			},
 		},
 		{
 			"CurrentEpochRecords",
-			func() {},
+			func() {
+				suite.Require().Len(genState.CurrentEpochRecords, 2)
+				for _, record := range genState.CurrentEpochRecords {
+					suite.Require().Equal(uint64(1), record.CurrentEpoch)
+				}
+			},
 		},
 		{
 			"StakingReserveCoins",
-			func() {},
+			func() {
+				suite.Require().True(coinsEq(
+					sdk.NewCoins(sdk.NewInt64Coin(denom1, 5000000), sdk.NewInt64Coin(denom2, 3000000)),
+					genState.StakingReserveCoins))
+			},
 		},
 		{
 			"RewardPoolCoins",
-			func() {},
+			func() {
+				suite.Require().True(coinsEq(
+					sdk.NewCoins(sdk.NewInt64Coin(denom3, 3000000)),
+					genState.RewardPoolCoins))
+			},
 		},
 		{
 			"LastEpochTime",
-			func() {},
+			func() {
+				suite.Require().NotNil(genState.LastEpochTime)
+				suite.Require().Equal(types.ParseTime("2021-08-06T00:00:00Z"), *genState.LastEpochTime)
+			},
 		},
 		{
 			"CurrentEpochDays",
-			func() {},
+			func() {
+				suite.Require().Equal(uint32(1), genState.CurrentEpochDays)
+			},
 		},
 	} {
 		suite.Run(tc.name, tc.check)
