@@ -108,7 +108,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 		if p.EpochAmount.IsAllPositive() {
 			if p.GetName() != "" {
 				if err := plan.SetName(p.GetName()); err != nil {
-					return err
+					return err // nolint:errcheck
 				}
 			}
 
@@ -151,7 +151,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			}
 
 			// change the plan to fixed amount plan if an epoch amount exists
-			if p.GetEpochAmount() != nil {
+			if p.GetEpochAmount().IsAllPositive() {
 				basePlan := types.NewBasePlan(
 					plan.GetId(),
 					plan.GetName(),
@@ -174,7 +174,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 		} else if p.EpochRatio.IsPositive() {
 			if p.GetName() != "" {
 				if err := plan.SetName(p.GetName()); err != nil {
-					return err
+					return err // nolint:errcheck
 				}
 			}
 
@@ -217,7 +217,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			}
 
 			// change the plan to ratio plan if an epoch ratio exists
-			if !p.EpochRatio.IsZero() {
+			if p.EpochRatio.IsPositive() {
 				basePlan := types.NewBasePlan(
 					plan.GetId(),
 					plan.GetName(),
@@ -236,6 +236,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 			logger := k.Logger(ctx)
 			logger.Info("updated public ratio plan", "ratio_plan", plan)
+
 		}
 	}
 
