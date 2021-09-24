@@ -8,21 +8,16 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "50...75"
+  range: "50...80"
 
   status:
     project:
       default:
-        threshold: 1
-      unittest:
-        threshold: 1
-        only_pulls: true
-        flags:
-          - "unittest"
-    # Disable patch since it is noisy and not correct
+        target: auto
+        threshold: 1%
     patch:
       default:
-        enabled: no
+        enabled: no # disable patch since it is noisy and not correct
         if_not_found: success
 
 comment: false
