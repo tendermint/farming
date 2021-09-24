@@ -45,12 +45,13 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 		if err != nil {
 			return err
 		}
+
 		terminationAcc, err := sdk.AccAddressFromBech32(p.GetTerminationAddress())
 		if err != nil {
 			return err
 		}
 
-		if !p.EpochAmount.IsZero() && !p.EpochAmount.IsAnyNegative() {
+		if p.EpochAmount.IsAllPositive() {
 			msg := types.NewMsgCreateFixedAmountPlan(
 				p.GetName(),
 				farmingPoolAddrAcc,
@@ -68,7 +69,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 			logger := k.Logger(ctx)
 			logger.Info("created public fixed amount plan", "fixed_amount_plan", plan)
 
-		} else if !p.EpochRatio.IsZero() && !p.EpochRatio.IsNegative() && !p.EpochRatio.IsNil() {
+		} else if p.EpochRatio.IsPositive() {
 			msg := types.NewMsgCreateRatioPlan(
 				p.GetName(),
 				farmingPoolAddrAcc,
@@ -103,10 +104,13 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d is not found", p.GetPlanId())
 		}
 
-		// TODO: handle chaing plan type here
+		if p.EpochAmount.IsAllPositive() {
+			if p.GetName() != "" {
+				if err := plan.SetName(p.GetName()); err != nil {
+					return err
+				}
+			}
 
-		switch plan := plan.(type) {
-		case *types.FixedAmountPlan:
 			if p.GetFarmingPoolAddress() != "" {
 				farmingPoolAddrAcc, err := sdk.AccAddressFromBech32(p.GetFarmingPoolAddress())
 				if err != nil {
@@ -145,12 +149,20 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 				}
 			}
 
-			if p.GetName() != "" {
-				plan.Name = p.GetName()
-			}
-
+			// change the plan to fixed amount plan
 			if p.GetEpochAmount() != nil {
-				plan.EpochAmount = p.GetEpochAmount()
+				basePlan := types.NewBasePlan(
+					plan.GetId(),
+					plan.GetName(),
+					plan.GetType(),
+					plan.GetFarmingPoolAddress().String(),
+					plan.GetTerminationAddress().String(),
+					plan.GetStakingCoinWeights(),
+					plan.GetStartTime(),
+					plan.GetEndTime(),
+				)
+
+				plan = types.NewFixedAmountPlan(basePlan, p.GetEpochAmount())
 			}
 
 			k.SetPlan(ctx, plan)
@@ -158,9 +170,11 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			logger := k.Logger(ctx)
 			logger.Info("updated public fixed amount plan", "fixed_amount_plan", plan)
 
-		case *types.RatioPlan:
-			if err := plan.Validate(); err != nil {
-				return err
+		} else if p.EpochRatio.IsPositive() {
+			if p.GetName() != "" {
+				if err := plan.SetName(p.GetName()); err != nil {
+					return err
+				}
 			}
 
 			if p.GetFarmingPoolAddress() != "" {
@@ -201,12 +215,20 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 				}
 			}
 
-			if p.GetName() != "" {
-				plan.Name = p.GetName()
-			}
-
+			// change the plan to ratio plan
 			if !p.EpochRatio.IsZero() {
-				plan.EpochRatio = p.EpochRatio
+				basePlan := types.NewBasePlan(
+					plan.GetId(),
+					plan.GetName(),
+					plan.GetType(),
+					plan.GetFarmingPoolAddress().String(),
+					plan.GetTerminationAddress().String(),
+					plan.GetStakingCoinWeights(),
+					plan.GetStartTime(),
+					plan.GetEndTime(),
+				)
+
+				plan = types.NewRatioPlan(basePlan, p.EpochRatio)
 			}
 
 			k.SetPlan(ctx, plan)
@@ -214,8 +236,6 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			logger := k.Logger(ctx)
 			logger.Info("updated public ratio plan", "ratio_plan", plan)
 
-		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized plan type: %T", p)
 		}
 	}
 
