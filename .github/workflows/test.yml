@@ -65,6 +65,12 @@ jobs:
   test-race:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    status:
+      # Disable patch since it is noisy and not correct
+      patch:
+        default:
+          enabled: no
+          if_not_found: success
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2.1.3
