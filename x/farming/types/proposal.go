@@ -86,7 +86,6 @@ func (p PublicPlanProposal) String() string {
 }
 
 // NewAddRequestProposal creates a new AddRequestProposal object
-// nolint:interfacer
 func NewAddRequestProposal(
 	name string,
 	farmingPoolAddr string,
@@ -141,7 +140,6 @@ func (p *AddRequestProposal) Validate() error {
 }
 
 // NewUpdateRequestProposal creates a new UpdateRequestProposal object.
-// nolint:interfacer
 func NewUpdateRequestProposal(
 	id uint64,
 	name string,
@@ -201,7 +199,6 @@ func (p *UpdateRequestProposal) Validate() error {
 }
 
 // NewDeleteRequestProposal creates a new DeleteRequestProposal object.
-// nolint:interfacer
 func NewDeleteRequestProposal(id uint64) *DeleteRequestProposal {
 	return &DeleteRequestProposal{
 		PlanId: id,

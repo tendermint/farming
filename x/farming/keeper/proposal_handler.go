@@ -108,7 +108,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 		if p.EpochAmount.IsAllPositive() {
 			if p.GetName() != "" {
 				if err := plan.SetName(p.GetName()); err != nil {
-					return err // nolint:errcheck
+					return err
 				}
 			}
 
@@ -174,7 +174,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 		} else if p.EpochRatio.IsPositive() {
 			if p.GetName() != "" {
 				if err := plan.SetName(p.GetName()); err != nil {
-					return err // nolint:errcheck
+					return err
 				}
 			}
 
