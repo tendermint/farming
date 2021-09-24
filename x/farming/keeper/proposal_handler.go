@@ -31,6 +31,7 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 	if err := types.ValidateName(plans); err != nil {
 		return err
 	}
+
 	if err := types.ValidateTotalEpochRatio(plans); err != nil {
 		return err
 	}
@@ -149,7 +150,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 				}
 			}
 
-			// change the plan to fixed amount plan
+			// change the plan to fixed amount plan if an epoch amount exists
 			if p.GetEpochAmount() != nil {
 				basePlan := types.NewBasePlan(
 					plan.GetId(),
@@ -215,7 +216,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 				}
 			}
 
-			// change the plan to ratio plan
+			// change the plan to ratio plan if an epoch ratio exists
 			if !p.EpochRatio.IsZero() {
 				basePlan := types.NewBasePlan(
 					plan.GetId(),
@@ -235,7 +236,6 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 			logger := k.Logger(ctx)
 			logger.Info("updated public ratio plan", "ratio_plan", plan)
-
 		}
 	}
 
