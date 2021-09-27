@@ -12,7 +12,7 @@ The farming module emits the following events:
 | plan_terminated   | farming_pool_address | {farmingPoolAddress}  |
 | plan_terminated   | termination_address  | {terminationAddress}  |
 | rewards_allocated | plan_id              | {planID}              |
-| rewards_allocated | amount               | {totalAllocatedCoins} |
+| rewards_allocated | reward_coins         | {rewardCoins}         |
 
 ## Handlers
 
