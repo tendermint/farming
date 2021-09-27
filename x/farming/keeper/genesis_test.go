@@ -136,6 +136,14 @@ func (suite *KeeperTestSuite) TestInitGenesisPanics() {
 			},
 			true,
 		},
+		{
+			"invalid outstanding rewards records",
+			func(genState *types.GenesisState) {
+				genState.OutstandingRewardsRecords[0].OutstandingRewards.Rewards = genState.OutstandingRewardsRecords[0].OutstandingRewards.Rewards.Add(
+					sdk.NewInt64DecCoin(denom3, 1000000))
+			},
+			true,
+		},
 	} {
 		suite.Run(tc.name, func() {
 			genState := suite.keeper.ExportGenesis(cacheCtx)
