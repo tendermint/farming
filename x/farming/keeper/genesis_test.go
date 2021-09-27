@@ -229,11 +229,10 @@ func (suite *KeeperTestSuite) TestExportGenesis() {
 			func() {
 				suite.Require().Len(genState.PlanRecords, len(suite.sampleFixedAmtPlans))
 				for _, record := range genState.PlanRecords {
-					err := record.Validate()
+					plan, err := types.UnpackPlan(&record.Plan)
 					suite.Require().NoError(err)
-					_, err = types.UnpackPlan(&record.Plan)
+					err = plan.Validate()
 					suite.Require().NoError(err)
-					// TODO: add more checks
 				}
 			},
 		},
