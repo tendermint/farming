@@ -327,6 +327,7 @@ func UnpackPlan(any *codectypes.Any) (PlanI, error) {
 		if err := registry.UnpackAny(any, &plan); err != nil {
 			return nil, err
 		}
+		return plan, nil
 	}
 	plan, ok := v.(PlanI)
 	if !ok {
