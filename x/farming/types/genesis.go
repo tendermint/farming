@@ -78,7 +78,64 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	// TODO: validate other fields
+	for _, record := range data.StakingRecords {
+		if _, err := sdk.AccAddressFromBech32(record.Farmer); err != nil {
+			return err
+		}
+		if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
+			return err
+		}
+		if !record.Staking.Amount.IsPositive() {
+			return fmt.Errorf("staking amount must be positive: %s", record.Staking.Amount)
+		}
+	}
+
+	for _, record := range data.QueuedStakingRecords {
+		if _, err := sdk.AccAddressFromBech32(record.Farmer); err != nil {
+			return err
+		}
+		if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
+			return err
+		}
+		if !record.QueuedStaking.Amount.IsPositive() {
+			return fmt.Errorf("queued staking amount must be positive: %s", record.QueuedStaking.Amount)
+		}
+	}
+
+	for _, record := range data.HistoricalRewardsRecords {
+		if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
+			return err
+		}
+		if err := record.HistoricalRewards.CumulativeUnitRewards.Validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, record := range data.OutstandingRewardsRecords {
+		if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
+			return err
+		}
+		if err := record.OutstandingRewards.Rewards.Validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, record := range data.CurrentEpochRecords {
+		if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
+			return err
+		}
+	}
+
+	if err := data.StakingReserveCoins.Validate(); err != nil {
+		return err
+	}
+	if err := data.RewardPoolCoins.Validate(); err != nil {
+		return err
+	}
+
+	if data.CurrentEpochDays == 0 {
+		return fmt.Errorf("current epoch days must be positive")
+	}
 
 	return nil
 }
