@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -73,11 +74,27 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		k.SetTotalStakings(ctx, stakingCoinDenom, types.TotalStakings{Amount: amt})
 	}
 
-	if err := k.ValidateRemainingRewardsAmount(ctx); err != nil {
+	err := k.ValidateRemainingRewardsAmount(ctx)
+	if err != nil {
 		panic(err)
 	}
+	rewardsPoolCoins := k.bankKeeper.GetAllBalances(ctx, k.GetRewardsReservePoolAcc(ctx))
+	if !genState.RewardPoolCoins.IsEqual(rewardsPoolCoins) {
+		panic(fmt.Sprintf("RewardPoolCoins differs from the actual value; have %s, want %s",
+			rewardsPoolCoins, genState.RewardPoolCoins))
+	}
 
-	if err := k.ValidateStakingReservedAmount(ctx); err != nil {
+	err = k.ValidateStakingReservedAmount(ctx)
+	if err != nil {
+		panic(err)
+	}
+	stakingReserveCoins := k.bankKeeper.GetAllBalances(ctx, k.GetStakingReservePoolAcc(ctx))
+	if !genState.StakingReserveCoins.IsEqual(stakingReserveCoins) {
+		panic(fmt.Sprintf("StakingReserveCoins differs from the actual value; have %s, expected %s",
+			stakingReserveCoins, genState.StakingReserveCoins))
+	}
+
+	if err := k.ValidateOutstandingRewards(ctx); err != nil {
 		panic(err)
 	}
 
@@ -89,7 +106,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	params := k.GetParams(ctx)
 
 	plans := []types.PlanRecord{}
-	for _, plan := range k.GetAllPlans(ctx) {
+	for _, plan := range k.GetPlans(ctx) {
 		any, err := types.PackPlan(plan)
 		if err != nil {
 			panic(err)

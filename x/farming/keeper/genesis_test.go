@@ -76,6 +76,84 @@ func (suite *KeeperTestSuite) TestInitGenesis() {
 	suite.Require().Equal(genState, suite.keeper.ExportGenesis(suite.ctx))
 }
 
+func (suite *KeeperTestSuite) TestInitGenesisPanics() {
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-08-06T00:00:00Z"))
+
+	cacheCtx, _ := suite.ctx.CacheContext()
+
+	for _, plan := range suite.samplePlans {
+		suite.keeper.SetPlan(cacheCtx, plan)
+	}
+
+	err := suite.keeper.Stake(cacheCtx, suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+	suite.Require().NoError(err)
+	err = suite.keeper.Stake(cacheCtx, suite.addrs[1], sdk.NewCoins(sdk.NewInt64Coin(denom1, 700000), sdk.NewInt64Coin(denom2, 500000)))
+	suite.Require().NoError(err)
+
+	err = suite.keeper.AdvanceEpoch(cacheCtx)
+	suite.Require().NoError(err)
+	err = suite.keeper.AdvanceEpoch(cacheCtx)
+	suite.Require().NoError(err)
+
+	err = suite.keeper.Stake(cacheCtx, suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom2, 800000)))
+	suite.Require().NoError(err)
+
+	for _, tc := range []struct {
+		name        string
+		malleate    func(state *types.GenesisState)
+		expectPanic bool
+	}{
+		{
+			"normal",
+			func(genState *types.GenesisState) {},
+			false,
+		},
+		{
+			"invalid staking records",
+			func(genState *types.GenesisState) {
+				genState.StakingRecords[0].Staking.Amount = sdk.NewInt(10000000)
+			},
+			true,
+		},
+		{
+			"invalid queued staking records",
+			func(genState *types.GenesisState) {
+				genState.QueuedStakingRecords[0].QueuedStaking.Amount = sdk.NewInt(10000000)
+			},
+			true,
+		},
+		{
+			"invalid remaining rewards",
+			func(genState *types.GenesisState) {
+				genState.RewardPoolCoins = sdk.NewCoins(sdk.NewInt64Coin(denom3, 100))
+			},
+			true,
+		},
+		{
+			"invalid staking reserved amount",
+			func(genState *types.GenesisState) {
+				genState.StakingReserveCoins = sdk.NewCoins(sdk.NewInt64Coin(denom1, 100))
+			},
+			true,
+		},
+	} {
+		suite.Run(tc.name, func() {
+			genState := suite.keeper.ExportGenesis(cacheCtx)
+			tc.malleate(genState)
+
+			cacheCtx2, _ := cacheCtx.CacheContext()
+
+			fn := suite.Require().NotPanics
+			if tc.expectPanic {
+				fn = suite.Require().Panics
+			}
+			fn(func() {
+				suite.keeper.InitGenesis(cacheCtx2, *genState)
+			})
+		})
+	}
+}
+
 func (suite *KeeperTestSuite) TestMarshalUnmarshalDefaultGenesis() {
 	genState := suite.keeper.ExportGenesis(suite.ctx)
 	bz, err := suite.app.AppCodec().MarshalJSON(genState)

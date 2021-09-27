@@ -226,7 +226,7 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 	allocCoins := make(map[string]map[uint64]sdk.Coins) // farmingPoolAddress => (planId => sdk.Coins)
 
 	plans := make(map[uint64]types.PlanI)
-	for _, plan := range k.GetAllPlans(ctx) {
+	for _, plan := range k.GetPlans(ctx) {
 		// Filter plans by their start time and end time.
 		if !plan.GetTerminated() && types.IsPlanActiveAt(plan, ctx.BlockTime()) {
 			plans[plan.GetId()] = plan
@@ -340,6 +340,45 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 			CumulativeUnitRewards: historical.CumulativeUnitRewards.Add(unitRewards...),
 		})
 		k.SetCurrentEpoch(ctx, stakingCoinDenom, currentEpoch+1)
+	}
+
+	return nil
+}
+
+// ValidateRemainingRewardsAmount checks that the balance of the RewardPoolAddresses of all plans greater than the total amount of unwithdrawn reward coins in all reward objects
+// TODO: correct comment above
+func (k Keeper) ValidateRemainingRewardsAmount(ctx sdk.Context) error {
+	cacheCtx, _ := ctx.CacheContext()
+
+	remainingRewards := sdk.NewCoins()
+	k.IterateStakings(cacheCtx, func(stakingCoinDenom string, farmerAcc sdk.AccAddress, staking types.Staking) (stop bool) {
+		rewards, err := k.WithdrawRewards(cacheCtx, farmerAcc, stakingCoinDenom)
+		if err != nil {
+			panic(err)
+		}
+		remainingRewards = remainingRewards.Add(rewards...)
+		return false
+	})
+
+	rewardsReservePoolBalances := k.bankKeeper.GetAllBalances(ctx, k.GetRewardsReservePoolAcc(ctx))
+	if !rewardsReservePoolBalances.IsAllGTE(remainingRewards) {
+		return types.ErrInvalidRemainingRewardsAmount
+	}
+
+	return nil
+}
+
+func (k Keeper) ValidateOutstandingRewards(ctx sdk.Context) error {
+	totalOutstandingRewards := sdk.NewDecCoins()
+	k.IterateOutstandingRewards(ctx, func(stakingCoinDenom string, rewards types.OutstandingRewards) (stop bool) {
+		totalOutstandingRewards = totalOutstandingRewards.Add(rewards.Rewards...)
+		return false
+	})
+
+	rewardsReservePoolBalances := sdk.NewDecCoinsFromCoins(k.bankKeeper.GetAllBalances(ctx, k.GetRewardsReservePoolAcc(ctx))...)
+	_, hasNeg := rewardsReservePoolBalances.SafeSub(totalOutstandingRewards)
+	if hasNeg {
+		return types.ErrInvalidStakingReservedAmount // TODO: use different error type
 	}
 
 	return nil
