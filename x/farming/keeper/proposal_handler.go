@@ -152,18 +152,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 			// change the plan to fixed amount plan if an epoch amount exists
 			if p.GetEpochAmount().IsAllPositive() {
-				basePlan := types.NewBasePlan(
-					plan.GetId(),
-					plan.GetName(),
-					plan.GetType(),
-					plan.GetFarmingPoolAddress().String(),
-					plan.GetTerminationAddress().String(),
-					plan.GetStakingCoinWeights(),
-					plan.GetStartTime(),
-					plan.GetEndTime(),
-				)
-
-				plan = types.NewFixedAmountPlan(basePlan, p.GetEpochAmount())
+				plan = types.NewFixedAmountPlan(plan.GetBasePlan(), p.GetEpochAmount())
 			}
 
 			k.SetPlan(ctx, plan)
@@ -218,18 +207,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 
 			// change the plan to ratio plan if an epoch ratio exists
 			if p.EpochRatio.IsPositive() {
-				basePlan := types.NewBasePlan(
-					plan.GetId(),
-					plan.GetName(),
-					plan.GetType(),
-					plan.GetFarmingPoolAddress().String(),
-					plan.GetTerminationAddress().String(),
-					plan.GetStakingCoinWeights(),
-					plan.GetStartTime(),
-					plan.GetEndTime(),
-				)
-
-				plan = types.NewRatioPlan(basePlan, p.EpochRatio)
+				plan = types.NewRatioPlan(plan.GetBasePlan(), p.EpochRatio)
 			}
 
 			k.SetPlan(ctx, plan)
