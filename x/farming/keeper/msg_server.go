@@ -39,7 +39,7 @@ func (k msgServer) CreateFixedAmountPlan(goCtx context.Context, msg *types.MsgCr
 	}
 
 	plans := k.GetPlans(ctx)
-	if err := types.ValidateName(plans); err != nil {
+	if err := types.ValidatePlanNames(plans); err != nil {
 		return nil, err
 	}
 
@@ -59,7 +59,7 @@ func (k msgServer) CreateRatioPlan(goCtx context.Context, msg *types.MsgCreateRa
 	}
 
 	plans := k.GetPlans(ctx)
-	if err := types.ValidateName(plans); err != nil {
+	if err := types.ValidatePlanNames(plans); err != nil {
 		return nil, err
 	}
 

@@ -56,11 +56,11 @@ func ValidateGenesis(data GenesisState) error {
 
 	var plans []PlanI
 	for _, record := range data.PlanRecords {
-		if err := record.Validate(); err != nil {
-			return err
-		}
 		plan, err := UnpackPlan(&record.Plan)
 		if err != nil {
+			return err
+		}
+		if err := plan.Validate(); err != nil {
 			return err
 		}
 		if plan.GetId() < id {
@@ -70,7 +70,7 @@ func ValidateGenesis(data GenesisState) error {
 		id = plan.GetId() + 1
 	}
 
-	if err := ValidateName(plans); err != nil {
+	if err := ValidatePlanNames(plans); err != nil {
 		return err
 	}
 
@@ -79,28 +79,6 @@ func ValidateGenesis(data GenesisState) error {
 	}
 
 	// TODO: validate other fields
-	if err := data.RewardPoolCoins.Validate(); err != nil {
-		return err
-	}
 
-	if err := data.StakingReserveCoins.Validate(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Validate validates Reward.
-func (record PlanRecord) Validate() error {
-	plan, err := UnpackPlan(&record.Plan)
-	if err != nil {
-		return err
-	}
-	if err := plan.Validate(); err != nil {
-		return err
-	}
-	if err := record.FarmingPoolCoins.Validate(); err != nil {
-		return err
-	}
 	return nil
 }

@@ -249,8 +249,8 @@ type PlanI interface {
 	Validate() error
 }
 
-// ValidateName validates duplicate plan name value.
-func ValidateName(i interface{}) error {
+// ValidatePlanNames validates duplicate plan name value.
+func ValidatePlanNames(i interface{}) error {
 	plans, ok := i.([]PlanI)
 	if !ok {
 		return sdkerrors.Wrapf(ErrInvalidPlanType, "invalid plan type %T", i)
@@ -313,15 +313,24 @@ func PackPlan(plan PlanI) (*codectypes.Any, error) {
 
 // UnpackPlan converts Any to PlanI.
 func UnpackPlan(any *codectypes.Any) (PlanI, error) {
+	if any == nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "cannot unpack nil")
+	}
+	if any.TypeUrl == "" {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidType, "empty type url")
+	}
 	var plan PlanI
 	v := any.GetCachedValue()
-	plan, ok := v.(PlanI)
-	if !ok {
+	if v == nil {
 		registry := codectypes.NewInterfaceRegistry()
 		RegisterInterfaces(registry)
 		if err := registry.UnpackAny(any, &plan); err != nil {
 			return nil, err
 		}
+	}
+	plan, ok := v.(PlanI)
+	if !ok {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "cannot unpack Plan from %T", v)
 	}
 	return plan, nil
 }
