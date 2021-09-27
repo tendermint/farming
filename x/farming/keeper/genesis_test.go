@@ -125,12 +125,20 @@ func (suite *KeeperTestSuite) TestInitGenesisPanics() {
 		{
 			"invalid remaining rewards",
 			func(genState *types.GenesisState) {
+				genState.HistoricalRewardsRecords[0].HistoricalRewards.CumulativeUnitRewards = genState.HistoricalRewardsRecords[0].HistoricalRewards.CumulativeUnitRewards.Add(
+					sdk.NewInt64DecCoin(denom3, 1000000))
+			},
+			true,
+		},
+		{
+			"invalid reward pool coins",
+			func(genState *types.GenesisState) {
 				genState.RewardPoolCoins = sdk.NewCoins(sdk.NewInt64Coin(denom3, 100))
 			},
 			true,
 		},
 		{
-			"invalid staking reserved amount",
+			"invalid staking reserve coins",
 			func(genState *types.GenesisState) {
 				genState.StakingReserveCoins = sdk.NewCoins(sdk.NewInt64Coin(denom1, 100))
 			},

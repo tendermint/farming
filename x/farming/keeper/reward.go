@@ -139,6 +139,24 @@ func (k Keeper) CalculateRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, stak
 	return
 }
 
+func (k Keeper) Rewards(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDenom string) sdk.Coins {
+	currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
+	rewards := k.CalculateRewards(ctx, farmerAcc, stakingCoinDenom, currentEpoch-1)
+	truncatedRewards, _ := rewards.TruncateDecimal()
+
+	return truncatedRewards
+}
+
+func (k Keeper) AllRewards(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins {
+	totalRewards := sdk.NewCoins()
+	k.IterateStakingsByFarmer(ctx, farmerAcc, func(stakingCoinDenom string, staking types.Staking) (stop bool) {
+		rewards := k.Rewards(ctx, farmerAcc, stakingCoinDenom)
+		totalRewards = totalRewards.Add(rewards...)
+		return false
+	})
+	return totalRewards
+}
+
 func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDenom string) (sdk.Coins, error) {
 	staking, found := k.GetStaking(ctx, stakingCoinDenom, farmerAcc)
 	if !found {
@@ -348,14 +366,9 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 // ValidateRemainingRewardsAmount checks that the balance of the RewardPoolAddresses of all plans greater than the total amount of unwithdrawn reward coins in all reward objects
 // TODO: correct comment above
 func (k Keeper) ValidateRemainingRewardsAmount(ctx sdk.Context) error {
-	cacheCtx, _ := ctx.CacheContext()
-
 	remainingRewards := sdk.NewCoins()
-	k.IterateStakings(cacheCtx, func(stakingCoinDenom string, farmerAcc sdk.AccAddress, staking types.Staking) (stop bool) {
-		rewards, err := k.WithdrawRewards(cacheCtx, farmerAcc, stakingCoinDenom)
-		if err != nil {
-			panic(err)
-		}
+	k.IterateStakings(ctx, func(stakingCoinDenom string, farmerAcc sdk.AccAddress, staking types.Staking) (stop bool) {
+		rewards := k.Rewards(ctx, farmerAcc, stakingCoinDenom)
 		remainingRewards = remainingRewards.Add(rewards...)
 		return false
 	})
