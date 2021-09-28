@@ -6,13 +6,13 @@ The farming module emits the following events:
 
 ## EndBlocker
 
-| Type              | Attribute Key        | Attribute Value       |
-| ----------------- | -------------------- | --------------------- |
-| plan_terminated   | plan_id              | {planID}              |
-| plan_terminated   | farming_pool_address | {farmingPoolAddress}  |
-| plan_terminated   | termination_address  | {terminationAddress}  |
-| rewards_allocated | plan_id              | {planID}              |
-| rewards_allocated | reward_coins         | {rewardCoins}         |
+| Type              | Attribute Key        | Attribute Value          |
+| ----------------- | -------------------- | ------------------------ |
+| plan_terminated   | plan_id              | {planID}                 |
+| plan_terminated   | farming_pool_address | {farmingPoolAddress}     |
+| plan_terminated   | termination_address  | {terminationAddress}     |
+| rewards_allocated | plan_id              | {planID}                 |
+| rewards_allocated | amount               | {totalAllocatedAmount} |
 
 ## Handlers
 
