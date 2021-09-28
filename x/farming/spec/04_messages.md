@@ -6,7 +6,7 @@ Messages (Msg) are objects that trigger state transitions. Msgs are wrapped in t
 
 ## MsgCreateFixedAmountPlan
 
-This is one of the private plan type messages that anyone can create. A fixed amount plan plans to distribute amount of coins by a fixed amount defined in `EpochAmount`. Internally, `PrivatePlanFarmingPoolAddress` is created and the creator should query the plan's farming pool address and send amount of coins to the farming pool address so that the plan distributes as intended. Note that there is a fee `PlanCreationFee` paid upon plan creation to prevent from spamming attack.
+This is one of the private plan type messages that anyone can create. A fixed amount plan plans to distribute amount of coins by a fixed amount defined in `EpochAmount`. Internally, `PrivatePlanFarmingPoolAddress` is created and the creator should query the plan's `PrivatePlanFarmingPoolAddress` and send amount of coins to the farming pool address so that the plan distributes as intended. Note that there is a fee `PlanCreationFee` paid upon plan creation to prevent from spamming attack.
 
 ```go
 type MsgCreateFixedAmountPlan struct {
@@ -21,7 +21,7 @@ type MsgCreateFixedAmountPlan struct {
 
 ## MsgCreateRatioPlan
 
-This is one of the private plan type messages that anyone can create. A ratio plan plans to distribute amount of coins by ratio defined in `EpochRatio`. All coins that the creator has in balances are used. Internally, `PrivatePlanFarmingPoolAddress` is created and the creator should query the plan's farming pool address and send amount of coins to the farming pool address so that the plan distributes as intended. Note that there is a fee `PlanCreationFee` paid upon plan creation to prevent from spamming attack.
+This is one of the private plan type messages that anyone can create. A ratio plan plans to distribute amount of coins by ratio defined in `EpochRatio`. Internally, `PrivatePlanFarmingPoolAddress` is created and the creator should query the plan's `PrivatePlanFarmingPoolAddress` and send amount of coins to the farming pool address so that the plan distributes as intended. For a ratio plan, whichever coins that the farming pool address has in balances are used every epoch. Note that there is a fee `PlanCreationFee` paid upon plan creation to prevent from spamming attack.
 
 ```go
 type MsgCreateRatioPlan struct {

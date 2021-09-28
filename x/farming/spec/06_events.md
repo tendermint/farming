@@ -16,7 +16,7 @@ The farming module emits the following events:
 
 ## Handlers
 
-### CreateFixedAmountPlan
+### MsgCreateFixedAmountPlan
 
 | Type                      | Attribute Key         | Attribute Value          |
 | ------------------------- | --------------------- | ------------------------ |
@@ -58,7 +58,6 @@ The farming module emits the following events:
 
 | Type    | Attribute Key   | Attribute Value  |
 | ------- | --------------- | ---------------- |
-| unstake | plan_id         | {planID}         |
 | unstake | farmer          | {farmer}         |
 | unstake | unstaking_coins | {unstakingCoins} | 
 | message | module          | farming          |
