@@ -15,4 +15,4 @@ This document specifies the farming module of the Cosmos SDK that serves farming
 6. **[End-Block](05_end_block.md)**
 7. **[Events](06_events.md)**
 8. **[Parameters](07_params.md)**
-8. **[Proposal](08_params.md)**
+8. **[Proposal](08_proposal.md)**
