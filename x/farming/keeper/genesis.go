@@ -11,6 +11,10 @@ import (
 
 // InitGenesis initializes the farming module's state from a given genesis state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
+	if err := types.ValidateGenesis(genState); err != nil {
+		panic(err)
+	}
+
 	ctx, writeCache := ctx.CacheContext()
 
 	k.SetParams(ctx, genState.Params)

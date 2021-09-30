@@ -363,8 +363,8 @@ func TestValidateGenesis(t *testing.T) {
 			func(genState *types.GenesisState) {
 				genState.HistoricalRewardsRecords = []types.HistoricalRewardsRecord{
 					{
-						StakingCoinDenom:  validStakingCoinDenom,
-						Epoch:             0,
+						StakingCoinDenom: validStakingCoinDenom,
+						Epoch:            0,
 						HistoricalRewards: types.HistoricalRewards{
 							CumulativeUnitRewards: sdk.DecCoins{sdk.NewInt64DecCoin("denom3", 0)},
 						},
@@ -390,7 +390,7 @@ func TestValidateGenesis(t *testing.T) {
 			func(genState *types.GenesisState) {
 				genState.OutstandingRewardsRecords = []types.OutstandingRewardsRecord{
 					{
-						StakingCoinDenom:   validStakingCoinDenom,
+						StakingCoinDenom: validStakingCoinDenom,
 						OutstandingRewards: types.OutstandingRewards{
 							Rewards: sdk.DecCoins{sdk.NewInt64DecCoin("denom3", 0)},
 						},
