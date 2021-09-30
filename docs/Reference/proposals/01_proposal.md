@@ -1,6 +1,6 @@
 # Signal Proposal
 
-Adopting the `Budget` Module and `Farming` Module on Cosmos Hub
+Adopting the `Budget` and `Farming` Modules on Cosmos Hub
 
 By voting yes to this signal proposal, the voter agrees to adopt the Budget Module and Farming Module on Cosmos Hub to allow an incentivization mechanism for userbase growth on Cosmos Hub. The Tendermint team is currently building the two suggested modules, and when this signal proposal passes, the Budget Module and Farming Module will be included in a future Gaia upgrade when both modules are ready to be deployed.
 
