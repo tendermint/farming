@@ -70,10 +70,6 @@ func ValidateGenesis(data GenesisState) error {
 		id = plan.GetId() + 1
 	}
 
-	if err := ValidateName(plans); err != nil {
-		return err
-	}
-
 	if err := ValidateTotalEpochRatio(plans); err != nil {
 		return err
 	}
