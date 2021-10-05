@@ -39,7 +39,6 @@ message PublicPlanProposal {
 // AddRequestProposal details a proposal for creating a public plan.
 message AddRequestProposal {
   // name specifies the plan name for diplay
-  // it doesn't need to be unique
   string name = 1;
 
   // farming_pool_address defines the bech32-encoded address of the farming pool
@@ -85,7 +84,7 @@ message UpdateRequestProposal {
   // plan_id specifies index of the farming plan
   uint64 plan_id = 1;
 
-  // name specifies the plan name that describes what plan is for
+  // name specifies the plan name for diplay
   string name = 2;
 
   // farming_pool_address defines the bech32-encoded address of the farming pool
