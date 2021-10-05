@@ -193,11 +193,13 @@ func NewStakeCmd() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Stake coins. 
 			
-To get farming rewards, it is recommended to check which plans are available on a network. 
+To get farming rewards, you must stake coins that are defined in plans that are available on a network. 
 
 Example:
 $ %s tx %s stake 1000poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4 --from mykey
+$ %s tx %s stake 500poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4,500pool93E069B333B5ECEBFE24C6E1437E814003248E0DD7FF8B9F82119F4587449BA5, --from mykey
 `,
+				version.AppName, types.ModuleName,
 				version.AppName, types.ModuleName,
 			),
 		),
