@@ -39,6 +39,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // amount farming plan.
 type MsgCreateFixedAmountPlan struct {
 	// name specifies the name for the plan
+	// it doesn't need to be unique
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// creator defines the bech32-encoded address of the creator for the private plan, termination address is also set to
 	// this creator.
@@ -127,6 +128,7 @@ var xxx_messageInfo_MsgCreateFixedAmountPlanResponse proto.InternalMessageInfo
 // plan.
 type MsgCreateRatioPlan struct {
 	// name specifies the name for the plan
+	// it doesn't need to be unique
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// creator defines the bech32-encoded address of the creator for the private plan, termination address is also set to
 	// this creator.

@@ -38,6 +38,7 @@ message MsgCreateFixedAmountPlan {
   option (gogoproto.goproto_getters) = false;
 
   // name specifies the name for the plan
+  // it doesn't need to be unique
   string name = 1;
 
   // creator defines the bech32-encoded address of the creator for the private plan, termination address is also set to
@@ -76,6 +77,7 @@ message MsgCreateRatioPlan {
   option (gogoproto.goproto_getters) = false;
 
   // name specifies the name for the plan
+  // it doesn't need to be unique
   string name = 1;
 
   // creator defines the bech32-encoded address of the creator for the private plan, termination address is also set to

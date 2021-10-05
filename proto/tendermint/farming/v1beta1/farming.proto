@@ -42,9 +42,10 @@ message BasePlan {
   option (cosmos_proto.implements_interface) = "PlanI";
 
   // id specifies index of the farming plan
+  // it doesn't need to be unique
   uint64 id = 1;
 
-  // name specifies the name for the base plan
+  // name specifies the name for the plan
   string name = 2;
 
   // type specifies the plan type; type 0 is public and 1 is private
