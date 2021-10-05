@@ -27,7 +27,7 @@ func HandlePublicPlanProposal(ctx sdk.Context, k Keeper, proposal *types.PublicP
 		}
 	}
 
-	plans := k.GetAllPlans(ctx)
+	plans := k.GetPlans(ctx)
 	if err := types.ValidateTotalEpochRatio(plans); err != nil {
 		return err
 	}

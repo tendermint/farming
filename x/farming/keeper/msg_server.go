@@ -53,7 +53,7 @@ func (k msgServer) CreateRatioPlan(goCtx context.Context, msg *types.MsgCreateRa
 		return nil, err
 	}
 
-	plans := k.GetAllPlans(ctx)
+	plans := k.GetPlans(ctx)
 	if err := types.ValidateTotalEpochRatio(plans); err != nil {
 		return nil, err
 	}
