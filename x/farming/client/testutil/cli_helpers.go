@@ -78,3 +78,16 @@ func MsgStakeExec(clientCtx client.Context, from string, stakingCoins string,
 
 	return clitestutil.ExecTestCLICmd(clientCtx, farmingcli.NewStakeCmd(), args)
 }
+
+// MsgAdvanceEpoch creates a transaction to advance epoch by 1.
+func MsgAdvanceEpoch(clientCtx client.Context, from string,
+	extraAtgs ...string) (testutil.BufferWriter, error) {
+
+	args := append([]string{
+		fmt.Sprintf("--%s=%s", flags.FlagFrom, from),
+	}, commonArgs...)
+
+	args = append(args, commonArgs...)
+
+	return clitestutil.ExecTestCLICmd(clientCtx, farmingcli.NewAdvanceEpochCmd(), args)
+}

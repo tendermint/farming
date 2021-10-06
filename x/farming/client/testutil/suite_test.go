@@ -39,6 +39,9 @@ type IntegrationTestSuite struct {
 func (s *IntegrationTestSuite) SetupTest() {
 	s.T().Log("setting up integration test suite")
 
+	// enable advance epoch
+	farmingkeeper.EnableAdvanceEpoch = true
+
 	db := tmdb.NewMemDB()
 	cfg := NewConfig(db)
 	cfg.NumValidators = 1
@@ -406,24 +409,35 @@ func (s *IntegrationTestSuite) TestNewStakeCmd() {
 		expectedCode uint32
 	}{
 		{
-			"valid transaction",
+			"valid transaction case #1",
 			[]string{
-				sdk.NewCoin("stake", sdk.NewInt(100000)).String(),
+				sdk.NewInt64Coin("stake", 100000).String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
+			},
+			false, &sdk.TxResponse{}, 0,
+		},
+		{
+			"valid transaction case #2",
+			[]string{
+				sdk.NewCoins(sdk.NewInt64Coin("stake", 100000), sdk.NewInt64Coin("node0token", 100000)).String(),
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
 			},
 			false, &sdk.TxResponse{}, 0,
 		},
 		{
 			"invalid staking coin case #1",
 			[]string{
-				sdk.NewCoin("stake", sdk.NewInt(0)).String(),
+				sdk.NewInt64Coin("stake", 0).String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
 			},
 			true, &sdk.TxResponse{}, 0,
 		},
@@ -457,7 +471,10 @@ func (s *IntegrationTestSuite) TestNewUnstakeCmd() {
 	_, err := MsgStakeExec(
 		val.ClientCtx,
 		val.Address.String(),
-		sdk.NewCoin("stake", sdk.NewInt(10_000_000)).String(),
+		sdk.NewCoins(
+			sdk.NewInt64Coin("stake", 10_000_000),
+			sdk.NewInt64Coin("node0token", 10_000_000),
+		).String(),
 	)
 	s.Require().NoError(err)
 
@@ -469,24 +486,35 @@ func (s *IntegrationTestSuite) TestNewUnstakeCmd() {
 		expectedCode uint32
 	}{
 		{
-			"valid transaction",
+			"valid transaction case #1",
 			[]string{
-				sdk.NewCoin("stake", sdk.NewInt(100000)).String(),
+				sdk.NewInt64Coin("stake", 100000).String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
+			},
+			false, &sdk.TxResponse{}, 0,
+		},
+		{
+			"valid transaction case #2",
+			[]string{
+				sdk.NewCoins(sdk.NewInt64Coin("stake", 100000), sdk.NewInt64Coin("node0token", 100000)).String(),
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
 			},
 			false, &sdk.TxResponse{}, 0,
 		},
 		{
 			"invalid unstaking coin case #1",
 			[]string{
-				sdk.NewCoin("stake", sdk.NewInt(0)).String(),
+				sdk.NewInt64Coin("stake", 0).String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
 			},
 			true, &sdk.TxResponse{}, 18,
 		},
@@ -508,8 +536,6 @@ func (s *IntegrationTestSuite) TestNewUnstakeCmd() {
 				s.Require().NoError(clientCtx.Codec.UnmarshalJSON(out.Bytes(), tc.respType), out.String())
 
 				txResp := tc.respType.(*sdk.TxResponse)
-				fmt.Println(txResp)
-				fmt.Println(out.String())
 				s.Require().Equal(tc.expectedCode, txResp.Code, out.String())
 			}
 		})
@@ -519,7 +545,6 @@ func (s *IntegrationTestSuite) TestNewUnstakeCmd() {
 func (s *IntegrationTestSuite) TestNewHarvestCmd() {
 	val := s.network.Validators[0]
 
-	// create fixed amount plan
 	req := cli.PrivateFixedPlanRequest{
 		Name:               "test",
 		StakingCoinWeights: sdk.NewDecCoins(sdk.NewDecCoin("stake", sdk.NewInt(1))),
@@ -528,6 +553,7 @@ func (s *IntegrationTestSuite) TestNewHarvestCmd() {
 		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
 	}
 
+	// create a fixed amount plan
 	_, err := MsgCreateFixedAmountPlanExec(
 		val.ClientCtx,
 		val.Address.String(),
@@ -535,17 +561,30 @@ func (s *IntegrationTestSuite) TestNewHarvestCmd() {
 	)
 	s.Require().NoError(err)
 
-	// stake coins
+	// stake coin
 	_, err = MsgStakeExec(
 		val.ClientCtx,
 		val.Address.String(),
-		sdk.NewCoin("stake", sdk.NewInt(10_000_000)).String(),
+		sdk.NewCoins(
+			sdk.NewInt64Coin("stake", 10_000_000),
+			sdk.NewInt64Coin("node0token", 10_000_000),
+		).String(),
 	)
 	s.Require().NoError(err)
 
-	// TODO: right now, there is no command-line interface that triggers keeeper
-	// to increase epoch days by 2 for reward distribution.
-	// handle invalid cases for now
+	// advance epoch by 1
+	_, err = MsgAdvanceEpoch(
+		val.ClientCtx,
+		val.Address.String(),
+	)
+	s.Require().NoError(err)
+
+	// advance epoch by 1
+	_, err = MsgAdvanceEpoch(
+		val.ClientCtx,
+		val.Address.String(),
+	)
+	s.Require().NoError(err)
 
 	testCases := []struct {
 		name         string
@@ -555,24 +594,46 @@ func (s *IntegrationTestSuite) TestNewHarvestCmd() {
 		expectedCode uint32
 	}{
 		{
-			"invalid transaction for no reward for staking coin denom stake",
+			"valid transaction case #1",
 			[]string{
 				"stake",
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
 			},
-			false, &sdk.TxResponse{}, 1,
+			false, &sdk.TxResponse{}, 0,
+		},
+		{
+			"valid transaction case #2",
+			[]string{
+				"stake,node0token",
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
+			},
+			false, &sdk.TxResponse{}, 0,
+		},
+		{
+			"valid transaction case #3",
+			[]string{
+				fmt.Sprintf("--%s", cli.FlagAll),
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
+			},
+			false, &sdk.TxResponse{}, 0,
 		},
 		{
 			"invalid staking coin denoms case #1",
 			[]string{
-				"!",
+				"invaliddenom!",
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewInt64Coin(s.cfg.BondDenom, 10)).String()),
 			},
 			true, &sdk.TxResponse{}, 18,
 		},
