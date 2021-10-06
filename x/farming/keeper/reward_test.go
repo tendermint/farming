@@ -288,9 +288,8 @@ func (suite *KeeperTestSuite) TestHarvest() {
 		suite.keeper.SetPlan(suite.ctx, plan)
 	}
 
-	// should return staking not exists
 	err := suite.keeper.Harvest(suite.ctx, suite.addrs[0], []string{denom1})
-	suite.Require().Error(err)
+	suite.Require().EqualError(types.ErrStakingNotExists, err.Error())
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1_000_000)))
 	suite.keeper.ProcessQueuedCoins(suite.ctx)
