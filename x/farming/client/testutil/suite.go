@@ -2,9 +2,7 @@ package testutil
 
 import (
 	"fmt"
-	"os"
 	"strconv"
-	"time"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/suite"
@@ -16,7 +14,6 @@ import (
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankcli "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/tendermint/farming/x/farming/client/cli"
 	farmingcli "github.com/tendermint/farming/x/farming/client/cli"
@@ -39,7 +36,6 @@ type IntegrationTestSuite struct {
 func (s *IntegrationTestSuite) SetupTest() {
 	s.T().Log("setting up integration test suite")
 
-	// enable advance epoch
 	farmingkeeper.EnableAdvanceEpoch = true
 
 	db := tmdb.NewMemDB()
@@ -573,14 +569,14 @@ func (s *IntegrationTestSuite) TestNewHarvestCmd() {
 	s.Require().NoError(err)
 
 	// advance epoch by 1
-	_, err = MsgAdvanceEpoch(
+	_, err = MsgAdvanceEpochExec(
 		val.ClientCtx,
 		val.Address.String(),
 	)
 	s.Require().NoError(err)
 
 	// advance epoch by 1
-	_, err = MsgAdvanceEpoch(
+	_, err = MsgAdvanceEpochExec(
 		val.ClientCtx,
 		val.Address.String(),
 	)
@@ -671,6 +667,8 @@ type QueryCmdTestSuite struct {
 func (s *QueryCmdTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
+	farmingkeeper.EnableAdvanceEpoch = true
+
 	db := tmdb.NewMemDB()
 	cfg := NewConfig(db)
 	cfg.NumValidators = 1
@@ -690,105 +688,45 @@ func (s *QueryCmdTestSuite) SetupSuite() {
 	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
 
-	s.createFixedAmountPlan(
-		"test",
-		sdk.NewDecCoins(sdk.NewInt64DecCoin(sdk.DefaultBondDenom, 1)),
-		types.ParseTime("0001-01-01T00:00:00Z"),
-		types.ParseTime("9999-01-01T00:00:00Z"),
-		sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
+	val := s.network.Validators[0]
+
+	req := cli.PrivateFixedPlanRequest{
+		Name:               "test",
+		StakingCoinWeights: sdk.NewDecCoins(sdk.NewInt64DecCoin(sdk.DefaultBondDenom, 1)),
+		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
+		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
+	}
+
+	// create a fixed amount plan
+	_, err = MsgCreateFixedAmountPlanExec(
+		val.ClientCtx,
+		val.Address.String(),
+		testutil.WriteToNewTempFile(s.T(), req.String()).Name(),
 	)
+	s.Require().NoError(err)
+
+	// query the farming pool address that is assigned to the pool and
+	// trasnfer some amount of coins to the address
 	s.fundFarmingPool(1, sdk.NewCoins(sdk.NewInt64Coin("node0token", 1_000_000_000)))
-	s.stake(sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1000000)))
-	s.advanceEpoch()
-	s.advanceEpoch()
+
+	_, err = MsgStakeExec(
+		val.ClientCtx,
+		val.Address.String(),
+		sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1000000)).String(),
+	)
+	s.Require().NoError(err)
+
+	_, err = MsgAdvanceEpochExec(val.ClientCtx, val.Address.String())
+	s.Require().NoError(err)
+
+	_, err = MsgAdvanceEpochExec(val.ClientCtx, val.Address.String())
+	s.Require().NoError(err)
 }
 
 func (s *QueryCmdTestSuite) TearDownSuite() {
 	s.T().Log("tearing down integration test suite")
 	s.network.Cleanup()
-}
-
-func (s *QueryCmdTestSuite) createFixedAmountPlan(name string, stakingCoinWeights sdk.DecCoins, startTime, endTime time.Time, epochAmount sdk.Coins) {
-	val := s.network.Validators[0]
-	clientCtx := val.ClientCtx
-
-	req := cli.PrivateFixedPlanRequest{
-		Name:               name,
-		StakingCoinWeights: stakingCoinWeights,
-		StartTime:          startTime,
-		EndTime:            endTime,
-		EpochAmount:        epochAmount,
-	}
-	file := testutil.WriteToNewTempFile(s.T(), req.String())
-	defer os.Remove(file.Name())
-
-	args := append([]string{
-		file.Name(),
-		fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
-	}, commonArgs...)
-
-	cmd := farmingcli.NewCreateFixedAmountPlanCmd()
-
-	_, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
-	s.Require().NoError(err)
-}
-
-func (s *QueryCmdTestSuite) fundFarmingPool(poolId uint64, amount sdk.Coins) {
-	val := s.network.Validators[0]
-	clientCtx := val.ClientCtx
-	types.RegisterInterfaces(clientCtx.InterfaceRegistry)
-
-	cmd := farmingcli.GetCmdQueryPlan()
-	args := []string{
-		strconv.FormatUint(poolId, 10),
-		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
-	}
-	out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
-	s.Require().NoError(err)
-	var resp types.QueryPlanResponse
-	clientCtx.Codec.MustUnmarshalJSON(out.Bytes(), &resp)
-	plan, err := types.UnpackPlan(resp.Plan)
-	s.Require().NoError(err)
-
-	cmd = bankcli.NewSendTxCmd()
-	args = append([]string{
-		val.Address.String(),
-		plan.GetFarmingPoolAddress().String(),
-		amount.String(),
-	}, commonArgs...)
-	_, err = clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
-	s.Require().NoError(err)
-}
-
-func (s *QueryCmdTestSuite) stake(amount sdk.Coins) {
-	val := s.network.Validators[0]
-	clientCtx := val.ClientCtx
-
-	args := append([]string{
-		amount.String(),
-		fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
-	}, commonArgs...)
-
-	cmd := farmingcli.NewStakeCmd()
-
-	_, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
-	s.Require().NoError(err)
-}
-
-func (s *QueryCmdTestSuite) advanceEpoch() {
-	farmingkeeper.EnableAdvanceEpoch = true
-
-	val := s.network.Validators[0]
-	clientCtx := val.ClientCtx
-
-	args := append([]string{
-		fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
-	}, commonArgs...)
-
-	cmd := farmingcli.NewAdvanceEpochCmd()
-
-	_, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
-	s.Require().NoError(err)
 }
 
 func (s *QueryCmdTestSuite) TestCmdQueryParams() {
@@ -1146,6 +1084,34 @@ func (s *QueryCmdTestSuite) TestCmdQueryCurrentEpochDays() {
 			}
 		})
 	}
+}
+
+func (s *QueryCmdTestSuite) fundFarmingPool(poolId uint64, amount sdk.Coins) {
+	val := s.network.Validators[0]
+	clientCtx := val.ClientCtx
+	types.RegisterInterfaces(clientCtx.InterfaceRegistry)
+
+	cmd := farmingcli.GetCmdQueryPlan()
+	args := []string{
+		strconv.FormatUint(poolId, 10),
+		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
+	}
+
+	out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
+	s.Require().NoError(err)
+
+	var resp types.QueryPlanResponse
+	clientCtx.Codec.MustUnmarshalJSON(out.Bytes(), &resp)
+	plan, err := types.UnpackPlan(resp.Plan)
+	s.Require().NoError(err)
+
+	_, err = MsgSendExec(
+		val.ClientCtx,
+		val.Address.String(),
+		plan.GetFarmingPoolAddress().String(),
+		amount.String(),
+	)
+	s.Require().NoError(err)
 }
 
 func intEq(exp, got sdk.Int) (bool, string, string, string) {
