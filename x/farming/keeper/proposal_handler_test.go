@@ -539,7 +539,15 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 			_, found := suite.keeper.GetPlan(suite.ctx, plans[0].GetId())
 			suite.Require().Equal(false, found)
 
+			// check balances
 			suite.Require().Equal(tc.expectedBalances, suite.app.BankKeeper.GetAllBalances(suite.ctx, tc.farmingPoolAddr))
+
+			for _, e := range suite.ctx.EventManager().ABCIEvents() {
+				switch e.Type {
+				case types.EventTypePlanTerminated:
+					suite.Require().NotEmpty(e.Attributes)
+				}
+			}
 		})
 	}
 }

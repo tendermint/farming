@@ -260,7 +260,6 @@ func (k Keeper) TerminatePlan(ctx sdk.Context, plan types.PlanI) error {
 			sdk.NewAttribute(types.AttributeKeyPlanId, strconv.FormatUint(plan.GetId(), 10)),
 			sdk.NewAttribute(types.AttributeKeyFarmingPoolAddress, plan.GetFarmingPoolAddress().String()),
 			sdk.NewAttribute(types.AttributeKeyTerminationAddress, plan.GetTerminationAddress().String()),
-			// TODO: add refunded coins?
 		),
 	})
 
