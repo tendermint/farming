@@ -481,45 +481,65 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 }
 
 func (suite *KeeperTestSuite) TestDeletePublicPlan() {
-	// create a fixed amount public plan
-	err := keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", []*types.AddRequestProposal{
-			types.NewAddRequestProposal(
-				"testPlan",
-				suite.addrs[0].String(),
-				suite.addrs[1].String(),
-				sdk.NewDecCoins(
-					sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)),
-					sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)),
-				),
-				types.ParseTime("0001-01-01T00:00:00Z"),
-				types.ParseTime("9999-12-31T00:00:00Z"),
-				sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
-				sdk.ZeroDec(),
-			),
-		}, nil, nil),
-	)
-	suite.Require().NoError(err)
+	for _, tc := range []struct {
+		name             string
+		farmingPoolAddr  sdk.AccAddress
+		terminationAddr  sdk.AccAddress
+		expectedBalances sdk.Coins
+	}{
+		{
+			"farming pool address and termination address are equal",
+			suite.addrs[0],
+			suite.addrs[0],
+			initialBalances,
+		},
+		{
+			"farming pool address and termination address are not equal",
+			suite.addrs[1],
+			suite.addrs[2],
+			sdk.Coins{},
+		},
+	} {
+		suite.Run(tc.name, func() {
+			// create a public plan
+			err := keeper.HandlePublicPlanProposal(
+				suite.ctx,
+				suite.keeper,
+				types.NewPublicPlanProposal("testTitle", "testDescription", []*types.AddRequestProposal{
+					types.NewAddRequestProposal(
+						"testPlan",
+						tc.farmingPoolAddr.String(),
+						tc.terminationAddr.String(),
+						sdk.NewDecCoins(
+							sdk.NewDecCoinFromDec(denom1, sdk.NewDecWithPrec(3, 1)),
+							sdk.NewDecCoinFromDec(denom2, sdk.NewDecWithPrec(7, 1)),
+						),
+						types.ParseTime("0001-01-01T00:00:00Z"),
+						types.ParseTime("9999-12-31T00:00:00Z"),
+						sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
+						sdk.ZeroDec(),
+					),
+				}, nil, nil),
+			)
+			suite.Require().NoError(err)
 
-	plan, found := suite.keeper.GetPlan(suite.ctx, uint64(1))
-	suite.Require().Equal(true, found)
+			plans := suite.keeper.GetPlans(suite.ctx)
 
-	// check farming pool address initial balances
-	poolInitialBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
-	suite.Require().Equal(initialBalances, poolInitialBalances)
+			// delete the plan
+			err = keeper.HandlePublicPlanProposal(
+				suite.ctx,
+				suite.keeper,
+				types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, []*types.DeleteRequestProposal{
+					types.NewDeleteRequestProposal(plans[0].GetId()),
+				}),
+			)
+			suite.Require().NoError(err)
 
-	// delete the plan
-	err = keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, []*types.DeleteRequestProposal{
-			types.NewDeleteRequestProposal(plan.GetId()),
-		}),
-	)
-	suite.Require().NoError(err)
+			// the plan should be successfully removed
+			_, found := suite.keeper.GetPlan(suite.ctx, plans[0].GetId())
+			suite.Require().Equal(false, found)
 
-	// farming pool address should have zero balance
-	suite.Require().True(suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0]).IsZero())
+			suite.Require().Equal(tc.expectedBalances, suite.app.BankKeeper.GetAllBalances(suite.ctx, tc.farmingPoolAddr))
+		})
+	}
 }
