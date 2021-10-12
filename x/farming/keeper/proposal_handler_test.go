@@ -503,7 +503,7 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 	)
 	suite.Require().NoError(err)
 
-	_, found := suite.keeper.GetPlan(suite.ctx, uint64(1))
+	plan, found := suite.keeper.GetPlan(suite.ctx, uint64(1))
 	suite.Require().Equal(true, found)
 
 	// check farming pool address initial balances
@@ -515,7 +515,7 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 		suite.ctx,
 		suite.keeper,
 		types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, []*types.DeleteRequestProposal{
-			types.NewDeleteRequestProposal(1),
+			types.NewDeleteRequestProposal(plan.GetId()),
 		}),
 	)
 	suite.Require().NoError(err)
