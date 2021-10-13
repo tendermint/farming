@@ -539,21 +539,22 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 			)
 			suite.Require().NoError(err)
 
-			// the plan should be successfully removed
+			// the plan should be successfully removed and coins meet the expected balances
 			_, found := suite.keeper.GetPlan(cacheCtx, plans[0].GetId())
 			suite.Require().Equal(false, found)
-
-			// check balances
 			suite.Require().Equal(tc.expectedBalances, suite.app.BankKeeper.GetAllBalances(cacheCtx, tc.farmingPoolAddr))
 
+			isPlanTerminatedEventType := false
 			for _, e := range cacheCtx.EventManager().ABCIEvents() {
-				switch e.Type {
-				case types.EventTypePlanTerminated:
+				if e.Type == types.EventTypePlanTerminated {
 					suite.Require().Equal(fmt.Sprint(plans[0].GetId()), string(e.Attributes[0].Value))
 					suite.Require().Equal(tc.farmingPoolAddr.String(), string(e.Attributes[1].Value))
 					suite.Require().Equal(tc.terminationAddr.String(), string(e.Attributes[2].Value))
+					isPlanTerminatedEventType = true
+					break
 				}
 			}
+			suite.Require().True(isPlanTerminatedEventType, "plan_terminated events should be emitted")
 		})
 	}
 }
