@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -501,9 +503,11 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 		},
 	} {
 		suite.Run(tc.name, func() {
+			cacheCtx, _ := suite.ctx.CacheContext()
+
 			// create a public plan
 			err := keeper.HandlePublicPlanProposal(
-				suite.ctx,
+				cacheCtx,
 				suite.keeper,
 				types.NewPublicPlanProposal("testTitle", "testDescription", []*types.AddRequestProposal{
 					types.NewAddRequestProposal(
@@ -523,11 +527,11 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 			)
 			suite.Require().NoError(err)
 
-			plans := suite.keeper.GetPlans(suite.ctx)
+			plans := suite.keeper.GetPlans(cacheCtx)
 
 			// delete the plan
 			err = keeper.HandlePublicPlanProposal(
-				suite.ctx,
+				cacheCtx,
 				suite.keeper,
 				types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, []*types.DeleteRequestProposal{
 					types.NewDeleteRequestProposal(plans[0].GetId()),
@@ -536,16 +540,18 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 			suite.Require().NoError(err)
 
 			// the plan should be successfully removed
-			_, found := suite.keeper.GetPlan(suite.ctx, plans[0].GetId())
+			_, found := suite.keeper.GetPlan(cacheCtx, plans[0].GetId())
 			suite.Require().Equal(false, found)
 
 			// check balances
-			suite.Require().Equal(tc.expectedBalances, suite.app.BankKeeper.GetAllBalances(suite.ctx, tc.farmingPoolAddr))
+			suite.Require().Equal(tc.expectedBalances, suite.app.BankKeeper.GetAllBalances(cacheCtx, tc.farmingPoolAddr))
 
-			for _, e := range suite.ctx.EventManager().ABCIEvents() {
+			for _, e := range cacheCtx.EventManager().ABCIEvents() {
 				switch e.Type {
 				case types.EventTypePlanTerminated:
-					suite.Require().NotEmpty(e.Attributes)
+					suite.Require().Equal(fmt.Sprint(plans[0].GetId()), string(e.Attributes[0].Value))
+					suite.Require().Equal(tc.farmingPoolAddr.String(), string(e.Attributes[1].Value))
+					suite.Require().Equal(tc.terminationAddr.String(), string(e.Attributes[2].Value))
 				}
 			}
 		})
