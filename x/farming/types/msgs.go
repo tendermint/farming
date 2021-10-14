@@ -137,7 +137,7 @@ func (msg MsgCreateRatioPlan) ValidateBasic() error {
 	if !msg.EpochRatio.IsPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid epoch ratio")
 	}
-	if msg.EpochRatio.GT(sdk.NewDec(1)) {
+	if msg.EpochRatio.GT(sdk.OneDec()) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid epoch ratio")
 	}
 	return nil

@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -113,6 +114,9 @@ func (p *AddRequestProposal) IsForRatioPlan() bool {
 }
 
 func (p *AddRequestProposal) Validate() error {
+	if strings.Contains(p.Name, PoolAddrSplitter) {
+		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", PoolAddrSplitter)
+	}
 	if len(p.Name) > MaxNameLength {
 		return sdkerrors.Wrapf(ErrInvalidPlanNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
@@ -123,13 +127,13 @@ func (p *AddRequestProposal) Validate() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
 	}
 	if p.StakingCoinWeights.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "staking coin weights must not be empty")
+		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")
 	}
 	if err := p.StakingCoinWeights.Validate(); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)
+		return sdkerrors.Wrapf(ErrInvalidStakingCoinWeights, "invalid staking coin weights: %v", err)
 	}
 	if ok := ValidateStakingCoinTotalWeights(p.StakingCoinWeights); !ok {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "total weight must be 1")
+		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "total weight must be 1")
 	}
 	if !p.EndTime.After(p.StartTime) {
 		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
@@ -177,6 +181,9 @@ func (p *UpdateRequestProposal) Validate() error {
 	if p.PlanId == 0 {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid plan id: %d", p.PlanId)
 	}
+	if strings.Contains(p.Name, PoolAddrSplitter) {
+		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", PoolAddrSplitter)
+	}
 	if len(p.Name) > MaxNameLength {
 		return sdkerrors.Wrapf(ErrInvalidPlanNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
@@ -187,13 +194,13 @@ func (p *UpdateRequestProposal) Validate() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
 	}
 	if p.StakingCoinWeights.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "staking coin weights must not be empty")
+		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")
 	}
 	if err := p.StakingCoinWeights.Validate(); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid staking coin weights: %v", err)
+		return sdkerrors.Wrapf(ErrInvalidStakingCoinWeights, "invalid staking coin weights: %v", err)
 	}
 	if ok := ValidateStakingCoinTotalWeights(p.StakingCoinWeights); !ok {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "total weight must be 1")
+		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "total weight must be 1")
 	}
 	if p.StartTime != nil && p.EndTime != nil {
 		if !p.EndTime.After(*p.StartTime) {
