@@ -184,6 +184,15 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 	staking.StartingEpoch = currentEpoch
 	k.SetStaking(ctx, stakingCoinDenom, farmerAcc, staking)
 
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRewardsWithdrawn,
+			sdk.NewAttribute(types.AttributeKeyFarmer, farmerAcc.String()),
+			sdk.NewAttribute(types.AttributeKeyStakingCoinDenom, stakingCoinDenom),
+			sdk.NewAttribute(types.AttributeKeyRewardCoins, truncatedRewards.String()),
+		),
+	})
+
 	return truncatedRewards, nil
 }
 
@@ -225,14 +234,6 @@ func (k Keeper) Harvest(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDe
 		}
 		totalRewards = totalRewards.Add(rewards...)
 	}
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeHarvest,
-			sdk.NewAttribute(types.AttributeKeyFarmer, farmerAcc.String()),
-			sdk.NewAttribute(types.AttributeKeyRewardCoins, totalRewards.String()),
-		),
-	})
 
 	return nil
 }
