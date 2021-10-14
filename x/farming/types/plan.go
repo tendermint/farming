@@ -175,7 +175,7 @@ func (plan BasePlan) Validate() error {
 		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", PoolAddrSplitter)
 	}
 	if len(plan.Name) > MaxNameLength {
-		return sdkerrors.Wrapf(ErrInvalidPlanNameLength, "plan name cannot be longer than max length of %d", MaxNameLength)
+		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
 	if plan.StakingCoinWeights.Empty() {
 		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")

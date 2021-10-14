@@ -36,14 +36,14 @@ func TestPublicPlanProposal_ValidateBasic(t *testing.T) {
 			func(proposal *types.PublicPlanProposal) {
 				proposal.AddRequestProposals[0].Name = strings.Repeat("a", 256)
 			},
-			"plan name cannot be longer than max length of 140: invalid plan name length",
+			"plan name cannot be longer than max length of 140: invalid plan name",
 		},
 		{
 			"invalid update request proposal",
 			func(proposal *types.PublicPlanProposal) {
 				proposal.UpdateRequestProposals[0].Name = strings.Repeat("a", 256)
 			},
-			"plan name cannot be longer than max length of 140: invalid plan name length",
+			"plan name cannot be longer than max length of 140: invalid plan name",
 		},
 		{
 			"invalid delete request proposal",
@@ -140,7 +140,7 @@ func TestAddRequestProposal_Validate(t *testing.T) {
 			func(proposal *types.AddRequestProposal) {
 				proposal.Name = strings.Repeat("a", 256)
 			},
-			"plan name cannot be longer than max length of 140: invalid plan name length",
+			"plan name cannot be longer than max length of 140: invalid plan name",
 		},
 		{
 			"invalid farming pool addr",
@@ -161,7 +161,7 @@ func TestAddRequestProposal_Validate(t *testing.T) {
 			func(proposal *types.AddRequestProposal) {
 				proposal.StakingCoinWeights = nil
 			},
-			"staking coin weights must not be empty: invalid request",
+			"staking coin weights must not be empty: invalid staking coin weights",
 		},
 		{
 			"invalid staking coin weights - invalid",
@@ -170,7 +170,7 @@ func TestAddRequestProposal_Validate(t *testing.T) {
 					sdk.DecCoin{Denom: "stake1", Amount: sdk.ZeroDec()},
 				}
 			},
-			"invalid staking coin weights: coin 0.000000000000000000stake1 amount is not positive: invalid request",
+			"invalid staking coin weights: coin 0.000000000000000000stake1 amount is not positive: invalid staking coin weights",
 		},
 		{
 			"invalid staking coin weights - invalid sum of weights",
@@ -180,7 +180,7 @@ func TestAddRequestProposal_Validate(t *testing.T) {
 					sdk.NewDecCoinFromDec("stake2", sdk.NewDecWithPrec(6, 1)),
 				)
 			},
-			"total weight must be 1: invalid request",
+			"total weight must be 1: invalid staking coin weights",
 		},
 		{
 			"invalid start/end time",
@@ -265,7 +265,7 @@ func TestUpdateRequestProposal_Validate(t *testing.T) {
 			func(proposal *types.UpdateRequestProposal) {
 				proposal.Name = strings.Repeat("a", 256)
 			},
-			"plan name cannot be longer than max length of 140: invalid plan name length",
+			"plan name cannot be longer than max length of 140: invalid plan name",
 		},
 		{
 			"invalid farming pool addr",
@@ -286,7 +286,7 @@ func TestUpdateRequestProposal_Validate(t *testing.T) {
 			func(proposal *types.UpdateRequestProposal) {
 				proposal.StakingCoinWeights = nil
 			},
-			"staking coin weights must not be empty: invalid request",
+			"staking coin weights must not be empty: invalid staking coin weights",
 		},
 		{
 			"invalid staking coin weights - invalid",
@@ -295,7 +295,7 @@ func TestUpdateRequestProposal_Validate(t *testing.T) {
 					sdk.DecCoin{Denom: "stake1", Amount: sdk.ZeroDec()},
 				}
 			},
-			"invalid staking coin weights: coin 0.000000000000000000stake1 amount is not positive: invalid request",
+			"invalid staking coin weights: coin 0.000000000000000000stake1 amount is not positive: invalid staking coin weights",
 		},
 		{
 			"invalid staking coin weights - invalid sum of weights",
@@ -305,7 +305,7 @@ func TestUpdateRequestProposal_Validate(t *testing.T) {
 					sdk.NewDecCoinFromDec("stake2", sdk.NewDecWithPrec(6, 1)),
 				)
 			},
-			"total weight must be 1: invalid request",
+			"total weight must be 1: invalid staking coin weights",
 		},
 		{
 			"invalid start/end time",
