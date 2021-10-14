@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"strconv"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/gogo/protobuf/types"
@@ -234,6 +235,14 @@ func (k Keeper) Harvest(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDe
 		}
 		totalRewards = totalRewards.Add(rewards...)
 	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeHarvest,
+			sdk.NewAttribute(types.AttributeKeyFarmer, farmerAcc.String()),
+			sdk.NewAttribute(types.AttributeKeyStakingCoinDenoms, strings.Join(stakingCoinDenoms, ",")),
+		),
+	})
 
 	return nil
 }
