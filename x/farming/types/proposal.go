@@ -122,7 +122,7 @@ func (p *AddRequestProposal) IsForRatioPlan() bool {
 // Validate validates AddRequestProposal.
 func (p *AddRequestProposal) Validate() error {
 	if p.Name == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "plan name must not be empty")
+		return sdkerrors.Wrap(ErrInvalidPlanName, "plan name must not be empty")
 	}
 	if strings.Contains(p.Name, PoolAddrSplitter) {
 		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", PoolAddrSplitter)

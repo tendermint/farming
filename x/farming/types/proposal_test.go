@@ -115,6 +115,13 @@ func TestAddRequestProposal_Validate(t *testing.T) {
 			"",
 		},
 		{
+			"invalid plan name",
+			func(proposal *types.AddRequestProposal) {
+				proposal.Name = "a|b|c"
+			},
+			"plan name cannot contain |: invalid plan name",
+		},
+		{
 			"ambiguous plan type #1",
 			func(proposal *types.AddRequestProposal) {
 				proposal.EpochRatio = sdk.NewDecWithPrec(5, 2)
@@ -133,7 +140,7 @@ func TestAddRequestProposal_Validate(t *testing.T) {
 			func(proposal *types.AddRequestProposal) {
 				proposal.Name = ""
 			},
-			"plan name must not be empty: invalid request",
+			"plan name must not be empty: invalid plan name",
 		},
 		{
 			"too long name",
@@ -268,6 +275,13 @@ func TestUpdateRequestProposal_Validate(t *testing.T) {
 				proposal.EpochAmount = nil
 			},
 			"",
+		},
+		{
+			"invalid plan name",
+			func(proposal *types.UpdateRequestProposal) {
+				proposal.Name = "a|b|c"
+			},
+			"plan name cannot contain |: invalid plan name",
 		},
 		{
 			"ambiguous plan type",
