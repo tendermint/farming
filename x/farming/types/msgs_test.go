@@ -46,7 +46,7 @@ func TestMsgCreateFixedAmountPlan(t *testing.T) {
 			),
 		},
 		{
-			"staking coin weights must not be empty: invalid request",
+			"staking coin weights must not be empty: invalid staking coin weights",
 			types.NewMsgCreateFixedAmountPlan(
 				name, creatorAddr, sdk.NewDecCoins(),
 				startTime, endTime, sdk.Coins{sdk.NewCoin("uatom", sdk.NewInt(1))},
@@ -112,14 +112,14 @@ func TestMsgCreateRatioPlan(t *testing.T) {
 			),
 		},
 		{
-			"staking coin weights must not be empty: invalid request",
+			"staking coin weights must not be empty: invalid staking coin weights",
 			types.NewMsgCreateRatioPlan(
 				name, creatorAddr, sdk.NewDecCoins(),
 				startTime, endTime, sdk.NewDec(1),
 			),
 		},
 		{
-			"invalid epoch ratio: invalid request",
+			"epoch ratio must be positive: -1.000000000000000000: invalid request",
 			types.NewMsgCreateRatioPlan(
 				name, creatorAddr, stakingCoinWeights,
 				startTime, endTime, sdk.NewDec(-1),

@@ -177,14 +177,8 @@ func (plan BasePlan) Validate() error {
 	if len(plan.Name) > MaxNameLength {
 		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
-	if plan.StakingCoinWeights.Empty() {
-		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")
-	}
-	if err := plan.StakingCoinWeights.Validate(); err != nil {
-		return sdkerrors.Wrapf(ErrInvalidStakingCoinWeights, "invalid staking coin weights: %v", err)
-	}
-	if ok := ValidateStakingCoinTotalWeights(plan.StakingCoinWeights); !ok {
-		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "total weight must be 1")
+	if err := ValidateStakingCoinTotalWeights(plan.StakingCoinWeights); err != nil {
+		return err
 	}
 	if !plan.EndTime.After(plan.StartTime) {
 		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", plan.EndTime, plan.StartTime)
@@ -209,6 +203,7 @@ func (plan BasePlan) MarshalYAML() (interface{}, error) {
 	return string(bz), err
 }
 
+// NewFixedAmountPlan returns a new fixed amount plan.
 func NewFixedAmountPlan(basePlan *BasePlan, epochAmount sdk.Coins) *FixedAmountPlan {
 	return &FixedAmountPlan{
 		BasePlan:    basePlan,
@@ -216,6 +211,7 @@ func NewFixedAmountPlan(basePlan *BasePlan, epochAmount sdk.Coins) *FixedAmountP
 	}
 }
 
+// NewRatioPlan returns a new ratio plan.
 func NewRatioPlan(basePlan *BasePlan, epochRatio sdk.Dec) *RatioPlan {
 	return &RatioPlan{
 		BasePlan:   basePlan,
@@ -223,6 +219,7 @@ func NewRatioPlan(basePlan *BasePlan, epochRatio sdk.Dec) *RatioPlan {
 	}
 }
 
+// PlanI represents a farming plan.
 type PlanI interface {
 	proto.Message
 
@@ -295,6 +292,25 @@ func ValidateTotalEpochRatio(plans []PlanI) error {
 	return nil
 }
 
+// ValidateEpochRatio validate a epoch ratio that must be positive and less than 1.
+func ValidateEpochRatio(epochRatio sdk.Dec) error {
+	if !epochRatio.IsPositive() {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "epoch ratio must be positive: %s", epochRatio)
+	}
+	if epochRatio.GT(sdk.OneDec()) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "epoch ratio must be less than 1: %s", epochRatio)
+	}
+	return nil
+}
+
+// ValidateEpochAmount validate a epoch amount that must be valid coins.
+func ValidateEpochAmount(epochAmount sdk.Coins) error {
+	if err := epochAmount.Validate(); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid epoch amount: %v", err)
+	}
+	return nil
+}
+
 // PackPlan converts PlanI to Any
 func PackPlan(plan PlanI) (*codectypes.Any, error) {
 	any, err := codectypes.NewAnyWithValue(plan)
@@ -343,12 +359,21 @@ func UnpackPlans(plansAny []*codectypes.Any) ([]PlanI, error) {
 }
 
 // ValidateStakingCoinTotalWeights validates the total staking coin weights must be equal to 1.
-func ValidateStakingCoinTotalWeights(weights sdk.DecCoins) bool {
+func ValidateStakingCoinTotalWeights(weights sdk.DecCoins) error {
+	if weights.Empty() {
+		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")
+	}
+	if err := weights.Validate(); err != nil {
+		return sdkerrors.Wrapf(ErrInvalidStakingCoinWeights, "invalid staking coin weights: %v", err)
+	}
 	totalWeight := sdk.ZeroDec()
 	for _, w := range weights {
 		totalWeight = totalWeight.Add(w.Amount)
 	}
-	return totalWeight.Equal(sdk.OneDec())
+	if !totalWeight.Equal(sdk.OneDec()) {
+		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "total weight must be 1")
+	}
+	return nil
 }
 
 // IsPlanActiveAt returns if the plan is active at given time t.
@@ -356,6 +381,8 @@ func IsPlanActiveAt(plan PlanI, t time.Time) bool {
 	return !plan.GetStartTime().After(t) && plan.GetEndTime().After(t)
 }
 
+// PrivatePlanFarmingPoolAddress returns a unique farming pool address
+// for a newly created plan.
 func PrivatePlanFarmingPoolAddress(name string, planId uint64) sdk.AccAddress {
 	poolAddrName := strings.Join([]string{PrivatePlanFarmingPoolAddrPrefix, fmt.Sprint(planId), name}, PoolAddrSplitter)
 	return address.Module(ModuleName, []byte(poolAddrName))

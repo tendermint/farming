@@ -105,15 +105,25 @@ func NewAddRequestProposal(
 	}
 }
 
+// IsForFixedAmountPlan returns true if the request is for
+// fixed amount plan.
+// It checks if EpochAmount is not zero.
 func (p *AddRequestProposal) IsForFixedAmountPlan() bool {
-	return !p.EpochAmount.IsZero()
+	return !p.EpochAmount.Empty()
 }
 
+// IsForRatioPlan returns true if the request is for
+// ratio plan.
+// It checks if EpochRatio is not zero.
 func (p *AddRequestProposal) IsForRatioPlan() bool {
 	return !p.EpochRatio.IsNil() && !p.EpochRatio.IsZero()
 }
 
+// Validate validates AddRequestProposal.
 func (p *AddRequestProposal) Validate() error {
+	if p.Name == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "plan name must not be empty")
+	}
 	if strings.Contains(p.Name, PoolAddrSplitter) {
 		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", PoolAddrSplitter)
 	}
@@ -126,20 +136,26 @@ func (p *AddRequestProposal) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(p.TerminationAddress); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
 	}
-	if p.StakingCoinWeights.Empty() {
-		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")
-	}
-	if err := p.StakingCoinWeights.Validate(); err != nil {
-		return sdkerrors.Wrapf(ErrInvalidStakingCoinWeights, "invalid staking coin weights: %v", err)
-	}
-	if ok := ValidateStakingCoinTotalWeights(p.StakingCoinWeights); !ok {
-		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "total weight must be 1")
+	if err := ValidateStakingCoinTotalWeights(p.StakingCoinWeights); err != nil {
+		return err
 	}
 	if !p.EndTime.After(p.StartTime) {
 		return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
 	}
-	if p.IsForFixedAmountPlan() == p.IsForRatioPlan() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "only one of epoch amount or epoch ratio must be provided")
+
+	isForFixedAmountPlan := p.IsForFixedAmountPlan()
+	isForRatioPlan := p.IsForRatioPlan()
+	switch {
+	case isForFixedAmountPlan == isForRatioPlan:
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "exactly one of epoch amount or epoch ratio must be provided")
+	case isForFixedAmountPlan:
+		if err := ValidateEpochAmount(p.EpochAmount); err != nil {
+			return err
+		}
+	case isForRatioPlan:
+		if err := ValidateEpochRatio(p.EpochRatio); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -169,14 +185,21 @@ func NewUpdateRequestProposal(
 	}
 }
 
+// IsForFixedAmountPlan returns true if the request is for
+// fixed amount plan.
+// It checks if EpochAmount is not zero.
 func (p *UpdateRequestProposal) IsForFixedAmountPlan() bool {
-	return !p.EpochAmount.IsZero()
+	return !p.EpochAmount.Empty()
 }
 
+// IsForRatioPlan returns true if the request is for
+// ratio plan.
+// It checks if EpochRatio is not zero.
 func (p *UpdateRequestProposal) IsForRatioPlan() bool {
 	return !p.EpochRatio.IsNil() && !p.EpochRatio.IsZero()
 }
 
+// Validate validates UpdateRequestProposal.
 func (p *UpdateRequestProposal) Validate() error {
 	if p.PlanId == 0 {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid plan id: %d", p.PlanId)
@@ -187,28 +210,39 @@ func (p *UpdateRequestProposal) Validate() error {
 	if len(p.Name) > MaxNameLength {
 		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot be longer than max length of %d", MaxNameLength)
 	}
-	if _, err := sdk.AccAddressFromBech32(p.FarmingPoolAddress); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid farming pool address %q: %v", p.FarmingPoolAddress, err)
+	if p.FarmingPoolAddress != "" {
+		if _, err := sdk.AccAddressFromBech32(p.FarmingPoolAddress); err != nil {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid farming pool address %q: %v", p.FarmingPoolAddress, err)
+		}
 	}
-	if _, err := sdk.AccAddressFromBech32(p.TerminationAddress); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
+	if p.TerminationAddress != "" {
+		if _, err := sdk.AccAddressFromBech32(p.TerminationAddress); err != nil {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", p.TerminationAddress, err)
+		}
 	}
-	if p.StakingCoinWeights.Empty() {
-		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "staking coin weights must not be empty")
-	}
-	if err := p.StakingCoinWeights.Validate(); err != nil {
-		return sdkerrors.Wrapf(ErrInvalidStakingCoinWeights, "invalid staking coin weights: %v", err)
-	}
-	if ok := ValidateStakingCoinTotalWeights(p.StakingCoinWeights); !ok {
-		return sdkerrors.Wrap(ErrInvalidStakingCoinWeights, "total weight must be 1")
+	if p.StakingCoinWeights != nil {
+		if err := ValidateStakingCoinTotalWeights(p.StakingCoinWeights); err != nil {
+			return err
+		}
 	}
 	if p.StartTime != nil && p.EndTime != nil {
 		if !p.EndTime.After(*p.StartTime) {
 			return sdkerrors.Wrapf(ErrInvalidPlanEndTime, "end time %s must be greater than start time %s", p.EndTime, p.StartTime)
 		}
 	}
-	if p.IsForFixedAmountPlan() == p.IsForRatioPlan() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "only one of epoch amount or epoch ratio must be provided")
+	isForFixedAmountPlan := p.IsForFixedAmountPlan()
+	isForRatioPlan := p.IsForRatioPlan()
+	switch {
+	case isForFixedAmountPlan && isForRatioPlan:
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "at most one of epoch amount or epoch ratio must be provided")
+	case isForFixedAmountPlan:
+		if err := ValidateEpochAmount(p.EpochAmount); err != nil {
+			return err
+		}
+	case isForRatioPlan:
+		if err := ValidateEpochRatio(p.EpochRatio); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -220,6 +254,7 @@ func NewDeleteRequestProposal(id uint64) *DeleteRequestProposal {
 	}
 }
 
+// Validate validates DeleteRequestProposal.
 func (p *DeleteRequestProposal) Validate() error {
 	if p.PlanId == 0 {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid plan id: %d", p.PlanId)
