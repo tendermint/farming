@@ -37,7 +37,7 @@ One use case is to use the module to provide incentives for liquidity pool inves
 - [Spec Docs](https://github.com/tendermint/farming/blob/master/x/farming/spec/01_concepts.md)
 - Today's demo version [v0.1.1](https://github.com/tendermint/farming/releases)
 - Other useful resources are available in [docs](https://github.com/tendermint/farming/blob/master/docs) folder
-- Swagger Docs [v0.1.2](https://app.swaggerhub.com/apis-docs/gravity-devs/farming/0.1.2)    
+- Swagger Docs [v0.1.3](https://app.swaggerhub.com/apis-docs/gravity-devs/farming/0.1.3)    
 
 ## Demo
 
