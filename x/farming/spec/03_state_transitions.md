@@ -24,7 +24,7 @@ const (
 
 - Staking Coins for Farming
   - Each `Plan` defines a list of `StakingCoinWeights` using `sdk.DecCoins`
-  - `weight` mean that each group of farmers with each coin `denom` will receive each predefined `weight` of the total rewards
+  - Each weight in `StakingCoinWeights` is calculated in accordance with the total rewards and farmers who stake the coin denom defined in `StakingCoinWeights` will receive the relative amount of rewards.
 
 - Multiple Farming Coins within a `farmingPoolAddress`
   - If `farmingPoolAddress` has multiple kinds of coins, then all coins are identically distributed following the given `farmingPlan`
