@@ -22,27 +22,6 @@ const (
 )
 ```
 
-- Staking Coins for Farming
-  - Each `Plan` defines a list of `StakingCoinWeights` using `sdk.DecCoins`
-  - Each weight in `StakingCoinWeights` is calculated in accordance with the total rewards and farmers who stake the coin denom defined in `StakingCoinWeights` will receive the relative amount of rewards.
-
-- Multiple Farming Coins within a `farmingPoolAddress`
-  - If `farmingPoolAddress` has multiple kinds of coins, then all coins are identically distributed following the given `farmingPlan`
-
-- Time Parameters
-  - Each `farmingPlan` has its own `startTime` and `endTime`
-
-- Distribution Method
-  - `FixedAmountPlan`
-    - fixed amount of coins are distributed per `CurrentEpochDays`
-    - `epochAmount` is `sdk.Coins`
-  - `RatioPlan`
-    - ratio of total assets in `farmingPoolAddress` is distributed per `CurrentEpochDays`
-    - `epochRatio` is in percentage
-
-- Termination Address
-  - When the plan ends after the `endTime`, transfer the balance of `farmingPoolAddress` to `terminationAddress`.
-
 ## Stake
 
 When a farmer stakes an amount of coins, the following state transitions occur:
