@@ -30,13 +30,17 @@ A `RatioPlan` distributes to farmers by ratio distribution for every epoch day. 
 ## Accumulated Reward Calculation
 
 - Accumulated Unit Reward : AUR represents accumulated rewards(for each staking coin) of a staking position with amount 1.
+
 - AUR for each staking coin for each epoch can be calculated as below
+
   - ![](https://latex.codecogs.com/svg.latex?\Large&space;\sum_{i=0}^{now}\frac{TR_i}{TS_i})
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;i) : each `EpochId`
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;now) : current `EpochId`
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TS_i) : total staking amount of the staking coin for epoch i
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TR_i) : total reward amount of the staking coin for epoch i
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;i) : `StartingEpoch`
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;now) : `CurrentEpoch`
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TS_i) : total staking amount of the staking coin for `StartingEpoch`
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TR_i) : total reward amount of the staking coin for `StartingEpoch`
+
 - Accumulated rewards from any staking position can be calculated from AUR and the staking amount of the position as below
+
   - ![](https://latex.codecogs.com/svg.latex?\Large&space;x*\(\sum_{i=0}^{now}\frac{TR_i}{TS_i}-\sum_{i=0}^{start}\frac{TR_i}{TS_i}\))
     - assuming constant staking amount for the staking epochs
     - ![](https://latex.codecogs.com/svg.latex?\Large&space;x) : staking amount for the staking period
