@@ -55,15 +55,15 @@ When a farmer stakes an amount of coins, the following state transitions occur:
 
 When a farmer unstakes an amount of coins, the following state transitions occur:
 
-- it adds Staking and QueueStaking amounts to see if the unstaking amount is sufficient
+- it adds `Staking` and `QueueStaking` amounts to see if the unstaking amount is sufficient
 - it automatically withdraws rewards for the coin denom which are accumulated over the last epochs
-- it substracts the unstaking amount of coins from QueueStaking first and if it is not sufficient then it substracts from Staking
+- it substracts the unstaking amount of coins from `QueueStaking` first and if it is not sufficient then it substracts from `Staking`
 - it releases the unstaking amount of coins to the farmer
 
 ## Harvest (Reward Withdrawal)
 
 - it calculates `CumulativeUnitRewards` in `HistoricalRewards` object in order to get the rewards for the staking coin denom which are accumulated over the last epochs for the farmer
-- it releases the accumulated rewards to the farmer if it is not zero and decreases the outstanding rewards
+- it releases the accumulated rewards to the farmer if it is not zero and decreases the `OutstandingRewards`
 - it sets `StartingEpoch` in `Staking` object
 
 ## Reward Allocation
