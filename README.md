@@ -5,7 +5,10 @@
 
 A farming module is a Cosmos SDK module that implements farming functionality, which provides farming rewards to participants called farmers. A primary use case is to use this module to provide incentives for liquidity pool investors for their pool participation. 
 
-⚠ **Farming module v1 is in active development - see [master](https://github.com/tendermint/farming/tree/master) branch for the latest and reference [releases](https://github.com/tendermint/farming/releases) for the latest release** ⚠
+⚠ **Farming module v1 is in active development** ⚠ 
+- see the [master](https://github.com/tendermint/farming/tree/master) branch for the latest 
+- see [releases](https://github.com/tendermint/farming/releases) for the latest release
+
 ## Dependencies
 
 If you haven't already, install Golang by following the [official docs](https://golang.org/doc/install). Make sure that your `GOPATH` and `GOBIN` environment variables are properly set up.
