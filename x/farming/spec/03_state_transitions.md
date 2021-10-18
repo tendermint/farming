@@ -57,7 +57,7 @@ When a farmer unstakes an amount of coins, the following state transitions occur
 
 - it adds `Staking` and `QueueStaking` amounts to see if the unstaking amount is sufficient
 - it automatically withdraws rewards for the coin denom which are accumulated over the last epochs
-- it subtracts the unstaking amount of coins from `QueueStaking` first and if it is not sufficient then it substracts from `Staking`
+- it subtracts the unstaking amount of coins from `QueueStaking` first and if it is not sufficient then it subtracts from `Staking`
 - it releases the unstaking amount of coins to the farmer
 
 ## Harvest (Reward Withdrawal)
