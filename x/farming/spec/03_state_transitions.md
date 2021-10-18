@@ -70,8 +70,6 @@ When a farmer unstakes an amount of coins, the following state transitions occur
 
 Each abci end block call, the operations to update rewards allocation are to execute:
 
-++ https://github.com/tendermint/farming/blob/69db071ce3/x/farming/abci.go#L13-L46
-
 ++ https://github.com/tendermint/farming/blob/69db071ce30b99617b8ba9bb6efac76e74cd100b/x/farming/keeper/reward.go#L363-L426
 
 - it calculates rewards allocation information for the end of the current epoch depending on plan type `FixedAmountPlan` or `RatioPlan`
