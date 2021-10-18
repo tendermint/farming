@@ -36,8 +36,8 @@ A `RatioPlan` distributes to farmers by ratio distribution for every epoch day. 
   - ![](https://latex.codecogs.com/svg.latex?\Large&space;\sum_{i=0}^{now}\frac{TR_i}{TS_i})
     - ![](https://latex.codecogs.com/svg.latex?\Large&space;i) : `StartingEpoch`
     - ![](https://latex.codecogs.com/svg.latex?\Large&space;now) : `CurrentEpoch`
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TS_i) : total staking amount of the staking coin for `StartingEpoch`
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TR_i) : total reward amount of the staking coin for `StartingEpoch`
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TS_i) : total staking amount of the staking coin for epoch i
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;TR_i) : total reward amount of the staking coin for epoch i
 
 - Accumulated rewards from any staking position can be calculated from AUR and the staking amount of the position as below
 
