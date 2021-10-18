@@ -23,7 +23,7 @@ const (
 ```
 
 - Staking Coins for Farming
-  - Each `farmingPlan` predefines list of `stakingCoinWeights` using `sdk.DecCoins`
+  - Each `Plan` defines a list of `StakingCoinWeights` using `sdk.DecCoins`
   - `weight` mean that each group of farmers with each coin `denom` will receive each predefined `weight` of the total rewards
 
 - Multiple Farming Coins within a `farmingPoolAddress`
