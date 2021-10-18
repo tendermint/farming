@@ -46,8 +46,10 @@ type PlanI interface {
     GetDistributedCoins() sdk.Coins
     SetDistributedCoins(sdk.Coins) error
 
+    GetBasePlan() *BasePlan
+
     String() string
-    
+
     Validate() error
 }
 ```
@@ -147,12 +149,12 @@ type QueuedStaking struct {
 - QueuedStakingIndex: `0x24 | FarmerAddrLen (1 byte) | FarmerAddr | StakingCoinDenom -> nil`
 
 ```go
-type TotalStaking struct {
+type TotalStakings struct {
     Amount sdk.Int
 }
 ```
 
-- TotalStaking: `0x25 | StakingCoinDenom -> ProtocolBuffer(TotalStaking)`
+- TotalStakings: `0x25 | StakingCoinDenom -> ProtocolBuffer(TotalStakings)`
 
 ## Historical Rewards
 
@@ -186,11 +188,10 @@ An example of `FixedAmountPlan`
 ```json
 {
   "base_plan": {
-    "id": 0,
+    "id": 1,
     "name": "testPlan",
-    "type": 0,
+    "type": 1,
     "farmingPoolAddress": "cosmos1...",
-    "rewardPoolAddress": "cosmos1...",
     "stakingCoinWeights": [
       {
         "denom": "xxx",
@@ -209,10 +210,12 @@ An example of `FixedAmountPlan`
     "endTime": "2022-04-01T00:00:00Z",
     "terminationAddress": "cosmos1..."
   },
-  "epochAmount": {
-    "denom": "uatom",
-    "amount": "10000000"
-  }
+  "epochAmount": [
+    {
+      "denom": "uatom",
+      "amount": "10000000"
+    }
+  ]
 }
 ```
 
@@ -221,11 +224,10 @@ An example of `RatioPlan`
 ```json
 {
   "base_plan": {
-    "id": 0,
+    "id": 1,
     "name": "testPlan",
-    "type": 0,
+    "type": 1,
     "farmingPoolAddress": "cosmos1...",
-    "rewardPoolAddress": "cosmos1...",
     "stakingCoinWeights": [
       {
         "denom": "xxx",
