@@ -47,6 +47,8 @@ When a farmer unstakes an amount of coins, the following state transitions occur
 
 ## Reward Allocation
 
+If the sum of total calculated `EpochAmount` (or `EpochRatio` multiplied by the farming pool's balance) exceeds the farming pool's balance, then the reward allocation is skipped for that epoch.
+
 Each abci end block call, the operations to update rewards allocation are to execute:
 
 ++ https://github.com/tendermint/farming/blob/69db071ce30b99617b8ba9bb6efac76e74cd100b/x/farming/keeper/reward.go#L363-L426
@@ -55,6 +57,4 @@ Each abci end block call, the operations to update rewards allocation are to exe
 - it distributes total allocated coins from each plan’s farming pool address `FarmingPoolAddress` to the rewards reserve pool account `RewardsReserveAcc`
 - it calculates staking coin weight for each denom in each plan and gets the unit rewards by denom
 - it updates `HistoricalRewards` and `CurrentEpoch` based on the allocation information
-- it automatically withdraws the accumulated rewards to the farmer with the given staking coin denom if `Staking` position exists
 - it deletes `QueueStaking` object after moving `QueueCoins` to `StakedCoins` in `Staking` object
-- it increases `TotalStakings` for the staking coin denom

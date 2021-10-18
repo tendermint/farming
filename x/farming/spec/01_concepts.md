@@ -33,14 +33,14 @@ In farming module, farming rewards are calculated per epoch based on plans. The 
 
 ### Accumulated Unit Reward 
 
-AUR represents `HistoricalRewards` that are accumulated rewards for each staking coin with amount 1.
+`HistoricalRewards` represents accumulated rewards for each staking coin with amount 1.
 
 ### Base Algorithm 
 
 `HistoricalRewards` for each staking coin for every epoch can be calculated as the following algorithm:
 
 - ![](https://latex.codecogs.com/svg.latex?\Large&space;\sum_{i=0}^{now}\frac{TR_i}{TS_i})
-    - ![](https://latex.codecogs.com/svg.latex?\Large&space;i) : `StartingEpoch`
+    - ![](https://latex.codecogs.com/svg.latex?\Large&space;i) : each epoch
     - ![](https://latex.codecogs.com/svg.latex?\Large&space;now) : `CurrentEpoch`
     - ![](https://latex.codecogs.com/svg.latex?\Large&space;TS_i) : total staking amount of the staking coin for epoch i
     - ![](https://latex.codecogs.com/svg.latex?\Large&space;TR_i) : total reward amount of the staking coin for epoch i
