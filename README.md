@@ -18,7 +18,7 @@ Cosmos SDK  | v0.44.2 or higher
 ## Installation
 
 ```bash
-# Get Farming Module source code
+# Use git to clone farming module source code and install `farmingd`
 git clone https://github.com/tendermint/farming.git
 cd farming
 make install
@@ -41,4 +41,4 @@ These are some of the documents that help you to quickly get you on board with t
 
 ## Contributing
 
-We welcome contributions from everyone. The [master](https://github.com/tendermint/farming/tree/master) branch contains the development version of the code. You can branch of from master and create a pull request, or maintain your own fork and submit a cross-repository pull request. If you're not sure where to start check out [CONTRIBUTING.md](./CONTRIBUTING.md) for our guidelines & policies for how we develop Farming module. Thank you to all those who have contributed to Farming module!
+We welcome contributions from everyone. The [master](https://github.com/tendermint/farming/tree/master) branch contains the development version of the code. You can branch of from master and create a pull request, or maintain your own fork and submit a cross-repository pull request. If you're not sure where to start check out [CONTRIBUTING.md](./CONTRIBUTING.md) for our guidelines & policies for how we develop farming module. Thank you to all those who have contributed to farming module!
