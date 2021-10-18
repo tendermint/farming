@@ -24,7 +24,7 @@ const (
 
 - Staking Coins for Farming
   - Each `farmingPlan` predefines list of `stakingCoinWeights` using `sdk.DecCoins`
-  - `weight` mean that each group of stakers with each coin `denom` will receive each predefined `weight` of the total rewards
+  - `weight` mean that each group of farmers with each coin `denom` will receive each predefined `weight` of the total rewards
 
 - Multiple Farming Coins within a `farmingPoolAddress`
   - If `farmingPoolAddress` has multiple kinds of coins, then all coins are identically distributed following the given `farmingPlan`
@@ -49,7 +49,7 @@ When a farmer stakes an amount of coins, the following state transitions occur:
 
 - it reserves the amount of coins to the staking reserve pool account `StakingReservePoolAcc` 
 - it creates `QueuedStaking` object and stores the staking coins in `QueueStaking`, which are waiting in a queue until the end of epoch to move to `Staking` object
-- it imposes more gas if the farmer already has `Staking` with the same coin denom
+- it imposes more gas if the farmer already has `Staking` with the same coin denom(see [07_params.md](07_params.md#DelayedStakingGasFee) for details)
 
 ## Unstake
 
@@ -57,7 +57,7 @@ When a farmer unstakes an amount of coins, the following state transitions occur
 
 - it adds `Staking` and `QueueStaking` amounts to see if the unstaking amount is sufficient
 - it automatically withdraws rewards for the coin denom which are accumulated over the last epochs
-- it substracts the unstaking amount of coins from `QueueStaking` first and if it is not sufficient then it substracts from `Staking`
+- it subtracts the unstaking amount of coins from `QueueStaking` first and if it is not sufficient then it substracts from `Staking`
 - it releases the unstaking amount of coins to the farmer
 
 ## Harvest (Reward Withdrawal)
