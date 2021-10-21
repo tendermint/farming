@@ -19,7 +19,7 @@ A public farming plan can be created only through governance proposal. The propo
 A private farming plan can be created with any account. 
 
 - The account address of the plan creator account is used as the `TerminationAddress`. 
-- To prevent from spamming attacks, the `PlanCreationFee` fee must be paid on plan creation. 
+- To prevent spamming attacks, the `PlanCreationFee` fee must be paid on plan creation. 
 
 ## Distribution Methods
 
