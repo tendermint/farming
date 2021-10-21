@@ -83,7 +83,6 @@ export SED_I=""
 if [[ "$OSTYPE" == "darwin"* ]]; then 
     export SED_I="''"
 fi 
-aa
 
 # Modify app.toml
 sed -i $SED_I 's/enable = false/enable = true/g' $HOME_FARMINGAPP/config/app.toml
