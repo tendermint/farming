@@ -2,7 +2,7 @@
 
 # Parameters
 
-The farming module contains the following parameters:
+The `farming` module contains the following parameters:
 
 | Key                        | Type      | Example                                                             |
 | -------------------------- | --------- | ------------------------------------------------------------------- |

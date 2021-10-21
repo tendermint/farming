@@ -2,7 +2,7 @@
 
 # Events
 
-The farming module emits the following events:
+The `farming` module emits the following events:
 
 ## EndBlocker
 

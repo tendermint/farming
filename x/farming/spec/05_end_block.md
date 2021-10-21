@@ -1,7 +1,7 @@
 <!-- order: 6 -->
 # End-Block
 
-At each end-block call, the operations are specified to execute.
+At each end-block call, the `farming` module operations are specified to execute.
 
 ++ https://github.com/tendermint/farming/blob/69db071ce3/x/farming/abci.go#L13-L46
 
