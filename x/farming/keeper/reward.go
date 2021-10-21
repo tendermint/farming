@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -55,6 +56,51 @@ func (k Keeper) IterateHistoricalRewards(ctx sdk.Context, cb func(stakingCoinDen
 	}
 }
 
+// DeleteAllHistoricalRewards deletes all historical rewards for a given
+// staking coin denom.
+func (k Keeper) DeleteAllHistoricalRewards(ctx sdk.Context, stakingCoinDenom string) {
+	store := ctx.KVStore(k.storeKey)
+	iter := sdk.KVStorePrefixIterator(store, types.GetHistoricalRewardsPrefix(stakingCoinDenom))
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		store.Delete(iter.Key())
+	}
+}
+
+// incrementReferenceCount increments the reference count for a historical rewards.
+func (k Keeper) incrementReferenceCount(ctx sdk.Context, stakingCoinDenom string, epoch uint64) {
+	fmt.Printf("incrementReferenceCount(%s, %d)\n", stakingCoinDenom, epoch)
+	historical, found := k.GetHistoricalRewards(ctx, stakingCoinDenom, epoch)
+	if !found {
+		panic("historical rewards not found") // TODO: choose correct error message
+	}
+	if historical.ReferenceCount > 2 {
+		panic("reference count should never exceed 2")
+	}
+	fmt.Printf("  %d -> %d\n", historical.ReferenceCount, historical.ReferenceCount+1)
+	historical.ReferenceCount++
+	k.SetHistoricalRewards(ctx, stakingCoinDenom, epoch, historical)
+}
+
+// decrementReferenceCount decrements the reference count for a historical rewards.
+func (k Keeper) decrementReferenceCount(ctx sdk.Context, stakingCoinDenom string, epoch uint64) {
+	fmt.Printf("decrementReferenceCount(%s, %d)\n", stakingCoinDenom, epoch)
+	historical, found := k.GetHistoricalRewards(ctx, stakingCoinDenom, epoch)
+	if !found {
+		panic("historical rewards not found") // TODO: choose correct error message
+	}
+	if historical.ReferenceCount == 0 {
+		panic("cannot set negative reference count")
+	}
+	fmt.Printf("  %d -> %d\n", historical.ReferenceCount, historical.ReferenceCount-1)
+	historical.ReferenceCount--
+	if historical.ReferenceCount == 0 {
+		k.DeleteHistoricalRewards(ctx, stakingCoinDenom, epoch)
+	} else {
+		k.SetHistoricalRewards(ctx, stakingCoinDenom, epoch, historical)
+	}
+}
+
 // GetCurrentEpoch returns the current epoch number for a given
 // staking coin denom.
 func (k Keeper) GetCurrentEpoch(ctx sdk.Context, stakingCoinDenom string) uint64 {
@@ -91,16 +137,19 @@ func (k Keeper) IterateCurrentEpochs(ctx sdk.Context, cb func(stakingCoinDenom s
 	}
 }
 
+// DeleteCurrentEpoch deletes current epoch info for a given
+// staking coin denom.
+func (k Keeper) DeleteCurrentEpoch(ctx sdk.Context, stakingCoinDenom string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetCurrentEpochKey(stakingCoinDenom))
+}
+
 // GetOutstandingRewards returns outstanding rewards for a given
 // staking coin denom.
-func (k Keeper) GetOutstandingRewards(ctx sdk.Context, stakingCoinDenom string) (rewards types.OutstandingRewards, found bool) {
+func (k Keeper) GetOutstandingRewards(ctx sdk.Context, stakingCoinDenom string) (rewards types.OutstandingRewards) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetOutstandingRewardsKey(stakingCoinDenom))
-	if bz == nil {
-		return
-	}
 	k.cdc.MustUnmarshal(bz, &rewards)
-	found = true
 	return
 }
 
@@ -139,7 +188,7 @@ func (k Keeper) IterateOutstandingRewards(ctx sdk.Context, cb func(stakingCoinDe
 // IncreaseOutstandingRewards increases outstanding rewards for a given
 // staking coin denom by given amount.
 func (k Keeper) IncreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom string, amount sdk.DecCoins) {
-	outstanding, _ := k.GetOutstandingRewards(ctx, stakingCoinDenom)
+	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
 	outstanding.Rewards = outstanding.Rewards.Add(amount...)
 	k.SetOutstandingRewards(ctx, stakingCoinDenom, outstanding)
 }
@@ -149,10 +198,7 @@ func (k Keeper) IncreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom str
 // If the resulting outstanding rewards is zero, then the outstanding rewards
 // will be deleted, not updated.
 func (k Keeper) DecreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom string, amount sdk.DecCoins) {
-	outstanding, found := k.GetOutstandingRewards(ctx, stakingCoinDenom)
-	if !found {
-		panic("outstanding rewards not found")
-	}
+	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
 	if outstanding.Rewards.IsEqual(amount) {
 		k.DeleteOutstandingRewards(ctx, stakingCoinDenom)
 	} else {
@@ -209,7 +255,7 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 	}
 
 	currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
-	// TODO: handle if currentEpoch is 0
+	fmt.Printf("WithdrawRewards(%s) - CalculateRewards(%s, %d)\n", stakingCoinDenom, stakingCoinDenom, currentEpoch - 1)
 	rewards := k.CalculateRewards(ctx, farmerAcc, stakingCoinDenom, currentEpoch-1)
 	truncatedRewards, _ := rewards.TruncateDecimal()
 
@@ -234,6 +280,7 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 
 	staking.StartingEpoch = currentEpoch
 	k.SetStaking(ctx, stakingCoinDenom, farmerAcc, staking)
+	k.decrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 
 	return truncatedRewards, nil
 }
@@ -415,11 +462,15 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 
 	for stakingCoinDenom, unitRewards := range unitRewardsByDenom {
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
+		fmt.Printf("AllocateRewards :: Setting HistoricalRewards for %d\n", currentEpoch)
+		fmt.Printf("                   Updating CurrentEpoch %d -> %d\n", currentEpoch, currentEpoch+1)
 		historical, _ := k.GetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch-1)
 		k.SetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch, types.HistoricalRewards{
 			CumulativeUnitRewards: historical.CumulativeUnitRewards.Add(unitRewards...),
+			ReferenceCount:        1,
 		})
 		k.SetCurrentEpoch(ctx, stakingCoinDenom, currentEpoch+1)
+		k.decrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 	}
 
 	return nil

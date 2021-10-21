@@ -153,15 +153,15 @@ func (suite *KeeperTestSuite) AdvanceEpoch() {
 	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) SetFixedAmountPlan(id uint64, farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochAmountMap map[string]int64) {
-	stakingCoinWeights := sdk.NewDecCoins()
-	for denom, weight := range stakingCoinWeightsMap {
-		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
+func (suite *KeeperTestSuite) SetFixedAmountPlan(id uint64, farmingPoolAcc sdk.AccAddress, stakingCoinWeightsStr, epochAmountStr string) {
+	stakingCoinWeights, err := sdk.ParseDecCoins(stakingCoinWeightsStr)
+	if err != nil {
+		panic(err)
 	}
 
-	epochAmount := sdk.NewCoins()
-	for denom, amount := range epochAmountMap {
-		epochAmount = epochAmount.Add(sdk.NewInt64Coin(denom, amount))
+	epochAmount, err := sdk.ParseCoinsNormalized(epochAmountStr)
+	if err != nil {
+		panic(err)
 	}
 
 	suite.keeper.SetPlan(suite.ctx, types.NewFixedAmountPlan(
@@ -178,10 +178,10 @@ func (suite *KeeperTestSuite) SetFixedAmountPlan(id uint64, farmingPoolAcc sdk.A
 	))
 }
 
-func (suite *KeeperTestSuite) SetRatioPlan(id uint64, farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochRatioStr string) {
-	stakingCoinWeights := sdk.NewDecCoins()
-	for denom, weight := range stakingCoinWeightsMap {
-		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
+func (suite *KeeperTestSuite) SetRatioPlan(id uint64, farmingPoolAcc sdk.AccAddress, stakingCoinWeightsStr, epochRatioStr string) {
+	stakingCoinWeights, err := sdk.ParseDecCoins(stakingCoinWeightsStr)
+	if err != nil {
+		panic(err)
 	}
 
 	epochRatio := sdk.MustNewDecFromStr(epochRatioStr)

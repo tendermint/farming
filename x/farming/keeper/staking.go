@@ -182,6 +182,9 @@ func (k Keeper) IncreaseTotalStakings(ctx sdk.Context, stakingCoinDenom string, 
 	totalStaking, found := k.GetTotalStakings(ctx, stakingCoinDenom)
 	if !found {
 		totalStaking.Amount = sdk.ZeroInt()
+		if err := k.afterStakingCoinAdded(ctx, stakingCoinDenom); err != nil {
+			panic(err)
+		}
 	}
 	totalStaking.Amount = totalStaking.Amount.Add(amount)
 	k.SetTotalStakings(ctx, stakingCoinDenom, totalStaking)
@@ -195,11 +198,36 @@ func (k Keeper) DecreaseTotalStakings(ctx sdk.Context, stakingCoinDenom string, 
 		panic("total stakings not found")
 	}
 	if totalStaking.Amount.Equal(amount) {
+		if err := k.afterStakingCoinRemoved(ctx, stakingCoinDenom); err != nil {
+			panic(err)
+		}
 		k.DeleteTotalStakings(ctx, stakingCoinDenom)
 	} else {
 		totalStaking.Amount = totalStaking.Amount.Sub(amount)
 		k.SetTotalStakings(ctx, stakingCoinDenom, totalStaking)
 	}
+}
+
+func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) error {
+	// Set initial historical rewards with reference count of 1.
+	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}, ReferenceCount: 1})
+	// Set current epoch as 1.
+	k.SetCurrentEpoch(ctx, stakingCoinDenom, 1)
+	k.SetOutstandingRewards(ctx, stakingCoinDenom, types.OutstandingRewards{Rewards: sdk.DecCoins{}})
+	return nil
+}
+
+func (k Keeper) afterStakingCoinRemoved(ctx sdk.Context, stakingCoinDenom string) error {
+	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
+
+	if !outstanding.Rewards.IsZero() {
+		// TODO: send to fee pool
+	}
+
+	k.DeleteOutstandingRewards(ctx, stakingCoinDenom)
+	k.DeleteAllHistoricalRewards(ctx, stakingCoinDenom)
+	k.DeleteCurrentEpoch(ctx, stakingCoinDenom)
+	return nil
 }
 
 // ReserveStakingCoins sends staking coins to the staking reserve account.
@@ -333,12 +361,15 @@ func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 		}
 
 		k.DeleteQueuedStaking(ctx, stakingCoinDenom, farmerAcc)
+		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
+
+		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		k.SetStaking(ctx, stakingCoinDenom, farmerAcc, types.Staking{
 			Amount:        staking.Amount.Add(queuedStaking.Amount),
-			StartingEpoch: k.GetCurrentEpoch(ctx, stakingCoinDenom),
+			StartingEpoch: currentEpoch,
 		})
 
-		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
+		k.incrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 
 		return false
 	})

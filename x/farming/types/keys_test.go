@@ -237,6 +237,11 @@ func (s *keysTestSuite) TestGetHistoricalRewardsKey() {
 	}
 }
 
+func (s *keysTestSuite) TestGetHistoricalRewardsPrefix() {
+	s.Require().Equal([]byte{0x31, 0x5, 0x73, 0x74, 0x61, 0x6b, 0x65}, types.GetHistoricalRewardsPrefix(sdk.DefaultBondDenom))
+	s.Require().Equal([]byte{0x31, 0x6, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x31}, types.GetHistoricalRewardsPrefix("denom1"))
+}
+
 func (s *keysTestSuite) TestGetCurrentEpochKey() {
 	// key0
 	stakingCoinDenom0 := ""
