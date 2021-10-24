@@ -283,9 +283,8 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 				return err
 			}
 
-			staking.Amount = staking.Amount.Add(queuedStaking.Amount)
-			removedFromStaking := queuedStaking.Amount.Neg()
-			queuedStaking.Amount = sdk.ZeroInt()
+			removedFromStaking := queuedStaking.Amount.Neg() // make negative a positive
+			staking.Amount = staking.Amount.Sub(removedFromStaking)
 			if staking.Amount.IsPositive() {
 				currentEpoch := k.GetCurrentEpoch(ctx, coin.Denom)
 				staking.StartingEpoch = currentEpoch
@@ -294,6 +293,7 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 				k.DeleteStaking(ctx, coin.Denom, farmerAcc)
 			}
 
+			k.DeleteQueuedStaking(ctx, coin.Denom, farmerAcc)
 			k.DecreaseTotalStakings(ctx, coin.Denom, removedFromStaking)
 		} else if queuedStaking.Amount.IsPositive() {
 			k.SetQueuedStaking(ctx, coin.Denom, farmerAcc, queuedStaking)
