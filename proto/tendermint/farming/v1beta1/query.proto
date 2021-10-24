@@ -121,6 +121,7 @@ key:
 };
 }
 
+// Missing doc here
 rpc Stakings(QueryStakingsRequest) returns (QueryStakingsResponse) {
   option (google.api.http).get                                           = "/cosmos/farming/v1beta1/stakings/{farmer}";
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -145,6 +146,7 @@ key:
 };
 }
 
+// Missing doc here
 rpc TotalStakings(QueryTotalStakingsRequest) returns (QueryTotalStakingsResponse) {
   option (google.api.http).get = "/cosmos/farming/v1beta1/total_stakings/{staking_coin_denom}";
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
