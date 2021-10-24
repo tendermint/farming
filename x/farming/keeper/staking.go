@@ -259,6 +259,7 @@ func (k Keeper) Stake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Coin
 // It causes accumulated rewards to be withdrawn to the farmer.
 func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Coins) error {
 	// TODO: send coins at once, not in every WithdrawRewards
+	// ^ Aren't we already sending them 'at once' when we call ReleaseStakingCoins?
 
 	for _, coin := range amount {
 		staking, found := k.GetStaking(ctx, coin.Denom, farmerAcc)
