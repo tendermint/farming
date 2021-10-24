@@ -34,6 +34,12 @@ message PublicPlanProposal {
   // delete_request_proposals specifies DeleteRequestProposal object
   repeated DeleteRequestProposal delete_request_proposals = 5
       [(gogoproto.moretags) = "yaml:\"delete_request_proposals\""];
+
+  // Add/Update/Delete naming is a bit confusing; 'request' and 'proposal' are almost synonymous
+  // Consider changing to:
+  // - add_plan_requests    (or add_plan_proposals)
+  // - update_plan_requests (or update_plan_proposals)
+  // - delete_plan_requests (or delete_plan_proposals)
 }
 
 // AddRequestProposal details a proposal for creating a public plan.
