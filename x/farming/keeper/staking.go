@@ -274,7 +274,7 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 		availableAmt := staking.Amount.Add(queuedStaking.Amount)
 		if availableAmt.LT(coin.Amount) {
 			return sdkerrors.Wrapf(
-				sdkerrors.ErrInsufficientFunds, "%s is smaller than %s", availableAmt.String(), coin.String())
+				sdkerrors.ErrInsufficientFunds, "%s%s is smaller than %s%s", availableAmt, coin.Denom, coin.Amount, coin.Denom)
 		}
 
 		queuedStaking.Amount = queuedStaking.Amount.Sub(coin.Amount)
