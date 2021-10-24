@@ -145,6 +145,8 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		if hasNeg {
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "lack of %s coins to pay private plan creation fee", diffs.String())
 		}
+		// ^ No need to check if balance has enough to pay for fee. Can just try to .SendCoins; it will error if insufficient tokens
+		// If we want a specific error, the error returned by SendCoins can be replaced by the above error.
 
 		farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
 		if err != nil {
