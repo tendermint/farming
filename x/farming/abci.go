@@ -17,6 +17,7 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 		if !plan.GetTerminated() && ctx.BlockTime().After(plan.GetEndTime()) {
 			if err := k.TerminatePlan(ctx, plan); err != nil {
 				panic(err)
+				// Consider deleting terminated plans
 			}
 		}
 	}
