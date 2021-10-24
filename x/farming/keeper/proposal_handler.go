@@ -42,6 +42,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []*types.AddReq
 		if err != nil {
 			return err
 		}
+		// ^ Pick either farmingPoolAddr or farmingPoolAcc throughout this file :)
 
 		terminationAcc, err := sdk.AccAddressFromBech32(p.GetTerminationAddress())
 		if err != nil {
@@ -110,6 +111,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			if err := plan.SetFarmingPoolAddress(farmingPoolAddrAcc); err != nil {
 				return err
 			}
+			// ^ Pick either farmingPoolAddr or farmingPoolAcc :)
 		}
 
 		if p.GetTerminationAddress() != "" {
@@ -120,6 +122,7 @@ func (k Keeper) UpdatePublicPlanProposal(ctx sdk.Context, proposals []*types.Upd
 			if err := plan.SetTerminationAddress(terminationAddrAcc); err != nil {
 				return err
 			}
+			// ^ Pick either terminationAddr or terminationAcc :)
 		}
 
 		if p.GetStakingCoinWeights() != nil {
