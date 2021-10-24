@@ -19,6 +19,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 
 	k.SetParams(ctx, genState.Params)
 	// TODO: what if CurrentEpochDays field was empty?
+	// ^ If it is empty, it will default to zero and the following error comes up: 'current epoch days must be positive'
 	k.SetCurrentEpochDays(ctx, genState.CurrentEpochDays)
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 
