@@ -295,9 +295,7 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 			}
 
 			k.DecreaseTotalStakings(ctx, coin.Denom, removedFromStaking)
-		}
-
-		if queuedStaking.Amount.IsPositive() {
+		} else if queuedStaking.Amount.IsPositive() {
 			k.SetQueuedStaking(ctx, coin.Denom, farmerAcc, queuedStaking)
 		} else {
 			k.DeleteQueuedStaking(ctx, coin.Denom, farmerAcc)
