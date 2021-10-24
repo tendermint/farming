@@ -194,7 +194,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 		balances := k.bankKeeper.GetAllBalances(ctx, msg.GetCreator())
 		diffs, hasNeg := balances.SafeSub(params.PrivatePlanCreationFee)
 		if hasNeg {
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "lack of %s coins to pay private plan createion fee", diffs.String())
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "lack of %s coins to pay private plan creation fee", diffs.String())
 		}
 
 		farmingFeeCollectorAcc, err := sdk.AccAddressFromBech32(params.FarmingFeeCollector)
