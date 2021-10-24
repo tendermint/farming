@@ -322,6 +322,7 @@ func NewFarmingApp(
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(farmingtypes.RouterKey, farming.NewPublicPlanProposal(app.FarmingKeeper))
+	// Consider changing NewPublicPlanProposal to NewPublicPlanProposalHandler for consistency
 
 	govKeeper := govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
