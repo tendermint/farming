@@ -283,6 +283,8 @@ func (k Keeper) Harvest(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDe
 			types.EventTypeHarvest,
 			sdk.NewAttribute(types.AttributeKeyFarmer, farmerAcc.String()),
 			sdk.NewAttribute(types.AttributeKeyStakingCoinDenoms, strings.Join(stakingCoinDenoms, ",")),
+			// Consider adding totalRewards to list of events, so that this shows up when querying the transaction.
+			// However I understand that WithdrawRewards itself does this for each denom one by one.
 		),
 	})
 
