@@ -8,7 +8,7 @@ Farming module is in active development by the Gravity DEX team in Tendermint. T
 
 ## What does farming module do?
 
-> A farming module is a Cosmos SDK based module that implements farming functionality that provides farming rewards to staking participants called farmers. One use case is to use the module to provide incentives for liquidity pool investors for their pool participation.
+> The farming module is a Cosmos SDK based module that implements farming functionality that provides farming rewards to staking participants called farmers. One use case is to use the module to provide incentives for liquidity pool investors for their pool participation.
 
 ## Resources
 

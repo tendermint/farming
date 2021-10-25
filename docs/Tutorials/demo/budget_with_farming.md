@@ -11,13 +11,13 @@ The [budget](https://github.com/tendermint/budget) and [farming](https://github.
 
 ## What does budget module do?
 
-A budget module is a Cosmos SDK module that implements budget functionality. It is an independent module from other SDK modules and core functionality is to enable anyone to create a budget plan through governance param change proposal. Once it is agreed within the community, voted, and passed, it uses the budget source address to distribute amount of coins by the rate defined in the plan to the collection address. Collecting all budgets and distribution take place every epoch blocks that can be modified by a governance proposal.
+The budget module is a Cosmos SDK module that implements budget functionality. It is an independent module from other SDK modules and core functionality is to enable anyone to create a budget plan through governance param change proposal. Once it is agreed within the community, voted, and passed, it uses the budget source address to distribute amount of coins by the rate defined in the plan to the collection address. Collecting all budgets and distribution take place every epoch blocks that can be modified by a governance proposal.
 
 One use case is for Gravity DEX farming plan. Budget module can be used to create a budget plan that defines Cosmos Hub's FeeCollector module account where transaction gas fees and part of ATOM inflation are collected as budget source address and uses custom module account (created by budget creator) as collection address. 
 
 ## What does farming module do?
 
-A farming module is a Cosmos SDK based module that implements farming functionality that provides farming rewards to staking participants called farmers. 
+The farming module is a Cosmos SDK based module that implements farming functionality that provides farming rewards to staking participants called farmers. 
 
 One use case is to use the module to provide incentives for liquidity pool investors for their pool participation.
 
