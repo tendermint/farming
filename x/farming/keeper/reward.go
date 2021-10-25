@@ -375,7 +375,7 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 		totalWeight := sdk.ZeroDec()
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
 			totalWeight = totalWeight.Add(weight.Amount)
-		} // Add suggestion here if Dylan doesn't
+		}
 
 		totalAllocCoins := sdk.NewCoins()
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
