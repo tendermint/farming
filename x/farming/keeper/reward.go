@@ -338,9 +338,10 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 	}
 
 	var allocInfos []AllocationInfo
-	for farmingPool, coins := range allocCoins {
+	// Renamed coins -> planCoins to make it more clear that it's a map (planId => sdk.Coins) not just sdk.Coins
+	for farmingPool, planCoins := range allocCoins {
 		totalCoins := sdk.NewCoins()
-		for _, amt := range coins {
+		for _, amt := range planCoins {
 			totalCoins = totalCoins.Add(amt...)
 		}
 
@@ -349,7 +350,7 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 			continue
 		}
 
-		for planID, amt := range coins {
+		for planID, amt := range planCoins {
 			allocInfos = append(allocInfos, AllocationInfo{
 				Plan:   plans[planID],
 				Amount: amt,
