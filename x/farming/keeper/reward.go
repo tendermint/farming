@@ -210,6 +210,7 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 
 	currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 	// TODO: handle if currentEpoch is 0
+	// ^ Ensure this is handled
 	rewards := k.CalculateRewards(ctx, farmerAcc, stakingCoinDenom, currentEpoch-1)
 	truncatedRewards, _ := rewards.TruncateDecimal()
 
@@ -305,6 +306,8 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 	farmingPoolBalances := make(map[string]sdk.Coins)   // farmingPoolAddress => sdk.Coins
 	allocCoins := make(map[string]map[uint64]sdk.Coins) // farmingPoolAddress => (planId => sdk.Coins)
 
+	// This complex function is lacking inline documentation
+
 	plans := make(map[uint64]types.PlanI)
 	for _, plan := range k.GetPlans(ctx) {
 		// Filter plans by their start time and end time.
@@ -366,11 +369,13 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 	unitRewardsByDenom := map[string]sdk.DecCoins{} // (staking coin denom) => (unit rewards)
 
+	// This complex function is lacking inline documentation
+
 	for _, allocInfo := range k.AllocationInfos(ctx) {
 		totalWeight := sdk.ZeroDec()
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
 			totalWeight = totalWeight.Add(weight.Amount)
-		}
+		} // Add suggestion here if Dylan doesn't
 
 		totalAllocCoins := sdk.NewCoins()
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
@@ -382,8 +387,7 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 				continue
 			}
 
-			weightProportion := weight.Amount.QuoTruncate(totalWeight)
-			allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weightProportion).TruncateDecimal()
+			allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weight.Amount).TruncateDecimal()
 			allocCoinsDec := sdk.NewDecCoinsFromCoins(allocCoins...)
 
 			unitRewardsByDenom[weight.Denom] = unitRewardsByDenom[weight.Denom].Add(allocCoinsDec.QuoDecTruncate(totalStakings.Amount.ToDec())...)
