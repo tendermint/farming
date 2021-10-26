@@ -249,6 +249,9 @@ func (k Keeper) AllRewards(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins 
 // It decreases outstanding rewards and set the starting epoch of a
 // staking.
 func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDenom string) (sdk.Coins, error) {
+	// TODO: IncrementValidatorPeriod
+	// TODO: decrementReferenceCount
+
 	staking, found := k.GetStaking(ctx, stakingCoinDenom, farmerAcc)
 	if !found {
 		return nil, types.ErrStakingNotExists
@@ -470,7 +473,6 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 			ReferenceCount:        1,
 		})
 		k.SetCurrentEpoch(ctx, stakingCoinDenom, currentEpoch+1)
-		k.decrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 	}
 
 	return nil

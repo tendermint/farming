@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -209,6 +211,7 @@ func (k Keeper) DecreaseTotalStakings(ctx sdk.Context, stakingCoinDenom string, 
 }
 
 func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) error {
+	fmt.Printf("afterStakingCoinAdded(%s)\n", stakingCoinDenom)
 	// Set initial historical rewards with reference count of 1.
 	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}, ReferenceCount: 1})
 	// Set current epoch as 1.
@@ -218,6 +221,7 @@ func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) 
 }
 
 func (k Keeper) afterStakingCoinRemoved(ctx sdk.Context, stakingCoinDenom string) error {
+	fmt.Printf("afterStakingCoinRemoved(%s)\n", stakingCoinDenom)
 	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
 
 	if !outstanding.Rewards.IsZero() {
@@ -351,6 +355,8 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 // It causes accumulated rewards to be withdrawn to the farmer.
 func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 	k.IterateQueuedStakings(ctx, func(stakingCoinDenom string, farmerAcc sdk.AccAddress, queuedStaking types.QueuedStaking) (stop bool) {
+		k.DeleteQueuedStaking(ctx, stakingCoinDenom, farmerAcc)
+
 		staking, found := k.GetStaking(ctx, stakingCoinDenom, farmerAcc)
 		if found {
 			if _, err := k.WithdrawRewards(ctx, farmerAcc, stakingCoinDenom); err != nil {
@@ -358,18 +364,17 @@ func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 			}
 		} else {
 			staking.Amount = sdk.ZeroInt()
+			// TODO: IncrementValidatorPeriod
 		}
-
-		k.DeleteQueuedStaking(ctx, stakingCoinDenom, farmerAcc)
-		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
 
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		k.SetStaking(ctx, stakingCoinDenom, farmerAcc, types.Staking{
 			Amount:        staking.Amount.Add(queuedStaking.Amount),
 			StartingEpoch: currentEpoch,
 		})
-
 		k.incrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
+
+		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
 
 		return false
 	})
