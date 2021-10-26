@@ -364,6 +364,7 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 	unitRewardsByDenom := map[string]sdk.DecCoins{} // (staking coin denom) => (unit rewards)
 
 	for _, allocInfo := range k.AllocationInfos(ctx) {
+		// Isn't totalweight always 1?
 		totalWeight := sdk.ZeroDec()
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
 			totalWeight = totalWeight.Add(weight.Amount)
@@ -376,9 +377,13 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 				continue
 			}
 			if !totalStakings.Amount.IsPositive() {
+				// Shouldn't there be a panic here since this should never occur?
 				continue
 			}
 
+			// shouldn't this be
+			// allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weight.Amount).TruncateDecimal()
+			// since total weight is always 1?
 			weightProportion := weight.Amount.QuoTruncate(totalWeight)
 			allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weightProportion).TruncateDecimal()
 			allocCoinsDec := sdk.NewDecCoinsFromCoins(allocCoins...)
@@ -394,6 +399,8 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 			continue
 		}
 
+		// Should the rewards for all proposals be kept in the same address?
+		// Would rather prefer having a reward address per proposal just in case there is a bug with the maths
 		rewardsReserveAcc := k.GetRewardsReservePoolAcc(ctx)
 		if err := k.bankKeeper.SendCoins(ctx, allocInfo.Plan.GetFarmingPoolAddress(), rewardsReserveAcc, totalAllocCoins); err != nil {
 			return err

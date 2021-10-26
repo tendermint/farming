@@ -45,6 +45,8 @@ func (k Keeper) AdvanceEpoch(ctx sdk.Context) error {
 	if err := k.AllocateRewards(ctx); err != nil {
 		return err
 	}
+	// Would mention somewhere that queue staking is needed so that stakers can't stake at the last second to
+	// receive the same rewards as a staker that staked the entire day.
 	k.ProcessQueuedCoins(ctx)
 	k.SetLastEpochTime(ctx, ctx.BlockTime())
 
