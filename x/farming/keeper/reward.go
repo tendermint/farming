@@ -381,35 +381,45 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 // AllocateRewards updates historical rewards and current epoch info
 // based on the allocation infos.
 func (k Keeper) AllocateRewards(ctx sdk.Context) error {
-	unitRewardsByDenom := map[string]sdk.DecCoins{} // (staking coin denom) => (unit rewards)
+	// unitRewardsByDenom is a table that records how much unit rewards should
+	// be increased in this epoch, for each staking coin denom.
+	// It maps staking coin denom to unit rewards.
+	unitRewardsByDenom := map[string]sdk.DecCoins{}
 
-	for _, allocInfo := range k.AllocationInfos(ctx) {
-		totalWeight := sdk.ZeroDec()
-		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
-			totalWeight = totalWeight.Add(weight.Amount)
-		}
+	// Get allocation information first.
+	allocInfos := k.AllocationInfos(ctx)
 
+	for _, allocInfo := range allocInfos {
 		totalAllocCoins := sdk.NewCoins()
+
+		// For each staking coin weight, calculate how many coins will be actually
+		// allocated based on the weight.
+		// Basically it just calculates the following:
+		// (unit rewards for this epoch) = (weighted rewards for this denom) / (total staking amount for this denom)
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
+			// Check if there are any coins staked for this denom.
+			// If not, skip this denom for rewards allocation.
 			totalStakings, found := k.GetTotalStakings(ctx, weight.Denom)
 			if !found {
 				continue
 			}
-			if !totalStakings.Amount.IsPositive() {
-				continue
-			}
 
-			weightProportion := weight.Amount.QuoTruncate(totalWeight)
-			allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weightProportion).TruncateDecimal()
+			allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weight.Amount).TruncateDecimal()
 			allocCoinsDec := sdk.NewDecCoinsFromCoins(allocCoins...)
 
+			// Multiple plans can have same denom in their staking coin weights,
+			// so we accumulate all unit rewards for this denom in the table.
 			unitRewardsByDenom[weight.Denom] = unitRewardsByDenom[weight.Denom].Add(allocCoinsDec.QuoDecTruncate(totalStakings.Amount.ToDec())...)
 
+			// TODO: consider increasing outstanding rewards for a denom at once,
+			//       not in every iteration.
 			k.IncreaseOutstandingRewards(ctx, weight.Denom, allocCoinsDec)
 
 			totalAllocCoins = totalAllocCoins.Add(allocCoins...)
 		}
 
+		// If total allocated amount for this plan is zero, then skip allocation
+		// for this plan.
 		if totalAllocCoins.IsZero() {
 			continue
 		}
@@ -433,6 +443,8 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 		})
 	}
 
+	// For each staking coin denom in the table, increase cumulative unit rewards
+	// and increment current epoch number by 1.
 	for stakingCoinDenom, unitRewards := range unitRewardsByDenom {
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		historical, _ := k.GetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch-1)
