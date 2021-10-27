@@ -356,9 +356,9 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 	// In this step, we check if farming pools have sufficient balance for allocations.
 	// If not, we don't allocate rewards from that farming pool for this epoch.
 	var allocInfos []AllocationInfo
-	for farmingPool, coins := range allocCoins {
+	for farmingPool, planCoins := range allocCoins {
 		totalCoins := sdk.NewCoins()
-		for _, amt := range coins {
+		for _, amt := range planCoins {
 			totalCoins = totalCoins.Add(amt...)
 		}
 
@@ -367,7 +367,7 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 			continue
 		}
 
-		for planID, amt := range coins {
+		for planID, amt := range planCoins {
 			allocInfos = append(allocInfos, AllocationInfo{
 				Plan:   plans[planID],
 				Amount: amt,
