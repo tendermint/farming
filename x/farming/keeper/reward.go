@@ -301,33 +301,50 @@ type AllocationInfo struct {
 // When total allocated coins for a farming pool exceeds the pool's
 // balance, then allocation will not happen.
 func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
-	farmingPoolBalances := make(map[string]sdk.Coins)   // farmingPoolAddress => sdk.Coins
-	allocCoins := make(map[string]map[uint64]sdk.Coins) // farmingPoolAddress => (planId => sdk.Coins)
+	// farmingPoolBalances is a cache for balances of each farming pool,
+	// to reduce number of BankKeeper.GetAllBalances calls.
+	// It maps farmingPoolAddress to the pool's balance.
+	farmingPoolBalances := map[string]sdk.Coins{}
 
-	plans := make(map[uint64]types.PlanI)
+	// allocCoins is a table that records which farming pool allocates
+	// how many coins to which plan.
+	// It maps farmingPoolAddress to a map that maps planId to amount of
+	// coins to allocate.
+	allocCoins := map[string]map[uint64]sdk.Coins{}
+
+	plans := map[uint64]types.PlanI{} // it maps planId to plan.
 	for _, plan := range k.GetPlans(ctx) {
-		// Filter plans by their start time and end time.
+		// Add plans that are not terminated and active to the map.
 		if !plan.GetTerminated() && types.IsPlanActiveAt(plan, ctx.BlockTime()) {
 			plans[plan.GetId()] = plan
 		}
 	}
 
+	// Calculate how many coins the plans want to allocate rewards from farming pools.
+	// Note that in this step, we don't check if the farming pool has
+	// sufficient balance for all allocations. We'll do that check in the next step.
 	for _, plan := range plans {
 		farmingPoolAcc := plan.GetFarmingPoolAddress()
 		farmingPool := farmingPoolAcc.String()
 
+		// Lookup if we already have the farming pool's balance in the cache.
+		// If not, call BankKeeper.GetAllBalances and add the result to the cache.
 		balances, ok := farmingPoolBalances[farmingPool]
 		if !ok {
 			balances = k.bankKeeper.GetAllBalances(ctx, farmingPoolAcc)
 			farmingPoolBalances[farmingPool] = balances
 		}
 
+		// Lookup if we already have the farming pool's allocation map in the cache.
+		// If not, create new allocation map and add it to the cache.
 		ac, ok := allocCoins[farmingPool]
 		if !ok {
-			ac = make(map[uint64]sdk.Coins)
+			ac = map[uint64]sdk.Coins{}
 			allocCoins[farmingPool] = ac
 		}
 
+		// Based on the plan's type, record how many coins the plan wants to
+		// allocate in the allocation map.
 		switch plan := plan.(type) {
 		case *types.FixedAmountPlan:
 			ac[plan.GetId()] = plan.EpochAmount
@@ -336,6 +353,8 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 		}
 	}
 
+	// In this step, we check if farming pools have sufficient balance for allocations.
+	// If not, we don't allocate rewards from that farming pool for this epoch.
 	var allocInfos []AllocationInfo
 	for farmingPool, coins := range allocCoins {
 		totalCoins := sdk.NewCoins()
