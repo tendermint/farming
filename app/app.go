@@ -149,8 +149,6 @@ var (
 		liquiditytypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		budgettypes.ModuleName:         nil,
 		farmingtypes.ModuleName:        nil,
-		// Consider adding StakingReserveAcc and RewardsReserveAcc to this list of account permissions
-		// Consider adding FarmingFeeCollectorAcc as well.
 	}
 )
 
