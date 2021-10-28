@@ -24,8 +24,8 @@ const (
 // keys for farming store prefixes
 var (
 	GlobalPlanIdKey     = []byte("globalPlanId")
-	LastEpochTimeKey    = []byte("lastEpochTime")
-	CurrentEpochDaysKey = []byte("currentEpochDays")
+	EpochEndTimeKey    = []byte("epochEndTime")
+	NextEpochDaysKey = []byte("nextEpochDays")
 
 	PlanKeyPrefix = []byte{0x11}
 
@@ -36,7 +36,7 @@ var (
 	TotalStakingKeyPrefix       = []byte{0x25}
 
 	HistoricalRewardsKeyPrefix  = []byte{0x31}
-	CurrentEpochKeyPrefix       = []byte{0x32}
+	NextEpochKeyPrefix       = []byte{0x32}
 	OutstandingRewardsKeyPrefix = []byte{0x33}
 )
 
@@ -89,7 +89,7 @@ func GetHistoricalRewardsKey(stakingCoinDenom string, epoch uint64) []byte {
 
 // GetCurrentEpochKey returns a key for a current epoch info.
 func GetCurrentEpochKey(stakingCoinDenom string) []byte {
-	return append(CurrentEpochKeyPrefix, []byte(stakingCoinDenom)...)
+	return append(NextEpochKeyPrefix, []byte(stakingCoinDenom)...)
 }
 
 // GetOutstandingRewardsKey returns a key for an outstanding rewards record.
@@ -161,9 +161,9 @@ func ParseHistoricalRewardsKey(key []byte) (stakingCoinDenom string, epoch uint6
 	return
 }
 
-// ParseCurrentEpochKey parses a current epoch key.
-func ParseCurrentEpochKey(key []byte) (stakingCoinDenom string) {
-	if !bytes.HasPrefix(key, CurrentEpochKeyPrefix) {
+// ParseNextEpochKey parses a current epoch key.
+func ParseNextEpochKey(key []byte) (stakingCoinDenom string) {
+	if !bytes.HasPrefix(key, NextEpochKeyPrefix) {
 		panic("key does not have proper prefix")
 	}
 	stakingCoinDenom = string(key[1:])
