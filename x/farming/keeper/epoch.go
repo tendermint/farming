@@ -10,7 +10,7 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
-// GetEpochEndTime returns the last time the epoch ended.
+// GetEpochEndTime returns the last time the epoch ended in UTC format.
 func (k Keeper) GetEpochEndTime(ctx sdk.Context) (t time.Time, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.EpochEndTimeKey)

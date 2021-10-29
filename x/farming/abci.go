@@ -24,17 +24,19 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 	// alternative impl that stores the end date of an epoch instead of
 	// calculating it each time.
 	// XXX: it may have collateral effects in other parts of the code (unchecked)
-	blockDate := ctx.BlockTime()
+	blockDateUTC := ctx.BlockTime().In(time.UTC) // get the time in UTC
 	epochEndTime, isSet := k.GetEpochEndTime(ctx) // GetEpochEndDate replaces GetLastEpochTime
-	if !isSet || blockDate.After(epochEndTime) {
+	if !isSet || blockDateUTC.After(epochEndTime) {
 		nextEpochDays := k.GetNextEpochDuration(ctx) // GetNextEpochDays replaces GetCurrentEpochDays
-		nextEpochEndTime := blockDate.AddDate(0, 0, int(nextEpochDays))
+		nextEpochEndTimeUTC := blockDateUTC.
+			Truncate(time.Hour * 24). // begin of day
+			AddDate(0, 0, int(nextEpochDays))
 		// advance epoch
 		if err := k.AllocateRewards(ctx); err != nil {
 			panic(err)
 		}
 		k.ProcessQueuedCoins(ctx)
-		k.SetEpochEndTime(ctx, nextEpochEndTime)
+		k.SetEpochEndTime(ctx, nextEpochEndTimeUTC)
 	}
 
 

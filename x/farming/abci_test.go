@@ -14,9 +14,8 @@ func (suite *ModuleTestSuite) TestEndBlockerEpochDaysTest() {
 		suite.SetupTest()
 
 		params := suite.keeper.GetParams(suite.ctx)
-		params.NextEpochDays = formerEpochDays
 		suite.keeper.SetParams(suite.ctx, params)
-		suite.keeper.SetCurrentEpochDays(suite.ctx, formerEpochDays)
+		suite.keeper.SetNextEpochDuration(suite.ctx, params.NextEpochDays)
 
 		t := types.ParseTime("2021-08-01T00:00:00Z")
 		suite.ctx = suite.ctx.WithBlockTime(t)
