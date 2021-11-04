@@ -521,6 +521,6 @@ farmingd q farming rewards cosmos185fflsvwrz0cx46w6qada7mdy92m6kx4gqx0ny \
 --output json | jq
 ```
 
-## Finish
+## Conclusion
 
 Throughout the demo, you learn what the budget and farming modules are and how they work to provide eseential functionalities in the Cosmos ecosystem. Thank you for taking your time and your interest. 
