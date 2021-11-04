@@ -392,10 +392,9 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 	for _, allocInfo := range allocInfos {
 		totalAllocCoins := sdk.NewCoins()
 
-		// For each staking coin weight, calculate how many coins will be actually
-		// allocated based on the weight.
-		// Basically it just calculates the following:
-		// (unit rewards for this epoch) = (weighted rewards for this denom) / (total staking amount for this denom)
+		// Calculate how many coins are allocated based on each staking coin weight.
+		// It is calculated with the following formula:
+		// (unit rewards for this epoch) = (weighted rewards for the denom) / (total staking amount for the denom)
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
 			// Check if there are any coins staked for this denom.
 			// If not, skip this denom for rewards allocation.
