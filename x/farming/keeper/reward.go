@@ -411,8 +411,6 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 			// so we accumulate all unit rewards for this denom in the table.
 			unitRewardsByDenom[weight.Denom] = unitRewardsByDenom[weight.Denom].Add(allocCoinsDec.QuoDecTruncate(totalStakings.Amount.ToDec())...)
 
-			// TODO: consider increasing outstanding rewards for a denom at once,
-			//       not in every iteration.
 			k.IncreaseOutstandingRewards(ctx, weight.Denom, allocCoinsDec)
 
 			totalAllocCoins = totalAllocCoins.Add(allocCoins...)
