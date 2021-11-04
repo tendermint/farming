@@ -119,7 +119,7 @@ where the fields in the JSON file are:
 - `name`: the name of the budget plan used for display
 - `description`: the description of the budget plan used for display
 - `rate`: the distributing amount by ratio of the total budget source
-- `budget_source_address`: the address where the source of budget comes from
+- `source_address`: the address where the source of budget comes from
 - `collection_address`: the address that collects budget from the budget source address
 - `start_time`: start time of the budget plan
 - `end_time`: end time of the budget plan
