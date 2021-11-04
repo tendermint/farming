@@ -20,8 +20,10 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 	// TODO: what if CurrentEpochDays field was empty?
 	k.SetCurrentEpochDays(ctx, genState.CurrentEpochDays)
-	moduleAcc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	k.accountKeeper.SetModuleAccount(ctx, moduleAcc)
+	if addr := k.accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
+
 
 	for i, record := range genState.PlanRecords {
 		plan, err := types.UnpackPlan(&record.Plan)
@@ -99,7 +101,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 			stakingReserveCoins, genState.StakingReserveCoins))
 	}
 
-	if err := k.ValidateOutstandingRewards(ctx); err != nil {
+	if err := k.ValidateOutstandingRewardsAmount(ctx); err != nil {
 		panic(err)
 	}
 
