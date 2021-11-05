@@ -17,7 +17,7 @@ One use case is the Gravity DEX farming plan. The budget module can be used to c
 
 ## What does the farming module do?
 
-The farming module is an Cosmos SDK-based module that implements farming functionality that provides farming rewards to staking participants called farmers. 
+The farming module is a Cosmos SDK-based module that implements farming functionality that provides farming rewards to staking participants called farmers. 
 
 One use case is to use the module to provide incentives for liquidity pool investors for their pool participation.
 
