@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	simapp "github.com/tendermint/farming/app"
+	"github.com/tendermint/farming/x/farming"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -35,6 +37,7 @@ type KeeperTestSuite struct {
 	ctx                 sdk.Context
 	keeper              keeper.Keeper
 	querier             keeper.Querier
+	govHandler          govtypes.Handler
 	addrs               []sdk.AccAddress
 	sampleFixedAmtPlans []types.PlanI
 	sampleRatioPlans    []types.PlanI
@@ -53,6 +56,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.ctx = ctx
 	suite.keeper = suite.app.FarmingKeeper
 	suite.querier = keeper.Querier{Keeper: suite.keeper}
+	suite.govHandler = farming.NewPublicPlanProposalHandler(suite.keeper)
 	suite.addrs = simapp.AddTestAddrs(suite.app, suite.ctx, 6, sdk.ZeroInt())
 	for _, addr := range suite.addrs {
 		err := simapp.FundAccount(suite.app.BankKeeper, suite.ctx, addr, initialBalances)
