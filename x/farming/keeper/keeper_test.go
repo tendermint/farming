@@ -157,7 +157,7 @@ func (suite *KeeperTestSuite) AdvanceEpoch() {
 	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) SetFixedAmountPlan(id uint64, farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochAmountMap map[string]int64) {
+func (suite *KeeperTestSuite) CreateFixedAmountPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochAmountMap map[string]int64) {
 	stakingCoinWeights := sdk.NewDecCoins()
 	for denom, weight := range stakingCoinWeightsMap {
 		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
@@ -168,21 +168,19 @@ func (suite *KeeperTestSuite) SetFixedAmountPlan(id uint64, farmingPoolAcc sdk.A
 		epochAmount = epochAmount.Add(sdk.NewInt64Coin(denom, amount))
 	}
 
-	suite.keeper.SetPlan(suite.ctx, types.NewFixedAmountPlan(
-		types.NewBasePlan(
-			id,
-			fmt.Sprintf("plan%d", id),
-			types.PlanTypePublic,
-			farmingPoolAcc.String(),
-			farmingPoolAcc.String(),
-			stakingCoinWeights,
-			types.ParseTime("0001-01-01T00:00:00Z"),
-			types.ParseTime("9999-12-31T00:00:00Z"),
-		), epochAmount,
-	))
+	msg := types.NewMsgCreateFixedAmountPlan(
+		fmt.Sprintf("plan%d", suite.keeper.GetGlobalPlanId(suite.ctx)+1),
+		farmingPoolAcc,
+		stakingCoinWeights,
+		types.ParseTime("0001-01-01T00:00:00Z"),
+		types.ParseTime("9999-12-31T00:00:00Z"),
+		epochAmount,
+	)
+	_, err := suite.keeper.CreateFixedAmountPlan(suite.ctx, msg, farmingPoolAcc, farmingPoolAcc, types.PlanTypePublic)
+	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) SetRatioPlan(id uint64, farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochRatioStr string) {
+func (suite *KeeperTestSuite) CreateRatioPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochRatioStr string) {
 	stakingCoinWeights := sdk.NewDecCoins()
 	for denom, weight := range stakingCoinWeightsMap {
 		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
@@ -190,21 +188,23 @@ func (suite *KeeperTestSuite) SetRatioPlan(id uint64, farmingPoolAcc sdk.AccAddr
 
 	epochRatio := sdk.MustNewDecFromStr(epochRatioStr)
 
-	suite.keeper.SetPlan(suite.ctx, types.NewRatioPlan(
-		types.NewBasePlan(
-			id,
-			fmt.Sprintf("plan%d", id),
-			types.PlanTypePublic,
-			farmingPoolAcc.String(),
-			farmingPoolAcc.String(),
-			stakingCoinWeights,
-			types.ParseTime("0001-01-01T00:00:00Z"),
-			types.ParseTime("9999-12-31T00:00:00Z"),
-		), epochRatio,
-	))
+	msg := types.NewMsgCreateRatioPlan(
+		fmt.Sprintf("plan%d", suite.keeper.GetGlobalPlanId(suite.ctx)+1),
+		farmingPoolAcc,
+		stakingCoinWeights,
+		types.ParseTime("0001-01-01T00:00:00Z"),
+		types.ParseTime("9999-12-31T00:00:00Z"),
+		epochRatio,
+	)
+	_, err := suite.keeper.CreateRatioPlan(suite.ctx, msg, farmingPoolAcc, farmingPoolAcc, types.PlanTypePublic)
+	suite.Require().NoError(err)
 }
 
 func intEq(exp, got sdk.Int) (bool, string, string, string) {
+	return exp.Equal(got), "expected:\t%v\ngot:\t\t%v", exp.String(), got.String()
+}
+
+func decEq(exp, got sdk.Dec) (bool, string, string, string) {
 	return exp.Equal(got), "expected:\t%v\ngot:\t\t%v", exp.String(), got.String()
 }
 
