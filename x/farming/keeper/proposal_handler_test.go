@@ -70,7 +70,7 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 	suite.Require().Equal("plan1", plan.GetName())
 }
 
-func testModifyPlaRequest(
+func testModifyPlanRequest(
 	id uint64, name string, farmingPoolAcc, terminationAcc string,
 	weightsStr, startTimeStr, endTimeStr, epochAmountStr, epochRatioStr string,
 ) *types.ModifyPlanRequest {
