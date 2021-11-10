@@ -246,7 +246,7 @@ func (k Keeper) ReleaseStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, u
 // afterStakingCoinAdded is called after a new staking coin denom appeared
 // during ProcessQueuedCoins.
 func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) error {
-	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}})
+	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}, ReferenceCount: 1})
 	k.SetCurrentEpoch(ctx, stakingCoinDenom, 1)
 	k.SetOutstandingRewards(ctx, stakingCoinDenom, types.OutstandingRewards{Rewards: sdk.DecCoins{}})
 	return nil
@@ -386,7 +386,6 @@ func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 			}
 		} else {
 			staking.Amount = sdk.ZeroInt()
-			// TODO: IncrementValidatorPeriod
 		}
 
 		k.DeleteQueuedStaking(ctx, stakingCoinDenom, farmerAcc)
