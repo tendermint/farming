@@ -131,6 +131,15 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.samplePlans = append(suite.sampleFixedAmtPlans, suite.sampleRatioPlans...)
 }
 
+func (suite *KeeperTestSuite) AddTestAddrs(num int, coins sdk.Coins) []sdk.AccAddress {
+	addrs := simapp.AddTestAddrs(suite.app, suite.ctx, num, sdk.ZeroInt())
+	for _, addr := range addrs {
+		err := simapp.FundAccount(suite.app.BankKeeper, suite.ctx, addr, coins)
+		suite.Require().NoError(err)
+	}
+	return addrs
+}
+
 // Stake is a convenient method to test Keeper.Stake.
 func (suite *KeeperTestSuite) Stake(farmerAcc sdk.AccAddress, amt sdk.Coins) {
 	err := suite.keeper.Stake(suite.ctx, farmerAcc, amt)

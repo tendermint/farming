@@ -203,7 +203,6 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
 }
 
 func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanTerminated() {
-
 	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
@@ -233,6 +232,43 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanTerminated() {
 	diff := balancesAfter.Sub(balancesBefore)
 
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), diff))
+}
+
+func (suite *KeeperTestSuite) TestAccumulatedRewardsAfterPlanModification() {
+	farmingPool := suite.AddTestAddrs(1, sdk.NewCoins(
+		sdk.NewInt64Coin(denom2, 10000000),
+		sdk.NewInt64Coin(denom3, 10000000),
+	))[0]
+
+	suite.CreateRatioPlan(farmingPool, map[string]string{denom1: "1"}, "0.1")
+
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch() // The farmer has 1000000denom2,1000000denom3 as rewards.
+
+	req := testModifyPlanRequest(1, "", "", "", "", "", "", "1000000denom3", "")
+	proposal := types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
+	err := suite.govHandler(suite.ctx, proposal)
+	suite.Require().NoError(err)
+
+	suite.AdvanceEpoch() // This adds 1000000denom3 as rewards to the farmer.
+
+	suite.Require().True(coinsEq(
+		sdk.NewCoins(sdk.NewInt64Coin(denom2, 1000000), sdk.NewInt64Coin(denom3, 2000000)),
+		suite.AllRewards(suite.addrs[0]),
+	))
+
+	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.5")
+	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
+	err = suite.govHandler(suite.ctx, proposal)
+	suite.Require().NoError(err)
+
+	suite.AdvanceEpoch() // This adds 4500000denom2,4000000denom3 as rewards to the farmer.
+
+	suite.Require().True(coinsEq(
+		sdk.NewCoins(sdk.NewInt64Coin(denom2, 5500000), sdk.NewInt64Coin(denom3, 6000000)),
+		suite.AllRewards(suite.addrs[0]),
+	))
 }
 
 func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
