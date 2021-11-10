@@ -13,7 +13,7 @@ import (
 	_ "github.com/stretchr/testify/suite"
 )
 
-func testAddPlanRequest(name string, farmingPoolAcc, terminationAcc string, weightsStr, epochAmountStr, epochRatioStr string) *types.AddPlanRequest {
+func testAddPlanRequest(name string, farmingPoolAcc, terminationAcc string, weightsStr, epochAmountStr, epochRatioStr string) types.AddPlanRequest {
 	weights, err := sdk.ParseDecCoins(weightsStr)
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func testAddPlanRequest(name string, farmingPoolAcc, terminationAcc string, weig
 	} else if epochRatioStr != "" {
 		epochRatio = sdk.MustNewDecFromStr(epochRatioStr)
 	}
-	return &types.AddPlanRequest{
+	return types.AddPlanRequest{
 		Name:               name,
 		FarmingPoolAddress: farmingPoolAcc,
 		TerminationAddress: terminationAcc,
@@ -48,7 +48,7 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 	addr := suite.addrs[4].String()
 
 	req := testAddPlanRequest("plan1", addr, addr, "1denom1", "1000000denom3", "")
-	proposal := types.NewPublicPlanProposal("title", "description", []*types.AddPlanRequest{req}, nil, nil)
+	proposal := types.NewPublicPlanProposal("title", "description", []types.AddPlanRequest{req}, nil, nil)
 	err := suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -59,7 +59,7 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 	suite.Require().Equal("plan1", plan.GetName())
 
 	// Same plan name is allowed.
-	proposal = types.NewPublicPlanProposal("title", "description", []*types.AddPlanRequest{req}, nil, nil)
+	proposal = types.NewPublicPlanProposal("title", "description", []types.AddPlanRequest{req}, nil, nil)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -73,7 +73,7 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 func testModifyPlanRequest(
 	id uint64, name string, farmingPoolAcc, terminationAcc string,
 	weightsStr, startTimeStr, endTimeStr, epochAmountStr, epochRatioStr string,
-) *types.ModifyPlanRequest {
+) types.ModifyPlanRequest {
 	weights, err := sdk.ParseDecCoins(weightsStr)
 	if err != nil {
 		panic(err)
@@ -98,7 +98,7 @@ func testModifyPlanRequest(
 	} else if epochRatioStr != "" {
 		epochRatio = sdk.MustNewDecFromStr(epochRatioStr)
 	}
-	return &types.ModifyPlanRequest{
+	return types.ModifyPlanRequest{
 		PlanId:             id,
 		Name:               name,
 		FarmingPoolAddress: farmingPoolAcc,
@@ -118,7 +118,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 
 	// Change name, addrs, epoch amount.
 	req := testModifyPlanRequest(1, "new name", addr, addr, "", "", "", "2000000denom3", "")
-	proposal := types.NewPublicPlanProposal("title", "description", nil, []*types.ModifyPlanRequest{req}, nil)
+	proposal := types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
 	err := suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -134,7 +134,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 
 	// Change staking coin weights, end time.
 	req = testModifyPlanRequest(1, "", "", "", "1denom2", "", "2021-12-31T00:00:00Z", "", "")
-	proposal = types.NewPublicPlanProposal("title", "description", nil, []*types.ModifyPlanRequest{req}, nil)
+	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -152,7 +152,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 
 	// Change plan type, from FixedAmountPlan to RatioPlan.
 	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.05")
-	proposal = types.NewPublicPlanProposal("title", "description", nil, []*types.ModifyPlanRequest{req}, nil)
+	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -165,7 +165,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
 
-	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []*types.DeletePlanRequest{{PlanId: 1}})
+	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []types.DeletePlanRequest{{PlanId: 1}})
 	err := suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -181,7 +181,7 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
 	suite.AdvanceEpoch()
 	suite.AdvanceEpoch()
 
-	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []*types.DeletePlanRequest{{PlanId: 1}})
+	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []types.DeletePlanRequest{{PlanId: 1}})
 	err := suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
 
@@ -197,12 +197,12 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
 func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 	for _, tc := range []struct {
 		name        string
-		addReqs     []*types.AddPlanRequest
+		addReqs     []types.AddPlanRequest
 		expectedErr error
 	}{
 		{
 			"happy case",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
 				suite.addrs[0].String(),
@@ -224,7 +224,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 		},
 		{
 			"name case #1",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				`OVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERMOVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERM
 		OVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERMOVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERM
 		OVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERMOVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERM
@@ -244,7 +244,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 		},
 		{
 			"staking coin weights case #1",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
 				suite.addrs[0].String(),
@@ -258,7 +258,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 		},
 		{
 			"staking coin weights case #2",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
 				suite.addrs[0].String(),
@@ -277,7 +277,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 		},
 		{
 			"start time & end time case #1",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
 				suite.addrs[0].String(),
@@ -296,7 +296,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 		},
 		{
 			"epoch amount & epoch ratio case #1",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
 				suite.addrs[0].String(),
@@ -313,7 +313,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 		},
 		{
 			"epoch amount & epoch ratio case #2",
-			[]*types.AddPlanRequest{types.NewAddPlanRequest(
+			[]types.AddPlanRequest{types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
 				suite.addrs[0].String(),
@@ -356,7 +356,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 
 func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 	// create a ratio public plan
-	addRequests := []*types.AddPlanRequest{
+	addRequests := []types.AddPlanRequest{
 		types.NewAddPlanRequest(
 			"testPlan",
 			suite.addrs[0].String(),
@@ -384,12 +384,12 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 
 	for _, tc := range []struct {
 		name        string
-		modifyReqs  []*types.ModifyPlanRequest
+		modifyReqs  []types.ModifyPlanRequest
 		expectedErr error
 	}{
 		{
 			"happy case #1 - decrease epoch ratio to 5%",
-			[]*types.ModifyPlanRequest{types.NewModifyPlanRequest(
+			[]types.ModifyPlanRequest{types.NewModifyPlanRequest(
 				plan.GetId(),
 				plan.GetName(),
 				plan.GetFarmingPoolAddress().String(),
@@ -409,7 +409,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"plan id case #1",
-			[]*types.ModifyPlanRequest{types.NewModifyPlanRequest(
+			[]types.ModifyPlanRequest{types.NewModifyPlanRequest(
 				uint64(0),
 				plan.GetName(),
 				plan.GetFarmingPoolAddress().String(),
@@ -424,7 +424,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"name case #1",
-			[]*types.ModifyPlanRequest{types.NewModifyPlanRequest(
+			[]types.ModifyPlanRequest{types.NewModifyPlanRequest(
 				plan.GetId(),
 				`OVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERMOVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERM
 		OVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERMOVERMAXLENGTHOVERMAXLENGTHOVERMAXLENGTHOVERM
@@ -442,7 +442,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"staking coin weights case #1",
-			[]*types.ModifyPlanRequest{types.NewModifyPlanRequest(
+			[]types.ModifyPlanRequest{types.NewModifyPlanRequest(
 				plan.GetId(),
 				plan.GetName(),
 				plan.GetFarmingPoolAddress().String(),
@@ -457,7 +457,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"staking coin weights case #2",
-			[]*types.ModifyPlanRequest{types.NewModifyPlanRequest(
+			[]types.ModifyPlanRequest{types.NewModifyPlanRequest(
 				plan.GetId(),
 				plan.GetName(),
 				plan.GetFarmingPoolAddress().String(),
@@ -477,7 +477,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"start time & end time case #1",
-			[]*types.ModifyPlanRequest{types.NewModifyPlanRequest(
+			[]types.ModifyPlanRequest{types.NewModifyPlanRequest(
 				plan.GetId(),
 				plan.GetName(),
 				plan.GetFarmingPoolAddress().String(),
@@ -494,7 +494,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"epoch amount & epoch ratio case #1",
-			[]*types.ModifyPlanRequest{
+			[]types.ModifyPlanRequest{
 				types.NewModifyPlanRequest(
 					plan.GetId(),
 					plan.GetName(),
@@ -510,7 +510,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 		},
 		{
 			"epoch amount & epoch ratio case #2",
-			[]*types.ModifyPlanRequest{
+			[]types.ModifyPlanRequest{
 				types.NewModifyPlanRequest(
 					plan.GetId(),
 					plan.GetName(),
@@ -552,7 +552,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 
 func (suite *KeeperTestSuite) TestValidateDeletePublicPlanProposal() {
 	// create a ratio public plan
-	addRequests := []*types.AddPlanRequest{types.NewAddPlanRequest(
+	addRequests := []types.AddPlanRequest{types.NewAddPlanRequest(
 		"testPlan",
 		suite.addrs[0].String(),
 		suite.addrs[0].String(),
@@ -578,7 +578,7 @@ func (suite *KeeperTestSuite) TestValidateDeletePublicPlanProposal() {
 	suite.Require().Equal(true, found)
 
 	// delete the proposal
-	deleteRequests := []*types.DeletePlanRequest{types.NewDeletePlanRequest(uint64(1))}
+	deleteRequests := []types.DeletePlanRequest{types.NewDeletePlanRequest(uint64(1))}
 
 	err = keeper.HandlePublicPlanProposal(
 		suite.ctx,
@@ -597,7 +597,7 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 	err := keeper.HandlePublicPlanProposal(
 		suite.ctx,
 		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", []*types.AddPlanRequest{
+		types.NewPublicPlanProposal("testTitle", "testDescription", []types.AddPlanRequest{
 			types.NewAddPlanRequest(
 				"testPlan",
 				suite.addrs[0].String(),
@@ -623,7 +623,7 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 	err = keeper.HandlePublicPlanProposal(
 		suite.ctx,
 		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", nil, []*types.ModifyPlanRequest{
+		types.NewPublicPlanProposal("testTitle", "testDescription", nil, []types.ModifyPlanRequest{
 			types.NewModifyPlanRequest(
 				plan.GetId(),
 				plan.GetName(),
@@ -647,7 +647,7 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 	err = keeper.HandlePublicPlanProposal(
 		suite.ctx,
 		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", nil, []*types.ModifyPlanRequest{
+		types.NewPublicPlanProposal("testTitle", "testDescription", nil, []types.ModifyPlanRequest{
 			types.NewModifyPlanRequest(
 				plan.GetId(),
 				plan.GetName(),
@@ -695,7 +695,7 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 			err := keeper.HandlePublicPlanProposal(
 				cacheCtx,
 				suite.keeper,
-				types.NewPublicPlanProposal("testTitle", "testDescription", []*types.AddPlanRequest{
+				types.NewPublicPlanProposal("testTitle", "testDescription", []types.AddPlanRequest{
 					types.NewAddPlanRequest(
 						"testPlan",
 						tc.farmingPoolAddr.String(),
@@ -719,7 +719,7 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 			err = keeper.HandlePublicPlanProposal(
 				cacheCtx,
 				suite.keeper,
-				types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, []*types.DeletePlanRequest{
+				types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, []types.DeletePlanRequest{
 					types.NewDeletePlanRequest(plans[0].GetId()),
 				}),
 			)
