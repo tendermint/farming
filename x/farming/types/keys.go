@@ -88,7 +88,7 @@ func GetHistoricalRewardsKey(stakingCoinDenom string, epoch uint64) []byte {
 }
 
 // GetHistoricalRewardsPrefix returns a key prefix used to iterate
-// historical rewards for a staking coin denom.
+// historical rewards by a staking coin denom.
 func GetHistoricalRewardsPrefix(stakingCoinDenom string) []byte {
 	return append(HistoricalRewardsKeyPrefix, LengthPrefixString(stakingCoinDenom)...)
 }
@@ -144,6 +144,15 @@ func ParseQueuedStakingIndexKey(key []byte) (farmerAcc sdk.AccAddress, stakingCo
 	addrLen := key[1]
 	farmerAcc = key[2 : 2+addrLen]
 	stakingCoinDenom = string(key[2+addrLen:])
+	return
+}
+
+// ParseTotalStakingsKey parses a total stakings key.
+func ParseTotalStakingsKey(key []byte) (stakingCoinDenom string) {
+	if !bytes.HasPrefix(key, TotalStakingKeyPrefix) {
+		panic("key does not have proper prefix")
+	}
+	stakingCoinDenom = string(key[1:])
 	return
 }
 

@@ -39,6 +39,17 @@ func (k Keeper) DeleteHistoricalRewards(ctx sdk.Context, stakingCoinDenom string
 	store.Delete(types.GetHistoricalRewardsKey(stakingCoinDenom, epoch))
 }
 
+// DeleteAllHistoricalRewards deletes all historical rewards for a
+// staking coin denom.
+func (k Keeper) DeleteAllHistoricalRewards(ctx sdk.Context, stakingCoinDenom string) {
+	store := ctx.KVStore(k.storeKey)
+	iter := sdk.KVStorePrefixIterator(store, types.GetHistoricalRewardsPrefix(stakingCoinDenom))
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		store.Delete(iter.Key())
+	}
+}
+
 // IterateHistoricalRewards iterates through all historical rewards
 // stored in the store and invokes callback function for each item.
 // Stops the iteration when the callback function returns true.
@@ -53,17 +64,6 @@ func (k Keeper) IterateHistoricalRewards(ctx sdk.Context, cb func(stakingCoinDen
 		if cb(stakingCoinDenom, epoch, rewards) {
 			break
 		}
-	}
-}
-
-// DeleteAllHistoricalRewards deletes all historical rewards for a given
-// staking coin denom.
-func (k Keeper) DeleteAllHistoricalRewards(ctx sdk.Context, stakingCoinDenom string) {
-	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.GetHistoricalRewardsPrefix(stakingCoinDenom))
-	defer iter.Close()
-	for ; iter.Valid(); iter.Next() {
-		store.Delete(iter.Key())
 	}
 }
 
@@ -120,6 +120,13 @@ func (k Keeper) SetCurrentEpoch(ctx sdk.Context, stakingCoinDenom string, curren
 	store.Set(types.GetCurrentEpochKey(stakingCoinDenom), bz)
 }
 
+// DeleteCurrentEpoch deletes current epoch info for a given
+// staking coin denom.
+func (k Keeper) DeleteCurrentEpoch(ctx sdk.Context, stakingCoinDenom string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetCurrentEpochKey(stakingCoinDenom))
+}
+
 // IterateCurrentEpochs iterates through all current epoch infos
 // stored in the store and invokes callback function for each item.
 // Stops the iteration when the callback function returns true.
@@ -137,19 +144,16 @@ func (k Keeper) IterateCurrentEpochs(ctx sdk.Context, cb func(stakingCoinDenom s
 	}
 }
 
-// DeleteCurrentEpoch deletes current epoch info for a given
-// staking coin denom.
-func (k Keeper) DeleteCurrentEpoch(ctx sdk.Context, stakingCoinDenom string) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetCurrentEpochKey(stakingCoinDenom))
-}
-
 // GetOutstandingRewards returns outstanding rewards for a given
 // staking coin denom.
-func (k Keeper) GetOutstandingRewards(ctx sdk.Context, stakingCoinDenom string) (rewards types.OutstandingRewards) {
+func (k Keeper) GetOutstandingRewards(ctx sdk.Context, stakingCoinDenom string) (rewards types.OutstandingRewards, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetOutstandingRewardsKey(stakingCoinDenom))
+	if bz == nil {
+		return
+	}
 	k.cdc.MustUnmarshal(bz, &rewards)
+	found = true
 	return
 }
 
@@ -188,7 +192,10 @@ func (k Keeper) IterateOutstandingRewards(ctx sdk.Context, cb func(stakingCoinDe
 // IncreaseOutstandingRewards increases outstanding rewards for a given
 // staking coin denom by given amount.
 func (k Keeper) IncreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom string, amount sdk.DecCoins) {
-	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
+	outstanding, found := k.GetOutstandingRewards(ctx, stakingCoinDenom)
+	if !found {
+		panic("outstanding rewards not found")
+	}
 	outstanding.Rewards = outstanding.Rewards.Add(amount...)
 	k.SetOutstandingRewards(ctx, stakingCoinDenom, outstanding)
 }
@@ -198,13 +205,12 @@ func (k Keeper) IncreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom str
 // If the resulting outstanding rewards is zero, then the outstanding rewards
 // will be deleted, not updated.
 func (k Keeper) DecreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom string, amount sdk.DecCoins) {
-	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
-	if outstanding.Rewards.IsEqual(amount) {
-		k.DeleteOutstandingRewards(ctx, stakingCoinDenom)
-	} else {
-		outstanding.Rewards = outstanding.Rewards.Sub(amount)
-		k.SetOutstandingRewards(ctx, stakingCoinDenom, outstanding)
+	outstanding, found := k.GetOutstandingRewards(ctx, stakingCoinDenom)
+	if !found {
+		panic("outstanding rewards not found")
 	}
+	outstanding.Rewards = outstanding.Rewards.Sub(amount)
+	k.SetOutstandingRewards(ctx, stakingCoinDenom, outstanding)
 }
 
 // CalculateRewards returns rewards accumulated until endingEpoch
@@ -258,7 +264,7 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 	}
 
 	currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
-	fmt.Printf("WithdrawRewards(%s) - CalculateRewards(%s, %d)\n", stakingCoinDenom, stakingCoinDenom, currentEpoch - 1)
+	fmt.Printf("WithdrawRewards(%s) - CalculateRewards(%s, %d)\n", stakingCoinDenom, stakingCoinDenom, currentEpoch-1)
 	rewards := k.CalculateRewards(ctx, farmerAcc, stakingCoinDenom, currentEpoch-1)
 	truncatedRewards, _ := rewards.TruncateDecimal()
 
@@ -497,10 +503,10 @@ func (k Keeper) ValidateRemainingRewardsAmount(ctx sdk.Context) error {
 	return nil
 }
 
-// ValidateOutstandingRewards checks that the balance of the
+// ValidateOutstandingRewardsAmount checks that the balance of the
 // rewards reserve pool is greater than the total amount of
 // outstanding rewards.
-func (k Keeper) ValidateOutstandingRewards(ctx sdk.Context) error {
+func (k Keeper) ValidateOutstandingRewardsAmount(ctx sdk.Context) error {
 	totalOutstandingRewards := sdk.NewDecCoins()
 	k.IterateOutstandingRewards(ctx, func(stakingCoinDenom string, rewards types.OutstandingRewards) (stop bool) {
 		totalOutstandingRewards = totalOutstandingRewards.Add(rewards.Rewards...)
@@ -510,7 +516,7 @@ func (k Keeper) ValidateOutstandingRewards(ctx sdk.Context) error {
 	rewardsReservePoolBalances := sdk.NewDecCoinsFromCoins(k.bankKeeper.GetAllBalances(ctx, k.GetRewardsReservePoolAcc(ctx))...)
 	_, hasNeg := rewardsReservePoolBalances.SafeSub(totalOutstandingRewards)
 	if hasNeg {
-		return types.ErrInvalidRemainingRewardsAmount // TODO: use different error type
+		return types.ErrInvalidOutstandingRewardsAmount
 	}
 
 	return nil

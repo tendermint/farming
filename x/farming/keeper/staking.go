@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -184,12 +182,14 @@ func (k Keeper) IncreaseTotalStakings(ctx sdk.Context, stakingCoinDenom string, 
 	totalStaking, found := k.GetTotalStakings(ctx, stakingCoinDenom)
 	if !found {
 		totalStaking.Amount = sdk.ZeroInt()
+	}
+	totalStaking.Amount = totalStaking.Amount.Add(amount)
+	k.SetTotalStakings(ctx, stakingCoinDenom, totalStaking)
+	if totalStaking.Amount.Equal(amount) {
 		if err := k.afterStakingCoinAdded(ctx, stakingCoinDenom); err != nil {
 			panic(err)
 		}
 	}
-	totalStaking.Amount = totalStaking.Amount.Add(amount)
-	k.SetTotalStakings(ctx, stakingCoinDenom, totalStaking)
 }
 
 // DecreaseTotalStakings decreases total stakings for given staking coin denom
@@ -200,38 +200,31 @@ func (k Keeper) DecreaseTotalStakings(ctx sdk.Context, stakingCoinDenom string, 
 		panic("total stakings not found")
 	}
 	if totalStaking.Amount.Equal(amount) {
+		k.DeleteTotalStakings(ctx, stakingCoinDenom)
 		if err := k.afterStakingCoinRemoved(ctx, stakingCoinDenom); err != nil {
 			panic(err)
 		}
-		k.DeleteTotalStakings(ctx, stakingCoinDenom)
 	} else {
 		totalStaking.Amount = totalStaking.Amount.Sub(amount)
 		k.SetTotalStakings(ctx, stakingCoinDenom, totalStaking)
 	}
 }
 
-func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) error {
-	fmt.Printf("afterStakingCoinAdded(%s)\n", stakingCoinDenom)
-	// Set initial historical rewards with reference count of 1.
-	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}, ReferenceCount: 1})
-	// Set current epoch as 1.
-	k.SetCurrentEpoch(ctx, stakingCoinDenom, 1)
-	k.SetOutstandingRewards(ctx, stakingCoinDenom, types.OutstandingRewards{Rewards: sdk.DecCoins{}})
-	return nil
-}
-
-func (k Keeper) afterStakingCoinRemoved(ctx sdk.Context, stakingCoinDenom string) error {
-	fmt.Printf("afterStakingCoinRemoved(%s)\n", stakingCoinDenom)
-	outstanding := k.GetOutstandingRewards(ctx, stakingCoinDenom)
-
-	if !outstanding.Rewards.IsZero() {
-		// TODO: send to fee pool
+// IterateTotalStakings iterates through all total stakings
+// stored in the store and invokes callback function for each item.
+// Stops the iteration when the callback function returns true.
+func (k Keeper) IterateTotalStakings(ctx sdk.Context, cb func(stakingCoinDenom string, totalStakings types.TotalStakings) (stop bool)) {
+	store := ctx.KVStore(k.storeKey)
+	iter := sdk.KVStorePrefixIterator(store, types.TotalStakingKeyPrefix)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		var totalStakings types.TotalStakings
+		k.cdc.MustUnmarshal(iter.Value(), &totalStakings)
+		stakingCoinDenom := types.ParseTotalStakingsKey(iter.Key())
+		if cb(stakingCoinDenom, totalStakings) {
+			break
+		}
 	}
-
-	k.DeleteOutstandingRewards(ctx, stakingCoinDenom)
-	k.DeleteAllHistoricalRewards(ctx, stakingCoinDenom)
-	k.DeleteCurrentEpoch(ctx, stakingCoinDenom)
-	return nil
 }
 
 // ReserveStakingCoins sends staking coins to the staking reserve account.
@@ -247,6 +240,37 @@ func (k Keeper) ReleaseStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, u
 	if err := k.bankKeeper.SendCoins(ctx, k.GetStakingReservePoolAcc(ctx), farmerAcc, unstakingCoins); err != nil {
 		return err
 	}
+	return nil
+}
+
+// afterStakingCoinAdded is called after a new staking coin denom appeared
+// during ProcessQueuedCoins.
+func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) error {
+	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}})
+	k.SetCurrentEpoch(ctx, stakingCoinDenom, 1)
+	k.SetOutstandingRewards(ctx, stakingCoinDenom, types.OutstandingRewards{Rewards: sdk.DecCoins{}})
+	return nil
+}
+
+// afterStakingCoinRemoved is called after a staking coin denom got removed
+// during Unstake.
+func (k Keeper) afterStakingCoinRemoved(ctx sdk.Context, stakingCoinDenom string) error {
+	// Send remaining outstanding rewards to the farming fee collector.
+	// A staking coin is removed only after there is no farmers
+	// have rewards.
+	// Note that there should never be any remaining integral rewards
+	// in general situations, so this exists for confidence.
+	outstanding, _ := k.GetOutstandingRewards(ctx, stakingCoinDenom)
+	coins, _ := outstanding.Rewards.TruncateDecimal() // Ignore remainder, since it cannot be sent.
+	if !coins.IsZero() {
+		if err := k.bankKeeper.SendCoins(ctx, k.GetRewardsReservePoolAcc(ctx), k.GetFarmingFeeCollectorAcc(ctx), coins); err != nil {
+			return err
+		}
+	}
+
+	k.DeleteOutstandingRewards(ctx, stakingCoinDenom)
+	k.DeleteAllHistoricalRewards(ctx, stakingCoinDenom)
+	k.DeleteCurrentEpoch(ctx, stakingCoinDenom)
 	return nil
 }
 
@@ -290,8 +314,6 @@ func (k Keeper) Stake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Coin
 // Unstake unstakes an amount of staking coins from the staking reserve account.
 // It causes accumulated rewards to be withdrawn to the farmer.
 func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Coins) error {
-	// TODO: send coins at once, not in every WithdrawRewards
-
 	for _, coin := range amount {
 		staking, found := k.GetStaking(ctx, coin.Denom, farmerAcc)
 		if !found {
@@ -367,14 +389,15 @@ func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 			// TODO: IncrementValidatorPeriod
 		}
 
+		k.DeleteQueuedStaking(ctx, stakingCoinDenom, farmerAcc)
+		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
+
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		k.SetStaking(ctx, stakingCoinDenom, farmerAcc, types.Staking{
 			Amount:        staking.Amount.Add(queuedStaking.Amount),
 			StartingEpoch: currentEpoch,
 		})
 		k.incrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
-
-		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
 
 		return false
 	})
