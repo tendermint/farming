@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	"github.com/tendermint/farming/x/farming"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
 
@@ -192,6 +193,46 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
 	suite.AdvanceEpoch()
 
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
+
+	balancesBefore := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+	suite.Harvest(suite.addrs[0], []string{denom1})
+	balancesAfter := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+	diff := balancesAfter.Sub(balancesBefore)
+
+	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), diff))
+}
+
+func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanTerminated() {
+
+	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-12-01T00:00:00Z"))
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch()
+
+	req := testModifyPlanRequest(1, "", "", "", "", "", "2021-11-01T00:00:00Z", "", "")
+	proposal := types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
+	err := suite.govHandler(suite.ctx, proposal)
+	suite.Require().NoError(err)
+
+	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
+
+	// Additional epochs should not accumulate rewards anymore.
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-12-02T00:00:00Z"))
+	farming.EndBlocker(suite.ctx, suite.keeper) // The plan should be terminated here.
+	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-12-03T00:00:00Z"))
+	farming.EndBlocker(suite.ctx, suite.keeper)
+
+	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
+
+	balancesBefore := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+	suite.Harvest(suite.addrs[0], []string{denom1})
+	balancesAfter := suite.app.BankKeeper.GetAllBalances(suite.ctx, suite.addrs[0])
+	diff := balancesAfter.Sub(balancesBefore)
+
+	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), diff))
 }
 
 func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
