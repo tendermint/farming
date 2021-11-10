@@ -45,7 +45,7 @@ func (suite *KeeperTestSuite) TestStake() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleStake() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
@@ -220,7 +220,7 @@ func (suite *KeeperTestSuite) TestUnstakeNotAlwaysWithdraw() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleUnstake() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 
