@@ -425,3 +425,38 @@ func (suite *KeeperTestSuite) TestInitializeAndPruneStakingCoinInfo() {
 	_, found = suite.keeper.GetOutstandingRewards(suite.ctx, denom1)
 	suite.Require().False(found)
 }
+
+func (suite *KeeperTestSuite) TestPruneHistoricalRewards() {
+	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+
+	for i := 0; i < 3; i++ {
+		suite.AdvanceEpoch()
+	}
+
+	for _, addr := range suite.addrs[:4] {
+		suite.Stake(addr, sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+	}
+
+	for i := 0; i < 3; i++ {
+		suite.AdvanceEpoch()
+	}
+
+	for _, addr := range suite.addrs[:4] {
+		suite.Stake(addr, sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+	}
+
+	for i := 0; i < 3; i++ {
+		suite.AdvanceEpoch()
+	}
+
+	for _, addr := range suite.addrs[:4] {
+		suite.Unstake(addr, sdk.NewCoins(sdk.NewInt64Coin(denom1, 2000000)))
+	}
+
+	cnt := 0
+	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+		cnt++
+		return false
+	})
+	suite.Require().Zero(cnt)
+}

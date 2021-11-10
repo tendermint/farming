@@ -6,6 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	_ "github.com/stretchr/testify/suite"
+
+	"github.com/tendermint/farming/x/farming/types"
 )
 
 func (suite *KeeperTestSuite) TestStake() {
@@ -315,4 +317,22 @@ func (suite *KeeperTestSuite) TestDelayedStakingGasFee() {
 	params := suite.keeper.GetParams(suite.ctx)
 	suite.Require().GreaterOrEqual(gasConsumedWithStaking, params.DelayedStakingGasFee)
 	suite.Require().Greater(gasConsumedWithStaking, gasConsumedNormal)
+}
+
+func (suite *KeeperTestSuite) TestPruneStatesWithoutRewards() {
+	for i := 0; i < 10; i++ {
+		suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+		suite.AdvanceEpoch()
+	}
+
+	suite.Unstake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 10000000)))
+
+	cnt := 0
+	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+		if stakingCoinDenom == denom1 {
+			cnt++
+		}
+		return false
+	})
+	suite.Require().Zero(cnt)
 }

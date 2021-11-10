@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -69,30 +68,23 @@ func (k Keeper) IterateHistoricalRewards(ctx sdk.Context, cb func(stakingCoinDen
 
 // incrementReferenceCount increments the reference count for a historical rewards.
 func (k Keeper) incrementReferenceCount(ctx sdk.Context, stakingCoinDenom string, epoch uint64) {
-	fmt.Printf("incrementReferenceCount(%s, %d)\n", stakingCoinDenom, epoch)
 	historical, found := k.GetHistoricalRewards(ctx, stakingCoinDenom, epoch)
 	if !found {
-		panic("historical rewards not found") // TODO: choose correct error message
+		panic("historical rewards not found")
 	}
-	if historical.ReferenceCount > 2 {
-		panic("reference count should never exceed 2")
-	}
-	fmt.Printf("  %d -> %d\n", historical.ReferenceCount, historical.ReferenceCount+1)
 	historical.ReferenceCount++
 	k.SetHistoricalRewards(ctx, stakingCoinDenom, epoch, historical)
 }
 
 // decrementReferenceCount decrements the reference count for a historical rewards.
 func (k Keeper) decrementReferenceCount(ctx sdk.Context, stakingCoinDenom string, epoch uint64) {
-	fmt.Printf("decrementReferenceCount(%s, %d)\n", stakingCoinDenom, epoch)
 	historical, found := k.GetHistoricalRewards(ctx, stakingCoinDenom, epoch)
 	if !found {
-		panic("historical rewards not found") // TODO: choose correct error message
+		panic("historical rewards not found")
 	}
 	if historical.ReferenceCount == 0 {
 		panic("cannot set negative reference count")
 	}
-	fmt.Printf("  %d -> %d\n", historical.ReferenceCount, historical.ReferenceCount-1)
 	historical.ReferenceCount--
 	if historical.ReferenceCount == 0 {
 		k.DeleteHistoricalRewards(ctx, stakingCoinDenom, epoch)
@@ -255,16 +247,15 @@ func (k Keeper) AllRewards(ctx sdk.Context, farmerAcc sdk.AccAddress) sdk.Coins 
 // It decreases outstanding rewards and set the starting epoch of a
 // staking.
 func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoinDenom string) (sdk.Coins, error) {
-	// TODO: IncrementValidatorPeriod
-	// TODO: decrementReferenceCount
-
 	staking, found := k.GetStaking(ctx, stakingCoinDenom, farmerAcc)
 	if !found {
 		return nil, types.ErrStakingNotExists
 	}
 
 	currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
-	fmt.Printf("WithdrawRewards(%s) - CalculateRewards(%s, %d)\n", stakingCoinDenom, stakingCoinDenom, currentEpoch-1)
+	if currentEpoch == staking.StartingEpoch {
+		return sdk.Coins{}, nil
+	}
 	rewards := k.CalculateRewards(ctx, farmerAcc, stakingCoinDenom, currentEpoch-1)
 	truncatedRewards, _ := rewards.TruncateDecimal()
 
@@ -287,9 +278,9 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 		k.DecreaseOutstandingRewards(ctx, stakingCoinDenom, rewards)
 	}
 
+	k.decrementReferenceCount(ctx, stakingCoinDenom, staking.StartingEpoch-1)
 	staking.StartingEpoch = currentEpoch
 	k.SetStaking(ctx, stakingCoinDenom, farmerAcc, staking)
-	k.decrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 
 	return truncatedRewards, nil
 }
@@ -471,9 +462,8 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 
 	for stakingCoinDenom, unitRewards := range unitRewardsByDenom {
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
-		fmt.Printf("AllocateRewards :: Setting HistoricalRewards for %d\n", currentEpoch)
-		fmt.Printf("                   Updating CurrentEpoch %d -> %d\n", currentEpoch, currentEpoch+1)
 		historical, _ := k.GetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch-1)
+		// TODO: decrement ref count?
 		k.SetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch, types.HistoricalRewards{
 			CumulativeUnitRewards: historical.CumulativeUnitRewards.Add(unitRewards...),
 			ReferenceCount:        1,
