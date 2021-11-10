@@ -173,6 +173,27 @@ func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 	suite.Require().Empty(plans)
 }
 
+func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
+	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch()
+
+	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []*types.DeletePlanRequest{{PlanId: 1}})
+	err := suite.govHandler(suite.ctx, proposal)
+	suite.Require().NoError(err)
+
+	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
+
+	// Additional epochs should not accumulate rewards anymore.
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch()
+
+	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
+}
+
 func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 	for _, tc := range []struct {
 		name        string
