@@ -47,7 +47,7 @@ func (suite *KeeperTestSuite) TestStake() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleStake() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
@@ -82,7 +82,7 @@ func (suite *KeeperTestSuite) TestStakeInAdvance() {
 	suite.AdvanceEpoch()
 	suite.AdvanceEpoch()
 
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 	suite.Require().True(coinsEq(sdk.NewCoins(), suite.AllRewards(suite.addrs[0])))
 	suite.AdvanceEpoch()
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
@@ -203,7 +203,7 @@ func (suite *KeeperTestSuite) TestUnstakeNotAlwaysWithdraw() {
 	// Unstaking from queued staking coins should not trigger
 	// reward withdrawal.
 
-	suite.SetRatioPlan(1, suite.addrs[4], "1denom1", "0.1")
+	suite.CreateRatioPlan(suite.addrs[4], "1denom1", "0.1")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.AdvanceEpoch()
@@ -222,7 +222,7 @@ func (suite *KeeperTestSuite) TestUnstakeNotAlwaysWithdraw() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleUnstake() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 

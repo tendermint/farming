@@ -179,8 +179,8 @@ func (suite *KeeperTestSuite) TestAllocateRewards_FixedAmountPlanAllBalances() {
 	suite.Require().NoError(err)
 
 	// The sum of epoch ratios is exactly 1.
-	suite.SetFixedAmountPlan(1, farmingPoolAcc, "1denom1", "600000denom3")
-	suite.SetFixedAmountPlan(2, farmingPoolAcc, "1denom2", "400000denom3")
+	suite.CreateFixedAmountPlan(farmingPoolAcc, "1denom1", "600000denom3")
+	suite.CreateFixedAmountPlan(farmingPoolAcc, "1denom2", "400000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000), sdk.NewInt64Coin(denom2, 1000000)))
 
@@ -197,8 +197,8 @@ func (suite *KeeperTestSuite) TestAllocateRewards_RatioPlanAllBalances() {
 	suite.Require().NoError(err)
 
 	// The sum of epoch ratios is exactly 1.
-	suite.SetRatioPlan(1, farmingPoolAcc, "1denom1", "0.5")
-	suite.SetRatioPlan(2, farmingPoolAcc, "1denom2", "0.5")
+	suite.CreateRatioPlan(farmingPoolAcc, "1denom1", "0.5")
+	suite.CreateRatioPlan(farmingPoolAcc, "1denom2", "0.5")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000), sdk.NewInt64Coin(denom2, 1000000)))
 
@@ -216,8 +216,8 @@ func (suite *KeeperTestSuite) TestAllocateRewards_FixedAmountPlanOverBalances() 
 
 	// The sum of epoch amounts is over the balances the farming pool has,
 	// so the reward allocation should never happen.
-	suite.SetFixedAmountPlan(1, farmingPoolAcc, "1denom1", "700000denom3")
-	suite.SetFixedAmountPlan(2, farmingPoolAcc, "1denom2", "400000denom3")
+	suite.CreateFixedAmountPlan(farmingPoolAcc, "1denom1", "700000denom3")
+	suite.CreateFixedAmountPlan(farmingPoolAcc, "1denom2", "400000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000), sdk.NewInt64Coin(denom2, 1000000)))
 
@@ -234,8 +234,8 @@ func (suite *KeeperTestSuite) TestAllocateRewards_RatioPlanOverBalances() {
 	suite.Require().NoError(err)
 
 	// The sum of epoch ratios is over 1, so the reward allocation should never happen.
-	suite.SetRatioPlan(1, farmingPoolAcc, "1denom1", "0.8")
-	suite.SetRatioPlan(2, farmingPoolAcc, "1denom2", "0.5")
+	suite.CreateRatioPlan(farmingPoolAcc, "1denom1", "0.8")
+	suite.CreateRatioPlan(farmingPoolAcc, "1denom2", "0.5")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000), sdk.NewInt64Coin(denom2, 1000000)))
 
@@ -250,7 +250,7 @@ func (suite *KeeperTestSuite) TestOutstandingRewards() {
 	// The block time here is not important, and has chosen randomly.
 	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-09-01T00:00:00Z"))
 
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000denom3")
 
 	// Three farmers stake same amount of coins.
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
@@ -307,7 +307,7 @@ func (suite *KeeperTestSuite) TestHarvest() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleHarvest() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 
@@ -330,8 +330,8 @@ func (suite *KeeperTestSuite) TestHistoricalRewards() {
 	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2021-08-06T00:00:00Z"))
 
 	// Create two plans that share same staking coin denom in their staking coin weights.
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
-	suite.SetFixedAmountPlan(2, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	// Advancing epoch(s) before any staking is made doesn't create any historical rewards records.
 	suite.AdvanceEpoch()
@@ -371,7 +371,7 @@ func (suite *KeeperTestSuite) TestHistoricalRewards() {
 
 // Test if initialization and pruning of staking coin info work properly.
 func (suite *KeeperTestSuite) TestInitializeAndPruneStakingCoinInfo() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 
@@ -427,7 +427,7 @@ func (suite *KeeperTestSuite) TestInitializeAndPruneStakingCoinInfo() {
 }
 
 func (suite *KeeperTestSuite) TestPruneHistoricalRewards() {
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	for i := 0; i < 3; i++ {
 		suite.AdvanceEpoch()

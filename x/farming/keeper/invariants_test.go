@@ -121,7 +121,7 @@ func (suite *KeeperTestSuite) TestStakingReservedAmountInvariant() {
 func (suite *KeeperTestSuite) TestRemainingRewardsAmountInvariant() {
 	k, ctx := suite.keeper, suite.ctx
 
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.AdvanceEpoch()
@@ -203,7 +203,7 @@ func (suite *KeeperTestSuite) TestNonNegativeOutstandingRewardsInvariant() {
 func (suite *KeeperTestSuite) TestOutstandingRewardsAmountInvariant() {
 	k, ctx := suite.keeper, suite.ctx
 
-	suite.SetFixedAmountPlan(1, suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.AdvanceEpoch()
@@ -292,7 +292,4 @@ func (suite *KeeperTestSuite) TestPositiveTotalStakingsAmountInvariant() {
 	k.SetTotalStakings(ctx, denom1, types.TotalStakings{Amount: sdk.NewInt(-1)})
 	_, broken = farmingkeeper.PositiveTotalStakingsAmountInvariant(k)(ctx)
 	suite.Require().True(broken)
-}
-
-func (suite *KeeperTestSuite) TestPlanTerminationStatusInvariant() {
 }
