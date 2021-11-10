@@ -117,7 +117,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	addr := suite.addrs[5].String()
 
 	// Change name, addrs, epoch amount.
-	req := testModifyPlaRequest(1, "new name", addr, addr, "", "", "", "2000000denom3", "")
+	req := testModifyPlanRequest(1, "new name", addr, addr, "", "", "", "2000000denom3", "")
 	proposal := types.NewPublicPlanProposal("title", "description", nil, []*types.ModifyPlanRequest{req}, nil)
 	err := suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
@@ -133,7 +133,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 2000000)), fixedAmountPlan.EpochAmount))
 
 	// Change staking coin weights, end time.
-	req = testModifyPlaRequest(1, "", "", "", "1denom2", "", "2021-12-31T00:00:00Z", "", "")
+	req = testModifyPlanRequest(1, "", "", "", "1denom2", "", "2021-12-31T00:00:00Z", "", "")
 	proposal = types.NewPublicPlanProposal("title", "description", nil, []*types.ModifyPlanRequest{req}, nil)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
@@ -151,7 +151,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	suite.Require().Equal(types.ParseTime("2021-12-31T00:00:00Z"), plan.GetEndTime())
 
 	// Change plan type, from FixedAmountPlan to RatioPlan.
-	req = testModifyPlaRequest(1, "", "", "", "", "", "", "", "0.05")
+	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.05")
 	proposal = types.NewPublicPlanProposal("title", "description", nil, []*types.ModifyPlanRequest{req}, nil)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().NoError(err)
