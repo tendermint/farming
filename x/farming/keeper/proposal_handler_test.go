@@ -185,7 +185,7 @@ func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 	suite.Require().Empty(plans)
 
 	// Test for private plan cannot be deleted.
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 	plans = suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Equal(plans[0].GetId(), uint64(2))
 
