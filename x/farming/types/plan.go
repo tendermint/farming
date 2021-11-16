@@ -370,3 +370,15 @@ func PrivatePlanFarmingPoolAddress(name string, planId uint64) sdk.AccAddress {
 	poolAddrName := strings.Join([]string{PrivatePlanFarmingPoolAddrPrefix, fmt.Sprint(planId), name}, PoolAddrSplitter)
 	return address.Module(ModuleName, []byte(poolAddrName))
 }
+
+// TODO: add test code
+// StakingReservePoolAcc returns module account for the staking reserve pool account by staking coin denom and type.
+func StakingReservePoolAcc(stakingCoinDenom string, addressType AddressType) sdk.AccAddress {
+	return DeriveAddress(addressType, ModuleName, "|staking|"+stakingCoinDenom)
+}
+
+// TODO: add test code
+// RewardsReservePoolAcc returns module account for the staking reserve pool account by staking coin denom and type.
+func RewardsReservePoolAcc(stakingCoinDenom string, addressType AddressType) sdk.AccAddress {
+	return DeriveAddress(addressType, ModuleName, "|reward|"+stakingCoinDenom)
+}
