@@ -155,6 +155,9 @@ func (record TotalStakingRecord) Validate() error {
 	if !record.Amount.IsPositive() {
 		return fmt.Errorf("total staking amount must be positive: %s", record.Amount)
 	}
+	if err := record.StakingReserveCoins.Validate(); err != nil {
+		return err
+	}
 	return nil
 }
 

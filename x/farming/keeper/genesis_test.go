@@ -289,13 +289,19 @@ func (suite *KeeperTestSuite) TestExportGenesis() {
 		{
 			"TotalStakingRecords",
 			func() {
-				suite.Require().Len(genState.TotalStakingRecords, 4)
+				suite.Require().Len(genState.TotalStakingRecords, 2)
 				for _, record := range genState.TotalStakingRecords {
 					switch record.StakingCoinDenom {
 					case denom1:
-						suite.Require().True(intEq(record.Amount, sdk.NewInt(5000000)))
+						suite.Require().True(intEq(record.Amount, sdk.NewInt(1500000)))
+						suite.Require().True(coinsEq(
+							sdk.NewCoins(sdk.NewInt64Coin(denom1, 5000000)),
+							record.StakingReserveCoins))
 					case denom2:
-						suite.Require().True(intEq(record.Amount, sdk.NewInt(3000000)))
+						suite.Require().True(intEq(record.Amount, sdk.NewInt(1500000)))
+						suite.Require().True(coinsEq(
+							sdk.NewCoins(sdk.NewInt64Coin(denom2, 3000000)),
+							record.StakingReserveCoins))
 					}
 				}
 			},

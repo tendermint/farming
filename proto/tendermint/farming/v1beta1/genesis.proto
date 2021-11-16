@@ -105,7 +105,16 @@ message TotalStakingRecord {
 
   string staking_coin_denom = 1 [(gogoproto.moretags) = "yaml:\"staking_coin_denom\""];
 
+  // amount specifies total amount of the staking for the staking coin denom except queued staking
   string amount = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+
+  // staking_reserve_coins specifies balance of the staking reserve account where staking and queued staking for the
+  // staking coin denom is stored this param is needed for import/export validation
+  repeated cosmos.base.v1beta1.Coin staking_reserve_coins = 9 [
+    (gogoproto.moretags)     = "yaml:\"reward_pool_coins\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable)     = false
+  ];
 }
 
 // HistoricalRewardsRecord is used for import/export via genesis json.
