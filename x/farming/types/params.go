@@ -23,8 +23,6 @@ var (
 	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
 	DefaultDelayedStakingGasFee   = sdk.Gas(60000) // See https://github.com/tendermint/farming/issues/102 for details.
 
-	// TODO: remove global reserve account due to split the reserveAcc by staking coin denom
-	StakingReserveAcc = sdk.AccAddress(address.Module(ModuleName, []byte("StakingReserveAcc")))
 	RewardsReserveAcc = sdk.AccAddress(address.Module(ModuleName, []byte("RewardsReserveAcc")))
 
 	// ReserveAccAddressType is Address type of reserve accounts for staking, rewards, It could be changed,

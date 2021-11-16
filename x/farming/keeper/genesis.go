@@ -51,6 +51,22 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		totalStakings[record.StakingCoinDenom] = amt
 	}
 
+	for _, record := range genState.TotalStakingRecords {
+		if !record.Amount.Equal(totalStakings[record.StakingCoinDenom]) {
+			panic(fmt.Sprintf("TotalStaking for %s differs from the actual value; have %s, want %s",
+				record.StakingCoinDenom, totalStakings[record.StakingCoinDenom], record.Amount))
+		}
+	}
+
+	if len(totalStakings) != len(genState.TotalStakingRecords) {
+		panic(fmt.Sprintf("the number of TotalStaking differs from the actual value; have %d, want %d",
+			len(totalStakings), len(genState.TotalStakingRecords)))
+	}
+
+	for _, record := range genState.TotalStakingRecords {
+		k.SetTotalStakings(ctx, record.StakingCoinDenom, types.TotalStakings{Amount: record.Amount})
+	}
+
 	for _, record := range genState.QueuedStakingRecords {
 		farmerAcc, err := sdk.AccAddressFromBech32(record.Farmer)
 		if err != nil {
@@ -75,10 +91,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		k.SetLastEpochTime(ctx, *genState.LastEpochTime)
 	}
 
-	for stakingCoinDenom, amt := range totalStakings {
-		k.SetTotalStakings(ctx, stakingCoinDenom, types.TotalStakings{Amount: amt})
-	}
-
 	err := k.ValidateRemainingRewardsAmount(ctx)
 	if err != nil {
 		panic(err)
@@ -92,11 +104,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	err = k.ValidateStakingReservedAmount(ctx)
 	if err != nil {
 		panic(err)
-	}
-	stakingReserveCoins := k.bankKeeper.GetAllBalances(ctx, k.GetStakingReservePoolAcc(ctx))
-	if !genState.StakingReserveCoins.IsEqual(stakingReserveCoins) {
-		panic(fmt.Sprintf("StakingReserveCoins differs from the actual value; have %s, expected %s",
-			stakingReserveCoins, genState.StakingReserveCoins))
 	}
 
 	if err := k.ValidateOutstandingRewardsAmount(ctx); err != nil {
@@ -142,6 +149,15 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		return false
 	})
 
+	totalStakings := []types.TotalStakingRecord{}
+	k.IterateTotalStakings(ctx, func(stakingCoinDenom string, ts types.TotalStakings) (stop bool) {
+		totalStakings = append(totalStakings, types.TotalStakingRecord{
+			StakingCoinDenom: stakingCoinDenom,
+			Amount:           ts.Amount,
+		})
+		return false
+	})
+
 	historicalRewards := []types.HistoricalRewardsRecord{}
 	k.IterateHistoricalRewards(ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
 		historicalRewards = append(historicalRewards, types.HistoricalRewardsRecord{
@@ -181,10 +197,10 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		plans,
 		stakings,
 		queuedStakings,
+		totalStakings,
 		historicalRewards,
 		outstandingRewards,
 		currentEpochs,
-		k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc),
 		k.bankKeeper.GetAllBalances(ctx, types.RewardsReserveAcc),
 		epochTime,
 		k.GetCurrentEpochDays(ctx),

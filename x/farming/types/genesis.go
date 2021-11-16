@@ -9,9 +9,9 @@ import (
 
 // NewGenesisState returns new GenesisState.
 func NewGenesisState(
-	params Params, plans []PlanRecord, stakings []StakingRecord, queuedStakings []QueuedStakingRecord,
+	params Params, plans []PlanRecord, stakings []StakingRecord, queuedStakings []QueuedStakingRecord, totalStakings []TotalStakingRecord,
 	historicalRewards []HistoricalRewardsRecord, outstandingRewards []OutstandingRewardsRecord,
-	currentEpochs []CurrentEpochRecord, stakingReserveCoins, rewardPoolCoins sdk.Coins,
+	currentEpochs []CurrentEpochRecord, rewardPoolCoins sdk.Coins,
 	lastEpochTime *time.Time, currentEpochDays uint32,
 ) *GenesisState {
 	return &GenesisState{
@@ -19,10 +19,10 @@ func NewGenesisState(
 		PlanRecords:               plans,
 		StakingRecords:            stakings,
 		QueuedStakingRecords:      queuedStakings,
+		TotalStakingRecords:       totalStakings,
 		HistoricalRewardsRecords:  historicalRewards,
 		OutstandingRewardsRecords: outstandingRewards,
 		CurrentEpochRecords:       currentEpochs,
-		StakingReserveCoins:       stakingReserveCoins,
 		RewardPoolCoins:           rewardPoolCoins,
 		LastEpochTime:             lastEpochTime,
 		CurrentEpochDays:          currentEpochDays,
@@ -36,10 +36,10 @@ func DefaultGenesisState() *GenesisState {
 		[]PlanRecord{},
 		[]StakingRecord{},
 		[]QueuedStakingRecord{},
+		[]TotalStakingRecord{},
 		[]HistoricalRewardsRecord{},
 		[]OutstandingRewardsRecord{},
 		[]CurrentEpochRecord{},
-		sdk.Coins{},
 		sdk.Coins{},
 		nil,
 		DefaultCurrentEpochDays,
@@ -83,6 +83,12 @@ func ValidateGenesis(data GenesisState) error {
 		}
 	}
 
+	for _, record := range data.TotalStakingRecords {
+		if err := record.Validate(); err != nil {
+			return err
+		}
+	}
+
 	for _, record := range data.HistoricalRewardsRecords {
 		if err := record.Validate(); err != nil {
 			return err
@@ -101,9 +107,6 @@ func ValidateGenesis(data GenesisState) error {
 		}
 	}
 
-	if err := data.StakingReserveCoins.Validate(); err != nil {
-		return err
-	}
 	if err := data.RewardPoolCoins.Validate(); err != nil {
 		return err
 	}
@@ -140,6 +143,17 @@ func (record StakingRecord) Validate() error {
 	}
 	if !record.Staking.Amount.IsPositive() {
 		return fmt.Errorf("staking amount must be positive: %s", record.Staking.Amount)
+	}
+	return nil
+}
+
+// Validate validates StakingRecord.
+func (record TotalStakingRecord) Validate() error {
+	if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
+		return err
+	}
+	if !record.Amount.IsPositive() {
+		return fmt.Errorf("total staking amount must be positive: %s", record.Amount)
 	}
 	return nil
 }

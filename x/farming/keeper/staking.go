@@ -227,18 +227,26 @@ func (k Keeper) IterateTotalStakings(ctx sdk.Context, cb func(stakingCoinDenom s
 	}
 }
 
+// TODO: add test code
 // ReserveStakingCoins sends staking coins to the staking reserve account.
 func (k Keeper) ReserveStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoins sdk.Coins) error {
-	if err := k.bankKeeper.SendCoins(ctx, farmerAcc, k.GetStakingReservePoolAcc(ctx), stakingCoins); err != nil {
-		return err
+	// TODO: refactor to using input, output multi-send
+	for _, coin := range stakingCoins {
+		if err := k.bankKeeper.SendCoins(ctx, farmerAcc, types.StakingReservePoolAcc(coin.Denom), sdk.Coins{coin}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
+// TODO: add test code
 // ReleaseStakingCoins sends staking coins back to the farmer.
 func (k Keeper) ReleaseStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, unstakingCoins sdk.Coins) error {
-	if err := k.bankKeeper.SendCoins(ctx, k.GetStakingReservePoolAcc(ctx), farmerAcc, unstakingCoins); err != nil {
-		return err
+	// TODO: refactor to using input, output multi-send
+	for _, coin := range unstakingCoins {
+		if err := k.bankKeeper.SendCoins(ctx, types.StakingReservePoolAcc(coin.Denom), farmerAcc, sdk.Coins{coin}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -409,9 +417,11 @@ func (k Keeper) ValidateStakingReservedAmount(ctx sdk.Context) error {
 		return false
 	})
 
-	balanceStakingReserveAcc := k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc)
-	if !balanceStakingReserveAcc.IsAllGTE(reservedCoins) {
-		return types.ErrInvalidStakingReservedAmount
+	for _, coin := range reservedCoins {
+		balanceStakingReserveAcc := k.bankKeeper.GetAllBalances(ctx, types.StakingReservePoolAcc(coin.Denom))
+		if !balanceStakingReserveAcc.IsAllGTE(sdk.Coins{coin}) {
+			return types.ErrInvalidStakingReservedAmount
+		}
 	}
 
 	return nil
