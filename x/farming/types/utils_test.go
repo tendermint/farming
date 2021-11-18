@@ -26,7 +26,18 @@ func TestDeriveAddress(t *testing.T) {
 		name            string
 		expectedAddress string
 	}{
-		// TODO: add case for denom,
+		{
+			types.ReserveAccAddressType,
+			types.ModuleName,
+			"StakingReserveAcc|uatom",
+			"cosmos1qxs9gxctmd637l7ckpc99kw6ax6thgxx5kshpgzc8kup675xp9dsank7up",
+		},
+		{
+			types.ReserveAccAddressType,
+			types.ModuleName,
+			"StakingReserveAcc|stake",
+			"cosmos1jn5vt4c3xg38ud89xjl8aumlf3akgdpllmt986w5tj9lureh65dsvk5z3t",
+		},
 		{
 			types.AddressType20Bytes,
 			"",

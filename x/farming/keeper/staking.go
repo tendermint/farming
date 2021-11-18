@@ -3,6 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -229,9 +230,18 @@ func (k Keeper) IterateTotalStakings(ctx sdk.Context, cb func(stakingCoinDenom s
 
 // ReserveStakingCoins sends staking coins to the staking reserve account.
 func (k Keeper) ReserveStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoins sdk.Coins) error {
-	// TODO: refactor to using input, output multi-send
-	for _, coin := range stakingCoins {
-		if err := k.bankKeeper.SendCoins(ctx, farmerAcc, types.StakingReservePoolAcc(coin.Denom), sdk.Coins{coin}); err != nil {
+	if stakingCoins.Len() == 1 {
+		if err := k.bankKeeper.SendCoins(ctx, farmerAcc, types.StakingReserveAcc(stakingCoins[0].Denom), stakingCoins); err != nil {
+			return err
+		}
+	} else {
+		var inputs []banktypes.Input
+		var outputs []banktypes.Output
+		for _, coin := range stakingCoins {
+			inputs = append(inputs, banktypes.NewInput(farmerAcc, sdk.Coins{coin}))
+			outputs = append(outputs, banktypes.NewOutput(types.StakingReserveAcc(coin.Denom), sdk.Coins{coin}))
+		}
+		if err := k.bankKeeper.InputOutputCoins(ctx, inputs, outputs); err != nil {
 			return err
 		}
 	}
@@ -240,9 +250,18 @@ func (k Keeper) ReserveStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, s
 
 // ReleaseStakingCoins sends staking coins back to the farmer.
 func (k Keeper) ReleaseStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, stakingCoins sdk.Coins) error {
-	// TODO: refactor to using input, output multi-send
-	for _, coin := range stakingCoins {
-		if err := k.bankKeeper.SendCoins(ctx, types.StakingReservePoolAcc(coin.Denom), farmerAcc, sdk.Coins{coin}); err != nil {
+	if stakingCoins.Len() == 1 {
+		if err := k.bankKeeper.SendCoins(ctx, types.StakingReserveAcc(stakingCoins[0].Denom), farmerAcc, stakingCoins); err != nil {
+			return err
+		}
+	} else {
+		var inputs []banktypes.Input
+		var outputs []banktypes.Output
+		for _, coin := range stakingCoins {
+			inputs = append(inputs, banktypes.NewInput(types.StakingReserveAcc(coin.Denom), sdk.Coins{coin}))
+			outputs = append(outputs, banktypes.NewOutput(farmerAcc, sdk.Coins{coin}))
+		}
+		if err := k.bankKeeper.InputOutputCoins(ctx, inputs, outputs); err != nil {
 			return err
 		}
 	}
@@ -416,7 +435,7 @@ func (k Keeper) ValidateStakingReservedAmount(ctx sdk.Context) error {
 	})
 
 	for _, coin := range reservedCoins {
-		balanceStakingReserveAcc := k.bankKeeper.GetAllBalances(ctx, types.StakingReservePoolAcc(coin.Denom))
+		balanceStakingReserveAcc := k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc(coin.Denom))
 		if !balanceStakingReserveAcc.IsAllGTE(sdk.Coins{coin}) {
 			return types.ErrInvalidStakingReservedAmount
 		}

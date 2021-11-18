@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/stretchr/testify/suite"
 	simapp "github.com/tendermint/farming/app"
+	"github.com/tendermint/farming/x/farming/types"
 )
 
 func (suite *KeeperTestSuite) TestStake() {
@@ -318,6 +319,10 @@ func (suite *KeeperTestSuite) TestDelayedStakingGasFee() {
 }
 
 func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {
+	denom9 := "denom9"
+	denom10 := "denom10"
+	denom11 := "denom11"
+	denom12 := "denom12"
 	for _, tc := range []struct {
 		name             string
 		farmerAcc        sdk.AccAddress
@@ -330,11 +335,11 @@ func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {
 			"normal",
 			suite.addrs[0],
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}),
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}),
 			false,
@@ -344,11 +349,11 @@ func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {
 			"bad farmer's balance",
 			suite.addrs[0],
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(1_100_000_000),
 			}),
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(1_100_000_000),
 			}),
 			true,
@@ -358,17 +363,17 @@ func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {
 			"multi coins",
 			suite.addrs[0],
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}, sdk.Coin{
-				Denom:  "denom10",
+				Denom:  denom10,
 				Amount: sdk.NewInt(100000),
 			}),
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}, sdk.Coin{
-				Denom:  "denom10",
+				Denom:  denom10,
 				Amount: sdk.NewInt(100000),
 			}),
 			false,
@@ -378,29 +383,55 @@ func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {
 			"over release",
 			suite.addrs[0],
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}, sdk.Coin{
-				Denom:  "denom10",
+				Denom:  denom10,
 				Amount: sdk.NewInt(100000),
 			}),
 			sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}, sdk.Coin{
-				Denom:  "denom10",
+				Denom:  denom10,
 				Amount: sdk.NewInt(110000),
 			}),
 			false,
 			true,
 		},
+		{
+			"partial release",
+			suite.addrs[0],
+			sdk.NewCoins(sdk.Coin{
+				Denom:  denom11,
+				Amount: sdk.NewInt(100000),
+			}, sdk.Coin{
+				Denom:  denom12,
+				Amount: sdk.NewInt(100000),
+			}),
+			sdk.NewCoins(sdk.Coin{
+				Denom:  denom11,
+				Amount: sdk.NewInt(100000),
+			}, sdk.Coin{
+				Denom:  denom12,
+				Amount: sdk.NewInt(90000),
+			}),
+			false,
+			false,
+		},
 	} {
 		suite.Run(tc.name, func() {
 			err := simapp.FundAccount(suite.app.BankKeeper, suite.ctx, tc.farmerAcc, sdk.NewCoins(sdk.Coin{
-				Denom:  "denom9",
+				Denom:  denom9,
 				Amount: sdk.NewInt(100000),
 			}, sdk.Coin{
-				Denom:  "denom10",
+				Denom:  denom10,
+				Amount: sdk.NewInt(100000),
+			}, sdk.Coin{
+				Denom:  denom11,
+				Amount: sdk.NewInt(100000),
+			}, sdk.Coin{
+				Denom:  denom12,
 				Amount: sdk.NewInt(100000),
 			}))
 			suite.Require().NoError(err)
@@ -415,6 +446,10 @@ func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {
 					suite.Require().Error(errRelease)
 				} else {
 					suite.Require().NoError(errRelease)
+					for _, coin := range tc.stakingCoins {
+						reservedBalance := suite.app.BankKeeper.GetAllBalances(suite.ctx, types.StakingReserveAcc(coin.Denom))
+						suite.Require().Equal(tc.stakingCoins.Sub(tc.releaseCoins).AmountOf(coin.Denom), reservedBalance.AmountOf(coin.Denom))
+					}
 				}
 			}
 		})

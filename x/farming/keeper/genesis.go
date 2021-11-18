@@ -56,7 +56,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 			panic(fmt.Sprintf("TotalStaking for %s differs from the actual value; have %s, want %s",
 				record.StakingCoinDenom, totalStakings[record.StakingCoinDenom], record.Amount))
 		}
-		stakingReserveCoins := k.bankKeeper.GetAllBalances(ctx, types.StakingReservePoolAcc(record.StakingCoinDenom))
+		stakingReserveCoins := k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc(record.StakingCoinDenom))
 		if !record.StakingReserveCoins.IsEqual(stakingReserveCoins) {
 			panic(fmt.Sprintf("StakingReserveCoins differs from the actual value; have %s, want %s",
 				stakingReserveCoins, record.StakingReserveCoins))
@@ -159,7 +159,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		totalStakings = append(totalStakings, types.TotalStakingRecord{
 			StakingCoinDenom:    stakingCoinDenom,
 			Amount:              ts.Amount,
-			StakingReserveCoins: k.bankKeeper.GetAllBalances(ctx, types.StakingReservePoolAcc(stakingCoinDenom)),
+			StakingReserveCoins: k.bankKeeper.GetAllBalances(ctx, types.StakingReserveAcc(stakingCoinDenom)),
 		})
 		return false
 	})

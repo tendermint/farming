@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	MaxNameLength                    int    = 140
-	PrivatePlanFarmingPoolAddrPrefix string = "PrivatePlan"
-	PoolAddrSplitter                 string = "|"
+	MaxNameLength                   int    = 140
+	PrivatePlanFarmingPoolAccPrefix string = "PrivatePlan"
+	StakingReserveAccPrefix         string = "StakingReserveAcc"
+	AccNameSplitter                 string = "|"
 )
 
 var (
@@ -170,8 +171,8 @@ func (plan BasePlan) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(plan.TerminationAddress); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid termination address %q: %v", plan.TerminationAddress, err)
 	}
-	if strings.Contains(plan.Name, PoolAddrSplitter) {
-		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", PoolAddrSplitter)
+	if strings.Contains(plan.Name, AccNameSplitter) {
+		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot contain %s", AccNameSplitter)
 	}
 	if len(plan.Name) > MaxNameLength {
 		return sdkerrors.Wrapf(ErrInvalidPlanName, "plan name cannot be longer than max length of %d", MaxNameLength)
@@ -364,15 +365,15 @@ func IsPlanActiveAt(plan PlanI, t time.Time) bool {
 	return !plan.GetStartTime().After(t) && plan.GetEndTime().After(t)
 }
 
-// PrivatePlanFarmingPoolAddress returns a unique farming pool address
+// PrivatePlanFarmingPoolAcc returns a unique farming pool address
 // for a newly created plan.
-func PrivatePlanFarmingPoolAddress(name string, planId uint64) sdk.AccAddress {
-	poolAddrName := strings.Join([]string{PrivatePlanFarmingPoolAddrPrefix, fmt.Sprint(planId), name}, PoolAddrSplitter)
-	return address.Module(ModuleName, []byte(poolAddrName))
+func PrivatePlanFarmingPoolAcc(name string, planId uint64) sdk.AccAddress {
+	poolAccName := strings.Join([]string{PrivatePlanFarmingPoolAccPrefix, fmt.Sprint(planId), name}, AccNameSplitter)
+	return DeriveAddress(ReserveAccAddressType, ModuleName, poolAccName)
 }
 
-// StakingReservePoolAcc returns module account for the staking reserve pool account by staking coin denom and type.
-func StakingReservePoolAcc(stakingCoinDenom string) sdk.AccAddress {
-	// TODO: TBC prefix
-	return DeriveAddress(ReserveAccAddressType, ModuleName, "|staking|"+stakingCoinDenom)
+// StakingReserveAcc returns module account for the staking reserve pool account by staking coin denom and type.
+func StakingReserveAcc(stakingCoinDenom string) sdk.AccAddress {
+	//return DeriveAddress(ReserveAccAddressType, ModuleName, StakingReserveAccPrefix+AccNameSplitter+stakingCoinDenom)
+	return address.Module(ModuleName, []byte("StakingReserveAcc|"+stakingCoinDenom))
 }
