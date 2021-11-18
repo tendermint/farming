@@ -371,7 +371,6 @@ func PrivatePlanFarmingPoolAddress(name string, planId uint64) sdk.AccAddress {
 	return address.Module(ModuleName, []byte(poolAddrName))
 }
 
-// TODO: add test code
 // StakingReservePoolAcc returns module account for the staking reserve pool account by staking coin denom and type.
 func StakingReservePoolAcc(stakingCoinDenom string) sdk.AccAddress {
 	// TODO: TBC prefix

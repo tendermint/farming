@@ -568,3 +568,24 @@ func TestUnpackPlanJSON(t *testing.T) {
 
 	require.Equal(t, uint64(1), plan2.GetId())
 }
+
+func TestStakingReservePoolAcc(t *testing.T) {
+	testCases := []struct {
+		stakingCoinDenom string
+		expectedAcc      string
+	}{
+		{
+			"uatom",
+			"cosmos1wzzy8mr49d65a35egyvefmcrwhunkj0wwdtz924umkylnr6dgu0q938n7l",
+		},
+		{
+			"stake",
+			"cosmos1yk4pp7ja4df55xw8zzmyrpgn4ntwmd3tnnhv3xnnajd5a0step7s7hduqk",
+		},
+	}
+
+	for _, tc := range testCases {
+		acc := types.StakingReservePoolAcc(tc.stakingCoinDenom)
+		require.Equal(t, tc.expectedAcc, acc.String())
+	}
+}

@@ -18,7 +18,7 @@ func ParseTime(s string) time.Time {
 	return t
 }
 
-// DeriveAddress TODO: add comments
+// DeriveAddress returns derived address by according to the address type, module name, and address name.
 func DeriveAddress(addressType AddressType, moduleName, name string) sdk.AccAddress {
 	switch addressType {
 	case AddressType32Bytes:

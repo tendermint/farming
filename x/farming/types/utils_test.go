@@ -26,6 +26,7 @@ func TestDeriveAddress(t *testing.T) {
 		name            string
 		expectedAddress string
 	}{
+		// TODO: add case for denom,
 		{
 			types.AddressType20Bytes,
 			"",
