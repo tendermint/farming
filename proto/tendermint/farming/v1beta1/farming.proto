@@ -94,9 +94,6 @@ message BasePlan {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable)     = false
   ];
-
-  //  // reserve_address_type specifies the type of reserve addresses of staking and reward.
-  //  AddressType reserve_address_type = 4;
 }
 
 // FixedAmountPlan defines a fixed amount plan that distributes a fixed amount

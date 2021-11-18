@@ -7,7 +7,6 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/gogo/protobuf/proto"
 )
@@ -365,8 +364,7 @@ func IsPlanActiveAt(plan PlanI, t time.Time) bool {
 	return !plan.GetStartTime().After(t) && plan.GetEndTime().After(t)
 }
 
-// PrivatePlanFarmingPoolAcc returns a unique farming pool address
-// for a newly created plan.
+// PrivatePlanFarmingPoolAcc returns a unique farming pool address for a newly created plan.
 func PrivatePlanFarmingPoolAcc(name string, planId uint64) sdk.AccAddress {
 	poolAccName := strings.Join([]string{PrivatePlanFarmingPoolAccPrefix, fmt.Sprint(planId), name}, AccNameSplitter)
 	return DeriveAddress(ReserveAccAddressType, ModuleName, poolAccName)
@@ -374,6 +372,5 @@ func PrivatePlanFarmingPoolAcc(name string, planId uint64) sdk.AccAddress {
 
 // StakingReserveAcc returns module account for the staking reserve pool account by staking coin denom and type.
 func StakingReserveAcc(stakingCoinDenom string) sdk.AccAddress {
-	//return DeriveAddress(ReserveAccAddressType, ModuleName, StakingReserveAccPrefix+AccNameSplitter+stakingCoinDenom)
-	return address.Module(ModuleName, []byte("StakingReserveAcc|"+stakingCoinDenom))
+	return DeriveAddress(ReserveAccAddressType, ModuleName, StakingReserveAccPrefix+AccNameSplitter+stakingCoinDenom)
 }
