@@ -9,7 +9,7 @@ import (
 
 // NewGenesisState returns new GenesisState.
 func NewGenesisState(
-	params Params, plans []PlanRecord, stakings []StakingRecord, queuedStakings []QueuedStakingRecord, totalStakings []TotalStakingRecord,
+	params Params, plans []PlanRecord, stakings []StakingRecord, queuedStakings []QueuedStakingRecord, totalStakings []TotalStakingsRecord,
 	historicalRewards []HistoricalRewardsRecord, outstandingRewards []OutstandingRewardsRecord,
 	currentEpochs []CurrentEpochRecord, rewardPoolCoins sdk.Coins,
 	lastEpochTime *time.Time, currentEpochDays uint32,
@@ -19,7 +19,7 @@ func NewGenesisState(
 		PlanRecords:               plans,
 		StakingRecords:            stakings,
 		QueuedStakingRecords:      queuedStakings,
-		TotalStakingRecords:       totalStakings,
+		TotalStakingsRecords:      totalStakings,
 		HistoricalRewardsRecords:  historicalRewards,
 		OutstandingRewardsRecords: outstandingRewards,
 		CurrentEpochRecords:       currentEpochs,
@@ -36,7 +36,7 @@ func DefaultGenesisState() *GenesisState {
 		[]PlanRecord{},
 		[]StakingRecord{},
 		[]QueuedStakingRecord{},
-		[]TotalStakingRecord{},
+		[]TotalStakingsRecord{},
 		[]HistoricalRewardsRecord{},
 		[]OutstandingRewardsRecord{},
 		[]CurrentEpochRecord{},
@@ -83,7 +83,7 @@ func ValidateGenesis(data GenesisState) error {
 		}
 	}
 
-	for _, record := range data.TotalStakingRecords {
+	for _, record := range data.TotalStakingsRecords {
 		if err := record.Validate(); err != nil {
 			return err
 		}
@@ -148,7 +148,7 @@ func (record StakingRecord) Validate() error {
 }
 
 // Validate validates StakingRecord.
-func (record TotalStakingRecord) Validate() error {
+func (record TotalStakingsRecord) Validate() error {
 	if err := sdk.ValidateDenom(record.StakingCoinDenom); err != nil {
 		return err
 	}

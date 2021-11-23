@@ -38,8 +38,8 @@ message GenesisState {
   repeated CurrentEpochRecord current_epoch_records = 7
       [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"current_epoch_records\""];
 
-  repeated TotalStakingRecord total_staking_records = 8
-      [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"total_staking_records\""];
+  repeated TotalStakingsRecord total_stakings_records = 8
+      [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"total_stakings_records\""];
 
   // reward_pool_coins specifies balance of the reward pool to be distributed in the plans
   // this param is needed for import/export validation
@@ -98,8 +98,8 @@ message QueuedStakingRecord {
   QueuedStaking queued_staking = 3 [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"queued_staking\""];
 }
 
-// TotalStakingRecord is used for import/export via genesis json.
-message TotalStakingRecord {
+// TotalStakingsRecord is used for import/export via genesis json.
+message TotalStakingsRecord {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 

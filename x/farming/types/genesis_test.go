@@ -313,7 +313,7 @@ func TestValidateGenesis(t *testing.T) {
 		{
 			"invalid total staking records - invalid staking coin denom",
 			func(genState *types.GenesisState) {
-				genState.TotalStakingRecords = []types.TotalStakingRecord{
+				genState.TotalStakingsRecords = []types.TotalStakingsRecord{
 					{
 						StakingCoinDenom: "!",
 						Amount:           sdk.OneInt(),
@@ -325,7 +325,7 @@ func TestValidateGenesis(t *testing.T) {
 		{
 			"invalid total staking records - invalid staking amount",
 			func(genState *types.GenesisState) {
-				genState.TotalStakingRecords = []types.TotalStakingRecord{
+				genState.TotalStakingsRecords = []types.TotalStakingsRecord{
 					{
 						StakingCoinDenom: "uatom",
 						Amount:           sdk.ZeroInt(),
