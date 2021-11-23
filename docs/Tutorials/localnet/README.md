@@ -3,17 +3,26 @@ Title: Localnet
 Description: A tutorial of how to build `farmingd` and bootstrap local network.
 ---
 
-### Get farming module source code
+## Get farming module source code
 
 ```bash
+# Use git to clone farming module source code and install `farmingd`
 git clone https://github.com/tendermint/farming.git
 cd farming
 make install
 ```
 
-### Boostrap
+## Start a blockchain with Starport
 
-The following script is prepared to bootstrap a single chain with a single validator in your local machine. Copy the script and run them in your terminal.
+Use [Starport CLI](https://docs.starport.network/cli/#starport-chain-serve) to start a local blockchain with automatic reloading. You can configure custom settings in [config.yml](../../config.yml).
+
+```bash
+starport chain serve
+```
+
+## Start a blockchain with commands
+
+The following commands are used to bootstrap a single chain with a single validator in your local machine. Copy the commands and run them in your terminal.
 
 ```bash
 # Configure variables
@@ -27,7 +36,7 @@ export VALIDATOR_1_GENESIS_COINS=10000000000stake,10000000000uatom,10000000000uu
 export USER_1_GENESIS_COINS=10000000000stake,10000000000uatom,10000000000uusd
 export USER_2_GENESIS_COINS=10000000000stake,10000000000poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4
 
-# Bootstrap
+# Initialize chain and craete gentx for a single validator
 $BINARY init $CHAIN_ID --chain-id $CHAIN_ID
 echo $VALIDATOR_1 | $BINARY keys add val1 --keyring-backend test --recover
 echo $USER_1 | $BINARY keys add user1 --keyring-backend test --recover
@@ -38,21 +47,30 @@ $BINARY add-genesis-account $($BINARY keys show user2 --keyring-backend test -a)
 $BINARY gentx val1 100000000stake --chain-id $CHAIN_ID --keyring-backend test
 $BINARY collect-gentxs
 
-# Check OS for sed -i option value
-export SED_I=""
-if [[ "$OSTYPE" == "darwin"* ]]; then 
-    export SED_I="''"
-fi 
+# Check platform
+platform='unknown'
+unamestr=`uname`
+if [ "$unamestr" = 'Linux' ]; then
+   platform='linux'
+fi
 
-# Modify app.toml
-sed -i $SED_I 's/enable = false/enable = true/g' $HOME_FARMINGAPP/config/app.toml
-sed -i $SED_I 's/swagger = false/swagger = true/g' $HOME_FARMINGAPP/config/app.toml
-
-# (Optional) Modify governance proposal for testing public plan proposal
-sed -i $SED_I 's%"amount": "10000000"%"amount": "1"%g' $HOME_FARMINGAPP/config/genesis.json
-sed -i $SED_I 's%"quorum": "0.334000000000000000",%"quorum": "0.000000000000000001",%g' $HOME_FARMINGAPP/config/genesis.json
-sed -i $SED_I 's%"threshold": "0.500000000000000000",%"threshold": "0.000000000000000001",%g' $HOME_FARMINGAPP/config/genesis.json
-sed -i $SED_I 's%"voting_period": "172800s"%"voting_period": "60s"%g' $HOME_FARMINGAPP/config/genesis.json
+if [ $platform = 'linux' ]; then
+	sed -i 's/enable = false/enable = true/g' $HOME_BUDGETAPP/config/app.toml
+	sed -i 's/swagger = false/swagger = true/g' $HOME_BUDGETAPP/config/app.toml
+	sed -i 's%"amount": "10000000"%"amount": "1"%g' $HOME_BUDGETAPP/config/genesis.json
+    # (Optional) Modify governance proposal for testing public plan proposal
+	sed -i 's%"quorum": "0.334000000000000000",%"quorum": "0.000000000000000001",%g' $HOME_BUDGETAPP/config/genesis.json
+	sed -i 's%"threshold": "0.500000000000000000",%"threshold": "0.000000000000000001",%g' $HOME_BUDGETAPP/config/genesis.json
+	sed -i 's%"voting_period": "172800s"%"voting_period": "30s"%g' $HOME_BUDGETAPP/config/genesis.json
+else
+	sed -i '' 's/enable = false/enable = true/g' $HOME_BUDGETAPP/config/app.toml
+	sed -i '' 's/swagger = false/swagger = true/g' $HOME_BUDGETAPP/config/app.toml
+	sed -i '' 's%"amount": "10000000"%"amount": "1"%g' $HOME_BUDGETAPP/config/genesis.json
+    # (Optional) Modify governance proposal for testing public plan proposal
+	sed -i '' 's%"quorum": "0.334000000000000000",%"quorum": "0.000000000000000001",%g' $HOME_BUDGETAPP/config/genesis.json
+	sed -i '' 's%"threshold": "0.500000000000000000",%"threshold": "0.000000000000000001",%g' $HOME_BUDGETAPP/config/genesis.json
+	sed -i '' 's%"voting_period": "172800s"%"voting_period": "30s"%g' $HOME_BUDGETAPP/config/genesis.json
+fi
 
 # Start
 $BINARY start
