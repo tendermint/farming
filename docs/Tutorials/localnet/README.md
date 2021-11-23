@@ -14,7 +14,7 @@ make install
 
 ## Start a blockchain with Starport
 
-Use [Starport CLI](https://docs.starport.network/cli/#starport-chain-serve) to start a local blockchain with automatic reloading. You can configure custom settings in [config.yml](../../config.yml).
+Use [Starport CLI](https://docs.starport.network/cli/#starport-chain-serve) to start a local blockchain with automatic reloading. You can configure custom settings in [config.yml](../../../config.yml).
 
 ```bash
 starport chain serve
