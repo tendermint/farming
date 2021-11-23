@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package tendermint.farming;
 
-import "google/protobuf/any.proto";
-import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/base/v1beta1/coin.proto";
-import "google/protobuf/timestamp.proto";
 import "farming.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+import "gogoproto/gogo.proto";
 
 option go_package            = "github.com/tendermint/farming/x/farming/types";
 option (gogoproto.equal_all) = true;
