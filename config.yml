@@ -1,0 +1,28 @@
+accounts:
+  - name: alice
+    coins: ["10000000000stake", "10000000uatom"]
+  - name: bob
+    coins: ["10000000000stake", "10000000uatom"]
+validator:
+  name: alice
+  staked: "100000000stake"
+client:
+  openapi:
+    path: "docs/static/openapi.yml"
+  vuex:
+    path: "vue/src/store"
+faucet:
+  name: bob
+  coins: ["10000000stake","10000000uatom"]
+genesis:
+  app_state:
+    gov:
+      deposit_params:
+        min_deposit:
+          - denom: "stake"
+            amount: "1"
+      voting_params:
+        voting_period: "1s"
+      tally_params:
+        quorum: "0.000000000000000001"
+        threshold: "0.000000000000000001"
