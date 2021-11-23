@@ -25,9 +25,9 @@ var (
 
 	RewardsReserveAcc = sdk.AccAddress(address.Module(ModuleName, []byte("RewardsReserveAcc")))
 
-	// ReserveAccAddressType is Address type of reserve accounts for staking, rewards, It could be changed,
+	// ReserveAddressType is Address type of reserve accounts for staking, rewards, It could be changed,
 	// details on https://github.com/tendermint/farming/issues/200
-	ReserveAccAddressType = AddressType32Bytes
+	ReserveAddressType = AddressType32Bytes
 )
 
 var _ paramstypes.ParamSet = (*Params)(nil)

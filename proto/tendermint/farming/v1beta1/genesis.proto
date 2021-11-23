@@ -111,7 +111,7 @@ message TotalStakingRecord {
   // staking_reserve_coins specifies balance of the staking reserve account where staking and queued staking for the
   // staking coin denom is stored this param is needed for import/export validation
   repeated cosmos.base.v1beta1.Coin staking_reserve_coins = 9 [
-    (gogoproto.moretags)     = "yaml:\"reward_pool_coins\"",
+    (gogoproto.moretags)     = "yaml:\"staking_reserve_coins\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable)     = false
   ];

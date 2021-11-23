@@ -23,7 +23,7 @@ A private farming plan can be created with any account.
 
 - The account address of the plan creator account is used as the `TerminationAddress`. 
 - To prevent spamming attacks, the `PlanCreationFee` fee must be paid on plan creation. 
-- Internally, The Private Plan Farming Pool Address is derived according to rule `address.Module(ModuleName, []byte("PrivatePlan|{planId}|{planName}"))` and assigned to the plan. 
+- Internally, the private plan's farming pool address is derived according to the rule `address.Module(ModuleName, []byte("PrivatePlan|{planId}|{planName}"))`. 
 - After creation, need to query the plan and send the amount of coins to the farming pool address so that the plan distributes as intended.
 
 ## Distribution Methods
