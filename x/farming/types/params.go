@@ -25,8 +25,10 @@ var (
 
 	RewardsReserveAcc = sdk.AccAddress(address.Module(ModuleName, []byte("RewardsReserveAcc")))
 
-	// ReserveAddressType is Address type of reserve accounts for staking, rewards, It could be changed,
-	// details on https://github.com/tendermint/farming/issues/200
+	// ReserveAddressType is an address type of reserve accounts for staking or rewards.
+	// The module uses the address type of 32 bytes length, but it can be changed depending on Cosmos SDK's direction.
+	// The discussion around this issue can be found in this link.
+	// https://github.com/tendermint/farming/issues/200
 	ReserveAddressType = AddressType32Bytes
 )
 
