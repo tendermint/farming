@@ -183,9 +183,8 @@ test-sim-after-import
 ###                               Localnet                                  ###
 ###############################################################################
 
-# Run a single testnet locally
 localnet: 
-	./scripts/localnet.sh
+	starport c serve
 
 .PHONY: localnet
 
