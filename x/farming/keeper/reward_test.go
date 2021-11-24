@@ -430,20 +430,23 @@ func (suite *KeeperTestSuite) TestHistoricalRewards() {
 	suite.AdvanceEpoch()
 	suite.AdvanceEpoch()
 
-	// First, ensure that we have only 3 entries in the store.
+	// First, ensure that we have only two entries in the store.
+	// One is for the epoch 0, and other one is for epoch 3.
 	count = 0
 	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
 		count++
 		return false
 	})
-	suite.Require().Equal(4, count)
+	suite.Require().Equal(2, count)
 
 	// Next, check if cumulative unit rewards is correct.
-	for i := uint64(1); i <= 3; i++ {
-		historical, found := suite.keeper.GetHistoricalRewards(suite.ctx, denom1, i)
-		suite.Require().True(found)
-		suite.Require().True(decCoinsEq(sdk.NewDecCoins(sdk.NewInt64DecCoin(denom3, int64(i*2))), historical.CumulativeUnitRewards))
-	}
+	historical, found := suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 0)
+	suite.Require().True(found)
+	suite.Require().True(decCoinsEq(sdk.DecCoins{}, historical.CumulativeUnitRewards))
+
+	historical, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 3)
+	suite.Require().True(found)
+	suite.Require().True(decCoinsEq(sdk.NewDecCoins(sdk.NewInt64DecCoin(denom3, 6)), historical.CumulativeUnitRewards))
 }
 
 // Test if initialization and pruning of staking coin info work properly.

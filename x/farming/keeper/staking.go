@@ -337,13 +337,15 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 				return err
 			}
 
+			currentEpoch := k.GetCurrentEpoch(ctx, coin.Denom)
+
 			removedFromStaking := queuedStaking.Amount.Neg() // Make negative a positive
 			staking.Amount = staking.Amount.Sub(removedFromStaking)
 			if staking.Amount.IsPositive() {
-				currentEpoch := k.GetCurrentEpoch(ctx, coin.Denom)
 				staking.StartingEpoch = currentEpoch
 				k.SetStaking(ctx, coin.Denom, farmerAcc, staking)
 			} else {
+				k.decrementReferenceCount(ctx, coin.Denom, currentEpoch-1)
 				k.DeleteStaking(ctx, coin.Denom, farmerAcc)
 			}
 
@@ -375,11 +377,14 @@ func (k Keeper) Unstake(ctx sdk.Context, farmerAcc sdk.AccAddress, amount sdk.Co
 // It causes accumulated rewards to be withdrawn to the farmer.
 func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 	k.IterateQueuedStakings(ctx, func(stakingCoinDenom string, farmerAcc sdk.AccAddress, queuedStaking types.QueuedStaking) (stop bool) {
+		incremented := false
+
 		staking, found := k.GetStaking(ctx, stakingCoinDenom, farmerAcc)
 		if found {
 			if _, err := k.WithdrawRewards(ctx, farmerAcc, stakingCoinDenom); err != nil {
 				panic(err)
 			}
+			incremented = true
 		} else {
 			staking.Amount = sdk.ZeroInt()
 		}
@@ -387,13 +392,12 @@ func (k Keeper) ProcessQueuedCoins(ctx sdk.Context) {
 		k.DeleteQueuedStaking(ctx, stakingCoinDenom, farmerAcc)
 		k.IncreaseTotalStakings(ctx, stakingCoinDenom, queuedStaking.Amount)
 
-		startingEpoch := staking.StartingEpoch
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		k.SetStaking(ctx, stakingCoinDenom, farmerAcc, types.Staking{
 			Amount:        staking.Amount.Add(queuedStaking.Amount),
 			StartingEpoch: currentEpoch,
 		})
-		if startingEpoch != currentEpoch {
+		if !incremented {
 			k.incrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 		}
 
