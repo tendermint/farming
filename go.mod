@@ -3,6 +3,7 @@ module github.com/tendermint/farming
 go 1.16
 
 require (
+	github.com/armon/go-metrics v0.3.9
 	github.com/cosmos/cosmos-sdk v0.44.3
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0

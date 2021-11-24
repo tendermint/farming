@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/armon/go-metrics"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/gogo/protobuf/types"
 
@@ -447,6 +449,21 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 		_ = allocInfo.Plan.SetDistributedCoins(allocInfo.Plan.GetDistributedCoins().Add(totalAllocCoins...))
 		k.SetPlan(ctx, allocInfo.Plan)
 
+		defer func() {
+			// Capture the variables in a loop for the deferred func
+			totalAllocCoinsInDefer := totalAllocCoins
+			for _, coin := range totalAllocCoinsInDefer {
+				if coin.Amount.IsInt64() {
+					telemetry.SetGaugeWithLabels(
+						[]string{types.ModuleName},
+						float32(coin.Amount.Int64()),
+						[]metrics.Label{
+							telemetry.NewLabel("rewards_allocated_denom", coin.Denom),
+						},
+					)
+				}
+			}
+		}()
 		ctx.EventManager().EmitEvents(sdk.Events{
 			sdk.NewEvent(
 				types.EventTypeRewardsAllocated,
