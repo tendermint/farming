@@ -320,7 +320,7 @@ func (suite *KeeperTestSuite) TestDelayedStakingGasFee() {
 	suite.Require().Greater(gasConsumedWithStaking, gasConsumedNormal)
 }
 
-func (suite *KeeperTestSuite) TestPruneStatesWithoutRewards() {
+func (suite *KeeperTestSuite) TestPruneStateWithoutRewards() {
 	for i := 0; i < 10; i++ {
 		suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 		suite.AdvanceEpoch()

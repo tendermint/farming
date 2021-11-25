@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"math/rand"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -539,4 +540,149 @@ func (suite *KeeperTestSuite) TestPruneHistoricalRewards() {
 		return false
 	})
 	suite.Require().Zero(cnt)
+}
+
+func (suite *KeeperTestSuite) TestReferenceCounting() {
+	// Staking coins before any plan has created will create a historical
+	// rewards record at epoch 0 for that denom.
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1000000)))
+	suite.Stake(suite.addrs[1], sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1000000)))
+	suite.AdvanceEpoch()
+
+	// Even for multiple stakings, it does not increment the denom's current epoch.
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1000000)))
+	suite.Stake(suite.addrs[1], sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1000000)))
+	suite.AdvanceEpoch()
+
+	historical, found := suite.keeper.GetHistoricalRewards(suite.ctx, sdk.DefaultBondDenom, 0)
+	suite.Require().True(found)
+	suite.Require().True(decCoinsEq(sdk.DecCoins{}, historical.CumulativeUnitRewards))
+	suite.Require().Equal(uint32(3), historical.ReferenceCount)
+
+	// Next, create two plans.
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
+	suite.CreateRatioPlan(suite.addrs[5], "1denom1", "0.01")
+
+	// Farmers stake.
+	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+	suite.Stake(suite.addrs[1], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch() // Rewards allocated.
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch()
+
+	// Ensure there are only two historical rewards records found, and check
+	// reference counts.
+	cnt := 0
+	refCnt := uint32(0)
+	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+		if stakingCoinDenom == denom1 {
+			cnt++
+			refCnt += rewards.ReferenceCount
+		}
+		return false
+	})
+	suite.Require().Equal(2, cnt)
+	suite.Require().Equal(uint32(3), refCnt)
+
+	// After a farmer harvests, check historical rewards records again.
+	suite.Harvest(suite.addrs[0], []string{denom1})
+
+	cnt = 0
+	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+		if stakingCoinDenom == denom1 {
+			cnt++
+		}
+		return false
+	})
+	suite.Require().Equal(2, cnt)
+	historical, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 0)
+	suite.Require().True(found)
+	suite.Require().Equal(uint32(1), historical.ReferenceCount)
+	historical, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 3)
+	suite.Require().True(found)
+	suite.Require().Equal(uint32(2), historical.ReferenceCount)
+
+	suite.AdvanceEpoch()
+	suite.AdvanceEpoch()
+
+	suite.Unstake(suite.addrs[1], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+	refCnt = 0
+	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+		if stakingCoinDenom == denom1 {
+			refCnt += rewards.ReferenceCount
+		}
+		return false
+	})
+	suite.Require().Equal(uint32(2), refCnt)
+	_, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 0)
+	suite.Require().False(found)
+	historical, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 3)
+	suite.Require().True(found)
+	suite.Require().Equal(uint32(1), historical.ReferenceCount)
+	historical, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 5)
+	suite.Require().True(found)
+	suite.Require().Equal(uint32(1), historical.ReferenceCount)
+}
+
+func (suite *KeeperTestSuite) TestReferenceCountingFuzz() {
+	for seed := int64(0); seed < 100; seed++ {
+		r := rand.New(rand.NewSource(seed))
+
+		suite.SetupTest()
+		suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
+		suite.CreateRatioPlan(suite.addrs[5], "1denom1", "0.0001")
+
+		staked := map[int]sdk.Coins{}
+		queued := map[int]sdk.Coins{}
+		for epoch := 0; epoch < 100; epoch++ {
+			for i, addr := range suite.addrs[:5] {
+				if r.Intn(5) == 0 { // Unstake with a 20% chance.
+					amount, ok := staked[i]
+					if ok {
+						if r.Intn(5) == 0 {
+							// Unstake all(staked) coins.
+							suite.Unstake(addr, amount)
+							delete(staked, i)
+						} else {
+							// Unstake staked - (1 ~ (staked - 1)) coins.
+							if amount.AmountOf(denom1).GT(sdk.OneInt()) {
+								subAmount := sdk.NewCoins(sdk.NewInt64Coin(denom1, 1+r.Int63n(amount.AmountOf(denom1).Int64()-1)))
+								suite.Unstake(addr, subAmount)
+								staked[i] = amount.Sub(subAmount)
+							}
+						}
+					}
+				}
+				if r.Intn(5) == 0 { // Stake with a 20% chance.
+					amount := sdk.NewCoins(sdk.NewInt64Coin(denom1, 1+r.Int63n(50)))
+					suite.Stake(addr, amount)
+					queued[i] = amount
+				}
+				if r.Intn(5) == 0 {
+					_, ok := staked[i]
+					if ok {
+						suite.Harvest(addr, []string{denom1})
+					}
+				}
+			}
+			suite.AdvanceEpoch()
+			for i, amount := range queued {
+				staked[i] = staked[i].Add(amount...)
+				delete(queued, i)
+			}
+
+			refCnt := uint32(0)
+			suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+				refCnt += rewards.ReferenceCount
+				return false
+			})
+			if len(staked) > 0 {
+				suite.Require().Equal(uint32(len(staked))+1, refCnt)
+			} else {
+				suite.Require().Equal(uint32(0), refCnt)
+			}
+		}
+	}
 }
