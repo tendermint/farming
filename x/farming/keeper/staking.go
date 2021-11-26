@@ -285,7 +285,7 @@ func (k Keeper) afterStakingCoinRemoved(ctx sdk.Context, stakingCoinDenom string
 	outstanding, _ := k.GetOutstandingRewards(ctx, stakingCoinDenom)
 	coins, _ := outstanding.Rewards.TruncateDecimal() // Ignore remainder, since it cannot be sent.
 	if !coins.IsZero() {
-		if err := k.bankKeeper.SendCoins(ctx, k.GetRewardsReservePoolAcc(ctx), k.GetFarmingFeeCollectorAcc(ctx), coins); err != nil {
+		if err := k.bankKeeper.SendCoins(ctx, types.RewardsReserveAcc, k.GetFarmingFeeCollectorAcc(ctx), coins); err != nil {
 			return err
 		}
 	}
