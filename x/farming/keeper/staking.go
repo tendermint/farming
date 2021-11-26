@@ -187,9 +187,7 @@ func (k Keeper) IncreaseTotalStakings(ctx sdk.Context, stakingCoinDenom string, 
 	totalStaking.Amount = totalStaking.Amount.Add(amount)
 	k.SetTotalStakings(ctx, stakingCoinDenom, totalStaking)
 	if totalStaking.Amount.Equal(amount) {
-		if err := k.afterStakingCoinAdded(ctx, stakingCoinDenom); err != nil {
-			panic(err)
-		}
+		k.afterStakingCoinAdded(ctx, stakingCoinDenom)
 	}
 }
 
@@ -270,11 +268,10 @@ func (k Keeper) ReleaseStakingCoins(ctx sdk.Context, farmerAcc sdk.AccAddress, s
 
 // afterStakingCoinAdded is called after a new staking coin denom appeared
 // during ProcessQueuedCoins.
-func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) error {
+func (k Keeper) afterStakingCoinAdded(ctx sdk.Context, stakingCoinDenom string) {
 	k.SetHistoricalRewards(ctx, stakingCoinDenom, 0, types.HistoricalRewards{CumulativeUnitRewards: sdk.DecCoins{}})
 	k.SetCurrentEpoch(ctx, stakingCoinDenom, 1)
 	k.SetOutstandingRewards(ctx, stakingCoinDenom, types.OutstandingRewards{Rewards: sdk.DecCoins{}})
-	return nil
 }
 
 // afterStakingCoinRemoved is called after a staking coin denom got removed
