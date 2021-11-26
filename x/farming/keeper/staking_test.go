@@ -4,9 +4,11 @@ import (
 	"math/rand"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	_ "github.com/stretchr/testify/suite"
+
 	simapp "github.com/tendermint/farming/app"
 	"github.com/tendermint/farming/x/farming/types"
+
+	_ "github.com/stretchr/testify/suite"
 )
 
 func (suite *KeeperTestSuite) TestStake() {
@@ -46,7 +48,7 @@ func (suite *KeeperTestSuite) TestStake() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleStake() {
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
@@ -81,7 +83,7 @@ func (suite *KeeperTestSuite) TestStakeInAdvance() {
 	suite.AdvanceEpoch()
 	suite.AdvanceEpoch()
 
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 	suite.Require().True(coinsEq(sdk.NewCoins(), suite.AllRewards(suite.addrs[0])))
 	suite.AdvanceEpoch()
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
@@ -202,7 +204,7 @@ func (suite *KeeperTestSuite) TestUnstakeNotAlwaysWithdraw() {
 	// Unstaking from queued staking coins should not trigger
 	// reward withdrawal.
 
-	suite.CreateRatioPlan(suite.addrs[4], map[string]string{denom1: "1"}, "0.1")
+	suite.CreateRatioPlan(suite.addrs[4], "1denom1", "0.1")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.AdvanceEpoch()
@@ -221,7 +223,7 @@ func (suite *KeeperTestSuite) TestUnstakeNotAlwaysWithdraw() {
 }
 
 func (suite *KeeperTestSuite) TestMultipleUnstake() {
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 
@@ -316,6 +318,24 @@ func (suite *KeeperTestSuite) TestDelayedStakingGasFee() {
 	params := suite.keeper.GetParams(suite.ctx)
 	suite.Require().GreaterOrEqual(gasConsumedWithStaking, params.DelayedStakingGasFee)
 	suite.Require().Greater(gasConsumedWithStaking, gasConsumedNormal)
+}
+
+func (suite *KeeperTestSuite) TestPruneStateWithoutRewards() {
+	for i := 0; i < 10; i++ {
+		suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
+		suite.AdvanceEpoch()
+	}
+
+	suite.Unstake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 10000000)))
+
+	cnt := 0
+	suite.keeper.IterateHistoricalRewards(suite.ctx, func(stakingCoinDenom string, epoch uint64, rewards types.HistoricalRewards) (stop bool) {
+		if stakingCoinDenom == denom1 {
+			cnt++
+		}
+		return false
+	})
+	suite.Require().Zero(cnt)
 }
 
 func (suite *KeeperTestSuite) TestReserveAndReleaseStakingCoins() {

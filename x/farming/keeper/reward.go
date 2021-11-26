@@ -66,6 +66,33 @@ func (k Keeper) IterateHistoricalRewards(ctx sdk.Context, cb func(stakingCoinDen
 	}
 }
 
+// incrementReferenceCount increments the reference count for a historical rewards.
+func (k Keeper) incrementReferenceCount(ctx sdk.Context, stakingCoinDenom string, epoch uint64) {
+	historical, found := k.GetHistoricalRewards(ctx, stakingCoinDenom, epoch)
+	if !found {
+		panic("historical rewards not found")
+	}
+	historical.ReferenceCount++
+	k.SetHistoricalRewards(ctx, stakingCoinDenom, epoch, historical)
+}
+
+// decrementReferenceCount decrements the reference count for a historical rewards.
+func (k Keeper) decrementReferenceCount(ctx sdk.Context, stakingCoinDenom string, epoch uint64) {
+	historical, found := k.GetHistoricalRewards(ctx, stakingCoinDenom, epoch)
+	if !found {
+		panic("historical rewards not found")
+	}
+	if historical.ReferenceCount == 0 {
+		panic("cannot set negative reference count")
+	}
+	historical.ReferenceCount--
+	if historical.ReferenceCount == 0 {
+		k.DeleteHistoricalRewards(ctx, stakingCoinDenom, epoch)
+	} else {
+		k.SetHistoricalRewards(ctx, stakingCoinDenom, epoch, historical)
+	}
+}
+
 // GetCurrentEpoch returns the current epoch number for a given
 // staking coin denom.
 func (k Keeper) GetCurrentEpoch(ctx sdk.Context, stakingCoinDenom string) uint64 {
@@ -226,6 +253,9 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 	}
 
 	currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
+	if currentEpoch == staking.StartingEpoch {
+		return sdk.Coins{}, nil
+	}
 	rewards := k.CalculateRewards(ctx, farmerAcc, stakingCoinDenom, currentEpoch-1)
 	truncatedRewards, _ := rewards.TruncateDecimal()
 
@@ -248,6 +278,8 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, farmerAcc sdk.AccAddress, staki
 		k.DecreaseOutstandingRewards(ctx, stakingCoinDenom, rewards)
 	}
 
+	k.decrementReferenceCount(ctx, stakingCoinDenom, staking.StartingEpoch-1)
+	k.incrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 	staking.StartingEpoch = currentEpoch
 	k.SetStaking(ctx, stakingCoinDenom, farmerAcc, staking)
 
@@ -461,8 +493,10 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 	for stakingCoinDenom, unitRewards := range unitRewardsByDenom {
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		historical, _ := k.GetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch-1)
+		k.decrementReferenceCount(ctx, stakingCoinDenom, currentEpoch-1)
 		k.SetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch, types.HistoricalRewards{
 			CumulativeUnitRewards: historical.CumulativeUnitRewards.Add(unitRewards...),
+			ReferenceCount:        1,
 		})
 		k.SetCurrentEpoch(ctx, stakingCoinDenom, currentEpoch+1)
 	}

@@ -166,15 +166,15 @@ func (suite *KeeperTestSuite) AdvanceEpoch() {
 	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) CreateFixedAmountPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochAmountMap map[string]int64) {
-	stakingCoinWeights := sdk.NewDecCoins()
-	for denom, weight := range stakingCoinWeightsMap {
-		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
+func (suite *KeeperTestSuite) CreateFixedAmountPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsStr, epochAmountStr string) {
+	stakingCoinWeights, err := sdk.ParseDecCoins(stakingCoinWeightsStr)
+	if err != nil {
+		panic(err)
 	}
 
-	epochAmount := sdk.NewCoins()
-	for denom, amount := range epochAmountMap {
-		epochAmount = epochAmount.Add(sdk.NewInt64Coin(denom, amount))
+	epochAmount, err := sdk.ParseCoinsNormalized(epochAmountStr)
+	if err != nil {
+		panic(err)
 	}
 
 	msg := types.NewMsgCreateFixedAmountPlan(
@@ -185,14 +185,14 @@ func (suite *KeeperTestSuite) CreateFixedAmountPlan(farmingPoolAcc sdk.AccAddres
 		types.ParseTime("9999-12-31T00:00:00Z"),
 		epochAmount,
 	)
-	_, err := suite.keeper.CreateFixedAmountPlan(suite.ctx, msg, farmingPoolAcc, farmingPoolAcc, types.PlanTypePublic)
+	_, err = suite.keeper.CreateFixedAmountPlan(suite.ctx, msg, farmingPoolAcc, farmingPoolAcc, types.PlanTypePublic)
 	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) CreateRatioPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochRatioStr string) {
-	stakingCoinWeights := sdk.NewDecCoins()
-	for denom, weight := range stakingCoinWeightsMap {
-		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
+func (suite *KeeperTestSuite) CreateRatioPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsStr, epochRatioStr string) {
+	stakingCoinWeights, err := sdk.ParseDecCoins(stakingCoinWeightsStr)
+	if err != nil {
+		panic(err)
 	}
 
 	epochRatio := sdk.MustNewDecFromStr(epochRatioStr)
@@ -205,7 +205,7 @@ func (suite *KeeperTestSuite) CreateRatioPlan(farmingPoolAcc sdk.AccAddress, sta
 		types.ParseTime("9999-12-31T00:00:00Z"),
 		epochRatio,
 	)
-	_, err := suite.keeper.CreateRatioPlan(suite.ctx, msg, farmingPoolAcc, farmingPoolAcc, types.PlanTypePublic)
+	_, err = suite.keeper.CreateRatioPlan(suite.ctx, msg, farmingPoolAcc, farmingPoolAcc, types.PlanTypePublic)
 	suite.Require().NoError(err)
 }
 

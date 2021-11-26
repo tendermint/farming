@@ -113,7 +113,7 @@ func testModifyPlanRequest(
 }
 
 func (suite *KeeperTestSuite) TestModifyPlanRequest() {
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	addr := suite.addrs[5].String()
 
@@ -175,7 +175,7 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 }
 
 func (suite *KeeperTestSuite) TestDeletePlanRequest() {
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []types.DeletePlanRequest{{PlanId: 1}})
 	err := suite.govHandler(suite.ctx, proposal)
@@ -185,7 +185,7 @@ func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 	suite.Require().Empty(plans)
 
 	// Test for private plan cannot be deleted.
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 	plans = suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Equal(plans[0].GetId(), uint64(2))
 
@@ -200,7 +200,7 @@ func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 }
 
 func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 
@@ -228,7 +228,7 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
 }
 
 func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanTerminated() {
-	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
+	suite.CreateFixedAmountPlan(suite.addrs[4], "1denom1", "1000000denom3")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 
@@ -265,7 +265,7 @@ func (suite *KeeperTestSuite) TestAccumulatedRewardsAfterPlanModification() {
 		sdk.NewInt64Coin(denom3, 10000000),
 	))[0]
 
-	suite.CreateRatioPlan(farmingPool, map[string]string{denom1: "1"}, "0.1")
+	suite.CreateRatioPlan(farmingPool, "1denom1", "0.1")
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.AdvanceEpoch()
