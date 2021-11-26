@@ -11,13 +11,6 @@ import (
 	"github.com/tendermint/farming/x/farming/types"
 )
 
-// NewPlan sets the next plan number to a given PlanI.
-func (k Keeper) NewPlan(ctx sdk.Context, plan types.PlanI) types.PlanI {
-	_ = plan.SetId(k.GetNextPlanIdWithUpdate(ctx))
-
-	return plan
-}
-
 // GetPlan returns a plan for a given plan id.
 func (k Keeper) GetPlan(ctx sdk.Context, id uint64) (plan types.PlanI, found bool) {
 	store := ctx.KVStore(k.storeKey)
