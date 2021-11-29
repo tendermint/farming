@@ -66,3 +66,16 @@ Run `make test-all` command to run tests.
 
 > 💡 you can also use the default `go` command to build the project, check the content of the [Makefile](https://github.com/tendermint/farming/blob/main/Makefile#L145) for reference
 
+## Getting Started
+
+The farming module uses [Starport](https://docs.starport.network/guide/). You can install it by simply running the following command. If you want to know more about the installation, you can go to the [official docs](https://docs.starport.network/guide/install.html).
+
+```bash
+curl https://get.starport.network/starport! | bash
+```
+
+`serve` command installs dependencies, builds, initializes, and starts your blockchain in development.
+
+```bash
+starport chain serve
+```
