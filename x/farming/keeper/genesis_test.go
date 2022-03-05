@@ -76,6 +76,7 @@ func (suite *KeeperTestSuite) TestInitGenesis() {
 		suite.keeper.InitGenesis(suite.ctx, *genState)
 	})
 	suite.Require().Equal(genState, suite.keeper.ExportGenesis(suite.ctx))
+	suite.Require().Equal(uint32(2), suite.keeper.GetNumPrivatePlans(suite.ctx))
 }
 
 func (suite *KeeperTestSuite) TestInitGenesisPanics() {

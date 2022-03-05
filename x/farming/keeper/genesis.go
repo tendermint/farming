@@ -23,6 +23,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
+	numPrivatePlans := uint32(0)
 	for i, record := range genState.PlanRecords {
 		plan, err := types.UnpackPlan(&record.Plan)
 		if err != nil {
@@ -32,7 +33,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		if i == len(genState.PlanRecords)-1 {
 			k.SetGlobalPlanId(ctx, plan.GetId())
 		}
+		if plan.GetTerminated() == false { // TODO: rename the method to IsTerminated
+			numPrivatePlans++
+		}
 	}
+	k.SetNumPrivatePlans(ctx, numPrivatePlans)
 
 	totalStakings := map[string]sdk.Int{} // (staking coin denom) => (amount)
 
