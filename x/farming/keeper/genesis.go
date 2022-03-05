@@ -23,18 +23,20 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
+	k.SetGlobalPlanId(ctx, genState.GlobalPlanId)
+
 	numPrivatePlans := uint32(0)
-	for i, record := range genState.PlanRecords {
+	for _, record := range genState.PlanRecords {
 		plan, err := types.UnpackPlan(&record.Plan)
 		if err != nil {
 			panic(err)
 		}
-		k.SetPlan(ctx, plan)
-		if i == len(genState.PlanRecords)-1 {
-			k.SetGlobalPlanId(ctx, plan.GetId())
-		}
-		if plan.GetTerminated() == false { // TODO: rename the method to IsTerminated
+		switch plan.GetTerminated() { // TODO: rename this method to IsTerminated
+		case false:
+			k.SetPlan(ctx, plan)
 			numPrivatePlans++
+		case true:
+			k.SetTerminatedPlan(ctx, plan)
 		}
 	}
 	k.SetNumPrivatePlans(ctx, numPrivatePlans)
@@ -127,13 +129,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	params := k.GetParams(ctx)
 
-	plans := []types.PlanRecord{}
-	for _, plan := range k.GetPlans(ctx) {
+	planRecords := []types.PlanRecord{}
+	for _, plan := range append(k.GetPlans(ctx), k.GetAllTerminatedPlans(ctx)...) {
 		any, err := types.PackPlan(plan)
 		if err != nil {
 			panic(err)
 		}
-		plans = append(plans, types.PlanRecord{
+		planRecords = append(planRecords, types.PlanRecord{
 			Plan:             *any,
 			FarmingPoolCoins: k.bankKeeper.GetAllBalances(ctx, plan.GetFarmingPoolAddress()),
 		})
@@ -205,7 +207,8 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 
 	return types.NewGenesisState(
 		params,
-		plans,
+		k.GetGlobalPlanId(ctx),
+		planRecords,
 		stakings,
 		queuedStakings,
 		totalStakings,

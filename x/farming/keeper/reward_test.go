@@ -193,7 +193,7 @@ func (suite *KeeperTestSuite) TestAllocationInfos() {
 	} {
 		suite.Run(tc.name, func() {
 			for _, plan := range suite.keeper.GetPlans(suite.ctx) {
-				suite.keeper.RemovePlan(suite.ctx, plan)
+				suite.keeper.DeletePlan(suite.ctx, plan)
 			}
 			for _, plan := range tc.plans {
 				suite.keeper.SetPlan(suite.ctx, plan)

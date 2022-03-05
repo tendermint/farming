@@ -15,15 +15,15 @@ var (
 	KeyPrivatePlanCreationFee = []byte("PrivatePlanCreationFee")
 	KeyNextEpochDays          = []byte("NextEpochDays")
 	KeyFarmingFeeCollector    = []byte("FarmingFeeCollector")
-	KeyDelayedStakingGasFee = []byte("DelayedStakingGasFee")
-	KeyMaxNumPrivatePlans   = []byte("MaxNumPrivatePlans")
+	KeyDelayedStakingGasFee   = []byte("DelayedStakingGasFee")
+	KeyMaxNumPrivatePlans     = []byte("MaxNumPrivatePlans")
 
 	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000_000)))
 	DefaultCurrentEpochDays       = uint32(1)
 	DefaultNextEpochDays          = uint32(1)
 	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
 	DefaultDelayedStakingGasFee   = sdk.Gas(60000) // See https://github.com/tendermint/farming/issues/102 for details.
-	DefaultMaxNumPrivatePlans = uint32(10000)
+	DefaultMaxNumPrivatePlans     = uint32(10000)
 
 	// ReserveAddressType is an address type of reserve accounts for staking or rewards.
 	// The module uses the address type of 32 bytes length, but it can be changed depending on Cosmos SDK's direction.
@@ -47,7 +47,7 @@ func DefaultParams() Params {
 		NextEpochDays:          DefaultNextEpochDays,
 		FarmingFeeCollector:    DefaultFarmingFeeCollector,
 		DelayedStakingGasFee:   DefaultDelayedStakingGasFee,
-		MaxNumPrivatePlans:      DefaultMaxNumPrivatePlans,
+		MaxNumPrivatePlans:     DefaultMaxNumPrivatePlans,
 	}
 }
 
@@ -142,7 +142,7 @@ func validateDelayedStakingGas(i interface{}) error {
 
 func validateMaxNumPrivatePlans(i interface{}) error {
 	_, ok := i.(uint32)
-	if! ok {
+	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 

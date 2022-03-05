@@ -25,6 +25,11 @@ func (s *keysTestSuite) TestGetPlanKey() {
 	s.Require().Equal([]byte{0x11, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xa}, types.GetPlanKey(10))
 }
 
+func (s *keysTestSuite) TestGetTerminatedPlanKey() {
+	s.Require().Equal([]byte{0x12, 0, 0, 0, 0, 0, 0, 0, 0}, types.GetTerminatedPlanKey(0))
+	s.Require().Equal([]byte{0x12, 0, 0, 0, 0, 0, 0, 0x3, 0xe8}, types.GetTerminatedPlanKey(1000))
+}
+
 func (s *keysTestSuite) TestGetStakingKey() {
 	testCases := []struct {
 		stakingCoinDenom string
