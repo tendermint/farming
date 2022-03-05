@@ -16,12 +16,14 @@ var (
 	KeyNextEpochDays          = []byte("NextEpochDays")
 	KeyFarmingFeeCollector    = []byte("FarmingFeeCollector")
 	KeyDelayedStakingGasFee   = []byte("DelayedStakingGasFee")
+	KeyMaxPrivatePlanNum      = []byte("MaxPrivatePlanNum")
 
 	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000_000)))
 	DefaultCurrentEpochDays       = uint32(1)
 	DefaultNextEpochDays          = uint32(1)
 	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
 	DefaultDelayedStakingGasFee   = sdk.Gas(60000) // See https://github.com/tendermint/farming/issues/102 for details.
+	DefaultMaxPrivatePlanNum      = uint32(10000)
 
 	// ReserveAddressType is an address type of reserve accounts for staking or rewards.
 	// The module uses the address type of 32 bytes length, but it can be changed depending on Cosmos SDK's direction.
@@ -45,6 +47,7 @@ func DefaultParams() Params {
 		NextEpochDays:          DefaultNextEpochDays,
 		FarmingFeeCollector:    DefaultFarmingFeeCollector,
 		DelayedStakingGasFee:   DefaultDelayedStakingGasFee,
+		MaxPrivatePlanNum:      DefaultMaxPrivatePlanNum,
 	}
 }
 
@@ -55,6 +58,7 @@ func (p *Params) ParamSetPairs() paramstypes.ParamSetPairs {
 		paramstypes.NewParamSetPair(KeyNextEpochDays, &p.NextEpochDays, validateNextEpochDays),
 		paramstypes.NewParamSetPair(KeyFarmingFeeCollector, &p.FarmingFeeCollector, validateFarmingFeeCollector),
 		paramstypes.NewParamSetPair(KeyDelayedStakingGasFee, &p.DelayedStakingGasFee, validateDelayedStakingGas),
+		paramstypes.NewParamSetPair(KeyMaxPrivatePlanNum, &p.MaxPrivatePlanNum, validateMaxPrivatePlanNum),
 	}
 }
 
@@ -74,6 +78,7 @@ func (p Params) Validate() error {
 		{p.NextEpochDays, validateNextEpochDays},
 		{p.FarmingFeeCollector, validateFarmingFeeCollector},
 		{p.DelayedStakingGasFee, validateDelayedStakingGas},
+		{p.MaxPrivatePlanNum, validateMaxPrivatePlanNum},
 	} {
 		if err := v.validator(v.value); err != nil {
 			return err
@@ -132,5 +137,15 @@ func validateDelayedStakingGas(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
+	return nil
+}
+
+func validateMaxPrivatePlanNum(i interface{}) error {
+	_, ok := i.(uint32)
+	if! ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	// Allow zero MaxPrivatePlanNum
 	return nil
 }
