@@ -37,7 +37,7 @@ message Params {
     (gogoproto.nullable)   = false
   ];
 
-  uint32 max_private_plan_num = 5 [(gogoproto.moretags) = "yaml:\"max_private_plan_num\""];
+  uint32 max_num_private_plans = 5 [(gogoproto.moretags) = "yaml:\"max_num_private_plans\""];
 }
 
 // BasePlan defines a base plan type and contains the required fields

@@ -18,7 +18,7 @@ const (
 	NextEpochDays          = "next_epoch_days"
 	FarmingFeeCollector    = "farming_fee_collector"
 	CurrentEpochDays       = "current_epoch_days"
-	MaxPrivatePlanNum      = "max_private_plan_num"
+	MaxNumPrivatePlans     = "max_num_private_plans"
 )
 
 // GenPrivatePlanCreationFee return randomized private plan creation fee.
@@ -41,8 +41,8 @@ func GenFarmingFeeCollector(r *rand.Rand) string {
 	return types.DefaultFarmingFeeCollector
 }
 
-// GenMaxPrivatePlanNum returns a randomized value for MaxPrivatePlanNum param.
-func GenMaxPrivatePlanNum(r *rand.Rand) uint32 {
+// GenMaxNumPrivatePlans returns a randomized value for MaxNumPrivatePlans param.
+func GenMaxNumPrivatePlans(r *rand.Rand) uint32 {
 	return uint32(simulation.RandIntBetween(r, 1, 10000))
 }
 
@@ -72,10 +72,10 @@ func RandomizedGenState(simState *module.SimulationState) {
 		func(r *rand.Rand) { currentEpochDays = GenCurrentEpochDays(r) },
 	)
 
-	var maxPrivatePlanNum uint32
+	var maxNumPrivatePlans uint32
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc, MaxPrivatePlanNum, &maxPrivatePlanNum, simState.Rand,
-		func(r *rand.Rand) { maxPrivatePlanNum = GenMaxPrivatePlanNum(r) },
+		simState.Cdc, MaxNumPrivatePlans, &maxNumPrivatePlans, simState.Rand,
+		func(r *rand.Rand) { maxNumPrivatePlans = GenMaxNumPrivatePlans(r) },
 	)
 
 	farmingGenesis := types.GenesisState{
@@ -83,7 +83,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 			PrivatePlanCreationFee: privatePlanCreationFee,
 			NextEpochDays:          nextEpochDays,
 			FarmingFeeCollector:    feeCollector,
-			MaxPrivatePlanNum:      maxPrivatePlanNum,
+			MaxNumPrivatePlans:     maxNumPrivatePlans,
 		},
 		CurrentEpochDays: currentEpochDays,
 	}

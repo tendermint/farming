@@ -26,6 +26,7 @@ var (
 	GlobalPlanIdKey     = []byte("globalPlanId")
 	LastEpochTimeKey    = []byte("lastEpochTime")
 	CurrentEpochDaysKey = []byte("currentEpochDays")
+	NumPrivatePlansKey  = []byte("numPrivatePlans")
 
 	PlanKeyPrefix = []byte{0x11}
 

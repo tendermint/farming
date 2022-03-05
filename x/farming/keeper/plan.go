@@ -110,6 +110,39 @@ func (k Keeper) decodePlan(bz []byte) types.PlanI {
 	return acc
 }
 
+// GetNumPrivatePlans returns the current number of private plans.
+func (k Keeper) GetNumPrivatePlans(ctx sdk.Context) uint32 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.NumPrivatePlansKey)
+	var val gogotypes.UInt32Value
+	k.cdc.MustUnmarshal(bz, &val)
+	return val.GetValue()
+}
+
+// SetNumPrivatePlans sets the current number of private plans.
+func (k Keeper) SetNumPrivatePlans(ctx sdk.Context, num uint32) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&gogotypes.UInt32Value{Value: num})
+	store.Set(types.NumPrivatePlansKey, bz)
+}
+
+// IncrementNumPrivatePlans increments the current number of private plans.
+func (k Keeper) IncrementNumPrivatePlans(ctx sdk.Context, amt uint32) {
+	num := k.GetNumPrivatePlans(ctx)
+	num += amt
+	k.SetNumPrivatePlans(ctx, num)
+}
+
+// DecrementNumPrivatePlans decrements the current number of private plans.
+func (k Keeper) DecrementNumPrivatePlans(ctx sdk.Context, amt uint32) {
+	num := k.GetNumPrivatePlans(ctx)
+	if num < amt { // sanity check
+		panic("cannot set negative NumPrivatePlans")
+	}
+	num -= amt
+	k.SetNumPrivatePlans(ctx, num)
+}
+
 // MarshalPlan serializes a plan.
 func (k Keeper) MarshalPlan(plan types.PlanI) ([]byte, error) { // nolint:interfacer
 	return k.cdc.MarshalInterface(plan)
@@ -123,7 +156,6 @@ func (k Keeper) UnmarshalPlan(bz []byte) (plan types.PlanI, err error) {
 
 // CreateFixedAmountPlan sets fixed amount plan.
 func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixedAmountPlan, farmingPoolAcc, terminationAcc sdk.AccAddress, typ types.PlanType) (types.PlanI, error) {
-	nextId := k.GetNextPlanIdWithUpdate(ctx)
 	if typ == types.PlanTypePrivate {
 		params := k.GetParams(ctx)
 
@@ -137,6 +169,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		}
 	}
 
+	nextId := k.GetNextPlanIdWithUpdate(ctx)
 	basePlan := types.NewBasePlan(
 		nextId,
 		msg.Name,

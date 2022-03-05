@@ -282,7 +282,7 @@ paths:
                     title: >-
                       delayed_staking_gas_fee is used to impose gas fee for the
                       delayed staking
-                  max_private_plan_num:
+                  max_num_private_plans:
                     type: integer
                     format: int64
                 description: Params defines the set of params for the farming module.
@@ -2251,7 +2251,7 @@ definitions:
         title: >-
           delayed_staking_gas_fee is used to impose gas fee for the delayed
           staking
-      max_private_plan_num:
+      max_num_private_plans:
         type: integer
         format: int64
     description: Params defines the set of params for the farming module.
@@ -2313,7 +2313,7 @@ definitions:
             title: >-
               delayed_staking_gas_fee is used to impose gas fee for the delayed
               staking
-          max_private_plan_num:
+          max_num_private_plans:
             type: integer
             format: int64
         description: Params defines the set of params for the farming module.
