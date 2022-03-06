@@ -18,7 +18,7 @@ var (
 	KeyDelayedStakingGasFee   = []byte("DelayedStakingGasFee")
 	KeyMaxNumPrivatePlans     = []byte("MaxNumPrivatePlans")
 
-	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100_000_000)))
+	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1_000_000_000)))
 	DefaultCurrentEpochDays       = uint32(1)
 	DefaultNextEpochDays          = uint32(1)
 	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc"))).String()
