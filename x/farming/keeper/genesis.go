@@ -27,19 +27,18 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 
 	numPrivatePlans := uint32(0)
 	for _, record := range genState.PlanRecords {
-		plan, err := types.UnpackPlan(&record.Plan)
-		if err != nil {
-			panic(err)
-		}
-		switch plan.GetTerminated() { // TODO: rename this method to IsTerminated
-		case false:
-			k.SetPlan(ctx, plan)
+		plan, _ := types.UnpackPlan(&record.Plan) // Already validated
+		k.SetPlan(ctx, plan)
+		if plan.GetType() == types.PlanTypePrivate {
 			numPrivatePlans++
-		case true:
-			k.SetTerminatedPlan(ctx, plan)
 		}
 	}
 	k.SetNumPrivatePlans(ctx, numPrivatePlans)
+
+	for _, record := range genState.TerminatedPlanRecords {
+		plan, _ := types.UnpackPlan(&record.Plan) // Already validated
+		k.SetTerminatedPlan(ctx, plan)
+	}
 
 	totalStakings := map[string]sdk.Int{} // (staking coin denom) => (amount)
 
@@ -130,12 +129,24 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	params := k.GetParams(ctx)
 
 	planRecords := []types.PlanRecord{}
-	for _, plan := range append(k.GetPlans(ctx), k.GetAllTerminatedPlans(ctx)...) {
+	for _, plan := range k.GetPlans(ctx) {
 		any, err := types.PackPlan(plan)
 		if err != nil {
 			panic(err)
 		}
 		planRecords = append(planRecords, types.PlanRecord{
+			Plan:             *any,
+			FarmingPoolCoins: k.bankKeeper.GetAllBalances(ctx, plan.GetFarmingPoolAddress()),
+		})
+	}
+
+	terminatedPlanRecords := []types.PlanRecord{}
+	for _, plan := range k.GetAllTerminatedPlans(ctx) {
+		any, err := types.PackPlan(plan)
+		if err != nil {
+			panic(err)
+		}
+		terminatedPlanRecords = append(terminatedPlanRecords, types.PlanRecord{
 			Plan:             *any,
 			FarmingPoolCoins: k.bankKeeper.GetAllBalances(ctx, plan.GetFarmingPoolAddress()),
 		})
@@ -209,6 +220,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		params,
 		k.GetGlobalPlanId(ctx),
 		planRecords,
+		terminatedPlanRecords,
 		stakings,
 		queuedStakings,
 		totalStakings,
