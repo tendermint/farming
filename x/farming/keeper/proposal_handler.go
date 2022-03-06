@@ -190,7 +190,7 @@ func (k Keeper) DeletePublicPlanProposal(ctx sdk.Context, proposals []types.Dele
 				}
 			}
 		}
-		k.DeleteTerminatedPlan(ctx, plan)
+		k.DeletePlan(ctx, plan)
 
 		logger := k.Logger(ctx)
 		logger.Info("removed public ratio plan", "plan_id", plan.GetId())

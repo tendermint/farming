@@ -9,7 +9,7 @@ import (
 
 // NewGenesisState returns new GenesisState.
 func NewGenesisState(
-	params Params, globalPlanId uint64, plans []PlanRecord, terminatedPlans []PlanRecord,
+	params Params, globalPlanId uint64, plans []PlanRecord,
 	stakings []StakingRecord, queuedStakings []QueuedStakingRecord, totalStakings []TotalStakingsRecord,
 	historicalRewards []HistoricalRewardsRecord, outstandingRewards []OutstandingRewardsRecord,
 	currentEpochs []CurrentEpochRecord, rewardPoolCoins sdk.Coins,
@@ -19,7 +19,6 @@ func NewGenesisState(
 		Params:                    params,
 		GlobalPlanId:              globalPlanId,
 		PlanRecords:               plans,
-		TerminatedPlanRecords:     terminatedPlans,
 		StakingRecords:            stakings,
 		QueuedStakingRecords:      queuedStakings,
 		TotalStakingsRecords:      totalStakings,
@@ -37,7 +36,6 @@ func DefaultGenesisState() *GenesisState {
 	return NewGenesisState(
 		DefaultParams(),
 		0,
-		[]PlanRecord{},
 		[]PlanRecord{},
 		[]StakingRecord{},
 		[]QueuedStakingRecord{},
@@ -67,16 +65,6 @@ func ValidateGenesis(data GenesisState) error {
 			return fmt.Errorf("plan id is greater than the global last plan id")
 		}
 		plans = append(plans, plan)
-	}
-
-	for _, record := range data.TerminatedPlanRecords {
-		if err := record.Validate(); err != nil {
-			return err
-		}
-		plan, _ := UnpackPlan(&record.Plan)
-		if plan.GetId() > data.GlobalPlanId {
-			return fmt.Errorf("terminated plan id is greater than the global last plan id")
-		}
 	}
 
 	if err := ValidateTotalEpochRatio(plans); err != nil {

@@ -26,7 +26,6 @@ func TestDecodeFarmingStore(t *testing.T) {
 	kvPairs := kv.Pairs{
 		Pairs: []kv.Pair{
 			{Key: types.PlanKeyPrefix, Value: cdc.MustMarshal(&basePlan)},
-			{Key: types.TerminatedPlanKeyPrefix, Value: cdc.MustMarshal(&basePlan)},
 			{Key: types.StakingKeyPrefix, Value: cdc.MustMarshal(&staking)},
 			{Key: types.QueuedStakingKeyPrefix, Value: cdc.MustMarshal(&queuedStaking)},
 			{Key: types.HistoricalRewardsKeyPrefix, Value: cdc.MustMarshal(&historicalRewards)},
@@ -40,7 +39,6 @@ func TestDecodeFarmingStore(t *testing.T) {
 		expectedLog string
 	}{
 		{"Plan", fmt.Sprintf("%v\n%v", basePlan, basePlan)},
-		{"TerminatedPlan", fmt.Sprintf("%v\n%v", basePlan, basePlan)},
 		{"Staking", fmt.Sprintf("%v\n%v", staking, staking)},
 		{"QueuedStaking", fmt.Sprintf("%v\n%v", queuedStaking, queuedStaking)},
 		{"HistoricalRewardsKeyPrefix", fmt.Sprintf("%v\n%v", historicalRewards, historicalRewards)},

@@ -391,7 +391,12 @@ func SimulateMsgRemovePlan(ak types.AccountKeeper, bk types.BankKeeper, k keeper
 
 		creator := account.GetAddress()
 
-		terminatedPlans := k.GetAllTerminatedPlans(ctx)
+		var terminatedPlans []types.PlanI
+		for _, plan := range k.GetPlans(ctx) {
+			if plan.GetTerminated() == true {
+				terminatedPlans = append(terminatedPlans, plan)
+			}
+		}
 		if len(terminatedPlans) == 0 {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgRemovePlan, "no terminated plans to remove"), nil, nil
 		}

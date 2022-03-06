@@ -28,8 +28,7 @@ var (
 	CurrentEpochDaysKey = []byte("currentEpochDays")
 	NumPrivatePlansKey  = []byte("numPrivatePlans")
 
-	PlanKeyPrefix           = []byte{0x11}
-	TerminatedPlanKeyPrefix = []byte{0x12}
+	PlanKeyPrefix = []byte{0x11}
 
 	StakingKeyPrefix            = []byte{0x21}
 	StakingIndexKeyPrefix       = []byte{0x22}
@@ -45,11 +44,6 @@ var (
 // GetPlanKey returns kv indexing key of the plan
 func GetPlanKey(planID uint64) []byte {
 	return append(PlanKeyPrefix, sdk.Uint64ToBigEndian(planID)...)
-}
-
-// GetTerminatedPlanKey returns the key for a terminated plan.
-func GetTerminatedPlanKey(planID uint64) []byte {
-	return append(TerminatedPlanKeyPrefix, sdk.Uint64ToBigEndian(planID)...)
 }
 
 // GetStakingKey returns a key for staking of corresponding the id

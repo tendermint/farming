@@ -143,55 +143,6 @@ func (k Keeper) DecrementNumPrivatePlans(ctx sdk.Context, amt uint32) {
 	k.SetNumPrivatePlans(ctx, num)
 }
 
-// GetTerminatedPlan returns a terminated plan.
-func (k Keeper) GetTerminatedPlan(ctx sdk.Context, id uint64) (plan types.PlanI, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GetTerminatedPlanKey(id))
-	if bz == nil {
-		return plan, false
-	}
-	return k.decodePlan(bz), true
-}
-
-// SetTerminatedPlan sets a terminated plan.
-func (k Keeper) SetTerminatedPlan(ctx sdk.Context, plan types.PlanI) {
-	store := ctx.KVStore(k.storeKey)
-	bz, err := k.MarshalPlan(plan)
-	if err != nil {
-		panic(err)
-	}
-	store.Set(types.GetTerminatedPlanKey(plan.GetId()), bz)
-}
-
-// IterateAllTerminatedPlans iterates through all terminated plans stored
-// and calls cb on each plan.
-func (k Keeper) IterateAllTerminatedPlans(ctx sdk.Context, cb func(plan types.PlanI) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.TerminatedPlanKeyPrefix)
-	defer iter.Close()
-	for ; iter.Valid(); iter.Next() {
-		plan := k.decodePlan(iter.Value())
-		if cb(plan) {
-			break
-		}
-	}
-}
-
-// GetAllTerminatedPlans returns all terminated plans stored.
-func (k Keeper) GetAllTerminatedPlans(ctx sdk.Context) (plans []types.PlanI) {
-	k.IterateAllTerminatedPlans(ctx, func(plan types.PlanI) (stop bool) {
-		plans = append(plans, plan)
-		return false
-	})
-	return
-}
-
-// DeleteTerminatedPlan deletes a terminated plan.
-func (k Keeper) DeleteTerminatedPlan(ctx sdk.Context, plan types.PlanI) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetTerminatedPlanKey(plan.GetId()))
-}
-
 // MarshalPlan serializes a plan.
 func (k Keeper) MarshalPlan(plan types.PlanI) ([]byte, error) { // nolint:interfacer
 	return k.cdc.MarshalInterface(plan)
@@ -303,8 +254,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 // It moves the plan under different store key, which is for terminated plans.
 func (k Keeper) TerminatePlan(ctx sdk.Context, plan types.PlanI) error {
 	_ = plan.SetTerminated(true)
-	k.SetTerminatedPlan(ctx, plan)
-	k.DeletePlan(ctx, plan)
+	k.SetPlan(ctx, plan)
 	if plan.GetType() == types.PlanTypePrivate {
 		k.DecrementNumPrivatePlans(ctx, 1)
 	}
@@ -322,12 +272,13 @@ func (k Keeper) TerminatePlan(ctx sdk.Context, plan types.PlanI) error {
 // RemovePlan removes a terminated plan and sends all remaining coins in the
 // farming pool address to the termination address.
 func (k Keeper) RemovePlan(ctx sdk.Context, creator sdk.AccAddress, planId uint64) error {
-	plan, found := k.GetTerminatedPlan(ctx, planId)
+	plan, found := k.GetPlan(ctx, planId)
 	if !found {
-		if _, found := k.GetPlan(ctx, planId); found {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan %d is not terminated yet", planId)
-		}
 		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d not found", planId)
+	}
+
+	if plan.GetTerminated() == false { // TODO: rename to IsTerminated
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan %d is not terminated yet", planId)
 	}
 
 	if plan.GetType() != types.PlanTypePrivate {
@@ -354,7 +305,7 @@ func (k Keeper) RemovePlan(ctx sdk.Context, creator sdk.AccAddress, planId uint6
 		return sdkerrors.Wrap(err, "failed to refund private plan creation fee")
 	}
 
-	k.DeleteTerminatedPlan(ctx, plan)
+	k.DeletePlan(ctx, plan)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
