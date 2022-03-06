@@ -145,7 +145,7 @@ func TestPlanI(t *testing.T) {
 		{
 			"Terminated",
 			func() interface{} {
-				return plan.GetTerminated()
+				return plan.IsTerminated()
 			},
 			func(plan types.PlanI, val interface{}) error {
 				return plan.SetTerminated(val.(bool))

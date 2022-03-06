@@ -277,7 +277,7 @@ func (k Keeper) RemovePlan(ctx sdk.Context, creator sdk.AccAddress, planId uint6
 		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "plan %d not found", planId)
 	}
 
-	if plan.GetTerminated() == false { // TODO: rename to IsTerminated
+	if !plan.IsTerminated() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "plan %d is not terminated yet", planId)
 	}
 

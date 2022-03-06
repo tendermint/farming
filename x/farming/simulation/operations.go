@@ -393,7 +393,7 @@ func SimulateMsgRemovePlan(ak types.AccountKeeper, bk types.BankKeeper, k keeper
 
 		var terminatedPlans []types.PlanI
 		for _, plan := range k.GetPlans(ctx) {
-			if plan.GetTerminated() == true {
+			if plan.IsTerminated() {
 				terminatedPlans = append(terminatedPlans, plan)
 			}
 		}

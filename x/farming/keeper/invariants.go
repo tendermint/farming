@@ -26,6 +26,8 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 		NonNegativeHistoricalRewardsInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "positive-total-stakings-amount",
 		PositiveTotalStakingsAmountInvariant(k))
+	ir.RegisterRoute(types.ModuleName, "number-of-private-plans",
+		NumPrivatePlansInvariant(k))
 }
 
 // AllInvariants runs all invariants of the farming module.
@@ -39,6 +41,7 @@ func AllInvariants(k Keeper) sdk.Invariant {
 			OutstandingRewardsAmountInvariant,
 			NonNegativeHistoricalRewardsInvariant,
 			PositiveTotalStakingsAmountInvariant,
+			NumPrivatePlansInvariant,
 		} {
 			res, stop := inv(k)(ctx)
 			if stop {
@@ -196,6 +199,26 @@ func PositiveTotalStakingsAmountInvariant(k Keeper) sdk.Invariant {
 		return sdk.FormatInvariant(
 			types.ModuleName, "positive total stakings amount",
 			fmt.Sprintf("found %d total stakings with non-positive amount\n%s", count, msg),
+		), broken
+	}
+}
+
+// NumPrivatePlansInvariant checks that the current number of active private plans
+// is same as stored value under types.NumPrivatePlansKey.
+func NumPrivatePlansInvariant(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		numPrivatePlans := uint32(0)
+		k.IteratePlans(ctx, func(plan types.PlanI) (stop bool) {
+			if plan.GetType() == types.PlanTypePrivate && !plan.IsTerminated() {
+				numPrivatePlans++
+			}
+			return false
+		})
+		stored := k.GetNumPrivatePlans(ctx)
+		broken := numPrivatePlans != stored
+		return sdk.FormatInvariant(
+			types.ModuleName, "number of private plans",
+			fmt.Sprintf("number of private plans is different from stored value: %d != %d", numPrivatePlans, stored),
 		), broken
 	}
 }
