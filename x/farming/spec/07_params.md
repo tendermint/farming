@@ -6,7 +6,7 @@ The `farming` module contains the following parameters:
 
 | Key                        | Type      | Example                                                             |
 | -------------------------- | --------- | ------------------------------------------------------------------- |
-| PrivatePlanCreationFee     | sdk.Coins | [{"denom":"stake","amount":"1000000000"}]                            |
+| PrivatePlanCreationFee     | sdk.Coins | [{"denom":"stake","amount":"1000000000"}]                           |
 | NextEpochDays              | uint32    | 1                                                                   |
 | FarmingFeeCollector        | string    | "cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x" |
 | DelayedStakingGasFee       | sdk.Gas   | 60000                                                               |
@@ -15,7 +15,7 @@ The `farming` module contains the following parameters:
 
 ## PrivatePlanCreationFee
 
-Fee paid to create a private type farming plan. This fee prevents spamming and is collected in the community pool of the distribution module.
+Fee paid to create a private farming plan. This fee prevents spamming attack and is reserved in the FarmingFeeCollector. If the plan creator removes the plan, this fee will be refunded to the creator.
 
 ## NextEpochDays
 
