@@ -265,8 +265,8 @@ func ValidateTotalEpochRatio(plans []PlanI) error {
 				continue
 			}
 			if otherPlan.FarmingPoolAddress == plan.FarmingPoolAddress &&
-				DateRangesOverlap(
-					plan.GetStartTime(), plan.GetEndTime(), otherPlan.GetStartTime(), otherPlan.GetEndTime()) {
+				DateRangeIncludes(
+					otherPlan.GetStartTime(), otherPlan.GetEndTime(), plan.GetStartTime()) {
 				totalRatio = totalRatio.Add(otherPlan.EpochRatio)
 			}
 		}

@@ -536,6 +536,35 @@ func TestTotalEpochRatio(t *testing.T) {
 			},
 			sdkerrors.Wrap(types.ErrInvalidTotalEpochRatio, "total epoch ratio must be lower than 1"),
 		},
+		{
+			[]types.PlanI{
+				types.NewRatioPlan(
+					types.NewBasePlan(
+						1, "plan1", types.PlanTypePublic,
+						farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights,
+						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
+					),
+					sdk.NewDecWithPrec(5, 1), // 0.5
+				),
+				types.NewRatioPlan(
+					types.NewBasePlan(
+						2, "plan2", types.PlanTypePublic,
+						farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights,
+						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2022-07-01T00:00:00Z"),
+					),
+					sdk.NewDecWithPrec(5, 1), // 0.5
+				),
+				types.NewRatioPlan(
+					types.NewBasePlan(
+						3, "plan3", types.PlanTypePublic,
+						farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights,
+						types.ParseTime("2022-07-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
+					),
+					sdk.NewDecWithPrec(5, 1), // 0.5
+				),
+			},
+			nil,
+		},
 	}
 
 	for _, tc := range testCases {
