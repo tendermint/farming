@@ -25,15 +25,10 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 
 	k.SetGlobalPlanId(ctx, genState.GlobalPlanId)
 
-	numPrivatePlans := uint32(0)
 	for _, record := range genState.PlanRecords {
 		plan, _ := types.UnpackPlan(&record.Plan) // Already validated
 		k.SetPlan(ctx, plan)
-		if plan.GetType() == types.PlanTypePrivate {
-			numPrivatePlans++
-		}
 	}
-	k.SetNumPrivatePlans(ctx, numPrivatePlans)
 
 	totalStakings := map[string]sdk.Int{} // (staking coin denom) => (amount)
 

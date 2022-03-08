@@ -293,19 +293,3 @@ func (suite *KeeperTestSuite) TestPositiveTotalStakingsAmountInvariant() {
 	_, broken = farmingkeeper.PositiveTotalStakingsAmountInvariant(k)(ctx)
 	suite.Require().True(broken)
 }
-
-func (suite *KeeperTestSuite) TestNumPrivatePlansInvariant() {
-	msg := types.NewMsgCreateFixedAmountPlan(
-		"plan1", suite.addrs[4], sdk.NewDecCoins(sdk.NewInt64DecCoin(denom1, 1)),
-		types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
-		sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)))
-	_, err := suite.keeper.CreateFixedAmountPlan(suite.ctx, msg, suite.addrs[4], suite.addrs[4], types.PlanTypePrivate)
-	suite.Require().NoError(err)
-
-	_, broken := farmingkeeper.NumPrivatePlansInvariant(suite.keeper)(suite.ctx)
-	suite.Require().False(broken)
-
-	suite.keeper.SetNumPrivatePlans(suite.ctx, 2)
-	_, broken = farmingkeeper.NumPrivatePlansInvariant(suite.keeper)(suite.ctx)
-	suite.Require().True(broken)
-}

@@ -110,37 +110,17 @@ func (k Keeper) decodePlan(bz []byte) types.PlanI {
 	return acc
 }
 
-// GetNumPrivatePlans returns the current number of private plans.
-func (k Keeper) GetNumPrivatePlans(ctx sdk.Context) uint32 {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.NumPrivatePlansKey)
-	var val gogotypes.UInt32Value
-	k.cdc.MustUnmarshal(bz, &val)
-	return val.GetValue()
-}
-
-// SetNumPrivatePlans sets the current number of private plans.
-func (k Keeper) SetNumPrivatePlans(ctx sdk.Context, num uint32) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&gogotypes.UInt32Value{Value: num})
-	store.Set(types.NumPrivatePlansKey, bz)
-}
-
-// IncrementNumPrivatePlans increments the current number of private plans.
-func (k Keeper) IncrementNumPrivatePlans(ctx sdk.Context, amt uint32) {
-	num := k.GetNumPrivatePlans(ctx)
-	num += amt
-	k.SetNumPrivatePlans(ctx, num)
-}
-
-// DecrementNumPrivatePlans decrements the current number of private plans.
-func (k Keeper) DecrementNumPrivatePlans(ctx sdk.Context, amt uint32) {
-	num := k.GetNumPrivatePlans(ctx)
-	if num < amt { // sanity check
-		panic("cannot set negative NumPrivatePlans")
-	}
-	num -= amt
-	k.SetNumPrivatePlans(ctx, num)
+// GetNumActivePrivatePlans returns the number of active(non-terminated)
+// private plans.
+func (k Keeper) GetNumActivePrivatePlans(ctx sdk.Context) int {
+	num := 0
+	k.IteratePlans(ctx, func(plan types.PlanI) (stop bool) {
+		if plan.GetType() == types.PlanTypePrivate && !plan.IsTerminated() {
+			num++
+		}
+		return false
+	})
+	return num
 }
 
 // MarshalPlan serializes a plan.
@@ -159,7 +139,7 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 	if typ == types.PlanTypePrivate {
 		params := k.GetParams(ctx)
 
-		if k.GetNumPrivatePlans(ctx) >= params.MaxNumPrivatePlans {
+		if uint32(k.GetNumActivePrivatePlans(ctx)) >= params.MaxNumPrivatePlans {
 			return nil, types.ErrNumPrivatePlansLimit
 		}
 
@@ -167,8 +147,6 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		if err := k.bankKeeper.SendCoins(ctx, msg.GetCreator(), feeCollectorAcc, params.PrivatePlanCreationFee); err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to pay private plan creation fee")
 		}
-
-		k.IncrementNumPrivatePlans(ctx, 1)
 	}
 
 	nextId := k.GetNextPlanIdWithUpdate(ctx)
@@ -208,7 +186,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 	if typ == types.PlanTypePrivate {
 		params := k.GetParams(ctx)
 
-		if k.GetNumPrivatePlans(ctx) >= params.MaxNumPrivatePlans {
+		if uint32(k.GetNumActivePrivatePlans(ctx)) >= params.MaxNumPrivatePlans {
 			return nil, types.ErrNumPrivatePlansLimit
 		}
 
@@ -216,8 +194,6 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 		if err := k.bankKeeper.SendCoins(ctx, msg.GetCreator(), feeCollectorAcc, params.PrivatePlanCreationFee); err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to pay private plan creation fee")
 		}
-
-		k.IncrementNumPrivatePlans(ctx, 1)
 	}
 
 	basePlan := types.NewBasePlan(
@@ -255,9 +231,6 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 func (k Keeper) TerminatePlan(ctx sdk.Context, plan types.PlanI) error {
 	_ = plan.SetTerminated(true)
 	k.SetPlan(ctx, plan)
-	if plan.GetType() == types.PlanTypePrivate {
-		k.DecrementNumPrivatePlans(ctx, 1)
-	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
