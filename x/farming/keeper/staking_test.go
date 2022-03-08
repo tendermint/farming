@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/stretchr/testify/suite"
+
 	simapp "github.com/tendermint/farming/app"
 	"github.com/tendermint/farming/x/farming/types"
 )
