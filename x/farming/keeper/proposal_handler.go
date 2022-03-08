@@ -180,16 +180,6 @@ func (k Keeper) DeletePublicPlanProposal(ctx sdk.Context, proposals []types.Dele
 		if err := k.TerminatePlan(ctx, plan); err != nil {
 			return err
 		}
-
-		// Send all remaining coins in the farming pool to the termination address.
-		if plan.GetFarmingPoolAddress().String() != plan.GetTerminationAddress().String() {
-			balances := k.bankKeeper.SpendableCoins(ctx, plan.GetFarmingPoolAddress())
-			if !balances.IsZero() {
-				if err := k.bankKeeper.SendCoins(ctx, plan.GetFarmingPoolAddress(), plan.GetTerminationAddress(), balances); err != nil {
-					return err
-				}
-			}
-		}
 		k.DeletePlan(ctx, plan)
 
 		logger := k.Logger(ctx)

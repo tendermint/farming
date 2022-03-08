@@ -229,6 +229,15 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 // TerminatePlan marks the plan as terminated.
 // It moves the plan under different store key, which is for terminated plans.
 func (k Keeper) TerminatePlan(ctx sdk.Context, plan types.PlanI) error {
+	if plan.GetFarmingPoolAddress().String() != plan.GetTerminationAddress().String() {
+		balances := k.bankKeeper.SpendableCoins(ctx, plan.GetFarmingPoolAddress())
+		if !balances.IsZero() {
+			if err := k.bankKeeper.SendCoins(ctx, plan.GetFarmingPoolAddress(), plan.GetTerminationAddress(), balances); err != nil {
+				return err
+			}
+		}
+	}
+
 	_ = plan.SetTerminated(true)
 	k.SetPlan(ctx, plan)
 
@@ -260,15 +269,6 @@ func (k Keeper) RemovePlan(ctx sdk.Context, creator sdk.AccAddress, planId uint6
 
 	if !plan.GetTerminationAddress().Equals(creator) {
 		return sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only the plan creator can remove the plan")
-	}
-
-	if plan.GetFarmingPoolAddress().String() != plan.GetTerminationAddress().String() {
-		balances := k.bankKeeper.SpendableCoins(ctx, plan.GetFarmingPoolAddress())
-		if !balances.IsZero() {
-			if err := k.bankKeeper.SendCoins(ctx, plan.GetFarmingPoolAddress(), plan.GetTerminationAddress(), balances); err != nil {
-				return err
-			}
-		}
 	}
 
 	// Refund private plan creation fee.
