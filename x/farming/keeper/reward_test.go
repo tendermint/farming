@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	simapp "github.com/tendermint/farming/app"
+	"github.com/tendermint/farming/x/farming"
 	"github.com/tendermint/farming/x/farming/types"
 
 	_ "github.com/stretchr/testify/suite"
@@ -496,6 +497,7 @@ func (suite *KeeperTestSuite) TestInitializeAndPruneStakingCoinInfo() {
 	// Now unstake the rest of the coins. This should delete info
 	// about the staking coin.
 	suite.Unstake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1)))
+	farming.EndBlocker(suite.ctx, suite.keeper)
 	suite.Require().Equal(uint64(0), suite.keeper.GetCurrentEpoch(suite.ctx, denom1))
 	_, found = suite.keeper.GetHistoricalRewards(suite.ctx, denom1, 1)
 	suite.Require().False(found)
