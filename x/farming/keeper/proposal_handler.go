@@ -180,7 +180,6 @@ func (k Keeper) DeletePublicPlanProposal(ctx sdk.Context, proposals []types.Dele
 		if err := k.TerminatePlan(ctx, plan); err != nil {
 			return err
 		}
-		k.DeletePlan(ctx, plan)
 
 		logger := k.Logger(ctx)
 		logger.Info("removed public ratio plan", "plan_id", plan.GetId())

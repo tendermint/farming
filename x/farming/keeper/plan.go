@@ -238,8 +238,16 @@ func (k Keeper) TerminatePlan(ctx sdk.Context, plan types.PlanI) error {
 		}
 	}
 
-	_ = plan.SetTerminated(true)
-	k.SetPlan(ctx, plan)
+	switch plan.GetType() {
+	case types.PlanTypePrivate:
+		// For private plans, mark the plan as terminated so that it can be removed
+		// later by the creator.
+		_ = plan.SetTerminated(true)
+		k.SetPlan(ctx, plan)
+	case types.PlanTypePublic:
+		// Delete the public plan immediately after terminating it.
+		k.DeletePlan(ctx, plan)
+	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
