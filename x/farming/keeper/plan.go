@@ -290,7 +290,7 @@ func (k Keeper) RemovePlan(ctx sdk.Context, creator sdk.AccAddress, planId uint6
 	}
 
 	if plan.GetFarmingPoolAddress().String() != plan.GetTerminationAddress().String() {
-		balances := k.bankKeeper.GetAllBalances(ctx, plan.GetFarmingPoolAddress())
+		balances := k.bankKeeper.SpendableCoins(ctx, plan.GetFarmingPoolAddress())
 		if !balances.IsZero() {
 			if err := k.bankKeeper.SendCoins(ctx, plan.GetFarmingPoolAddress(), plan.GetTerminationAddress(), balances); err != nil {
 				return err
