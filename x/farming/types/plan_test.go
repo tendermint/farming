@@ -571,7 +571,7 @@ func TestUnpackPlanJSON(t *testing.T) {
 
 func TestValidatePlanName(t *testing.T) {
 	for _, tc := range []struct {
-		name string
+		name      string
 		expectErr bool
 	}{
 		{"", true},
@@ -582,7 +582,8 @@ func TestValidatePlanName(t *testing.T) {
 		{"Plan #1", false},
 		{"contains\x00null", true},
 		{"It's valid", false},
-	}  {
+		{"With|AccNameSplitter", true},
+	} {
 		t.Run(tc.name, func(t *testing.T) {
 			err := types.ValidatePlanName(tc.name)
 			if tc.expectErr {
