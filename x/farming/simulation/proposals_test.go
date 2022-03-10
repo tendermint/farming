@@ -4,8 +4,9 @@ import (
 	"math/rand"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/tendermint/farming/app/params"
 	"github.com/tendermint/farming/x/farming/simulation"
