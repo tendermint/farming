@@ -23,6 +23,7 @@ const (
 	OpWeightMsgStake                 = "op_weight_msg_stake"
 	OpWeightMsgUnstake               = "op_weight_msg_unstake"
 	OpWeightMsgHarvest               = "op_weight_msg_harvest"
+	OpWeightMsgRemovePlan            = "op_weight_msg_remove_plan"
 )
 
 // WeightedOperations returns all the operations from the module with their respective weights.
@@ -66,6 +67,13 @@ func WeightedOperations(
 		},
 	)
 
+	var weightMsgRemovePlan int
+	appParams.GetOrGenerate(cdc, OpWeightMsgRemovePlan, &weightMsgRemovePlan, nil,
+		func(r *rand.Rand) {
+			weightMsgRemovePlan = params.DefaultWeightMsgRemovePlan
+		},
+	)
+
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
 			weightMsgCreateFixedAmountPlan,
@@ -86,6 +94,10 @@ func WeightedOperations(
 		simulation.NewWeightedOperation(
 			weightMsgHarvest,
 			SimulateMsgHarvest(ak, bk, k),
+		),
+		simulation.NewWeightedOperation(
+			weightMsgRemovePlan,
+			SimulateMsgRemovePlan(ak, bk, k),
 		),
 	}
 }
@@ -348,6 +360,51 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 
 		msg := types.NewMsgHarvest(simAccount.Address, stakingCoinDenoms)
 
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         msg.Type(),
+			Context:         ctx,
+			SimAccount:      simAccount,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendable,
+		}
+
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
+	}
+}
+
+// SimulateMsgRemovePlan generates a MsgRemovePlan with random values
+func SimulateMsgRemovePlan(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Keeper) simtypes.Operation {
+	return func(
+		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		simAccount, _ := simtypes.RandomAcc(r, accs)
+
+		account := ak.GetAccount(ctx, simAccount.Address)
+		spendable := bk.SpendableCoins(ctx, account.GetAddress())
+
+		creator := account.GetAddress()
+
+		var terminatedPlans []types.PlanI
+		for _, plan := range k.GetPlans(ctx) {
+			if plan.IsTerminated() {
+				terminatedPlans = append(terminatedPlans, plan)
+			}
+		}
+		if len(terminatedPlans) == 0 {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgRemovePlan, "no terminated plans to remove"), nil, nil
+		}
+
+		// Select a random terminated plan.
+		plan := terminatedPlans[simtypes.RandIntBetween(r, 0, len(terminatedPlans))]
+
+		msg := types.NewMsgRemovePlan(creator, plan.GetId())
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,

@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -145,7 +145,7 @@ func TestPlanI(t *testing.T) {
 		{
 			"Terminated",
 			func() interface{} {
-				return plan.GetTerminated()
+				return plan.IsTerminated()
 			},
 			func(plan types.PlanI, val interface{}) error {
 				return plan.SetTerminated(val.(bool))
@@ -660,6 +660,32 @@ func TestUnpackPlanJSON(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, uint64(1), plan2.GetId())
+}
+
+func TestValidatePlanName(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		expectErr bool
+	}{
+		{"", true},
+		{"valid", false},
+		{"valid!", false},
+		{" extra space", true},
+		{"contains\nline break", true},
+		{"Plan #1", false},
+		{"contains\x00null", true},
+		{"It's valid", false},
+		{"With|AccNameSplitter", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := types.ValidatePlanName(tc.name)
+			if tc.expectErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestStakingReserveAcc(t *testing.T) {
