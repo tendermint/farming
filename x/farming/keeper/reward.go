@@ -167,8 +167,6 @@ func (k Keeper) IncreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom str
 
 // DecreaseOutstandingRewards decreases outstanding rewards for a given
 // staking coin denom by given amount.
-// If the resulting outstanding rewards is zero, then the outstanding rewards
-// will be deleted, not updated.
 func (k Keeper) DecreaseOutstandingRewards(ctx sdk.Context, stakingCoinDenom string, amount sdk.DecCoins) {
 	outstanding, found := k.GetOutstandingRewards(ctx, stakingCoinDenom)
 	if !found {
