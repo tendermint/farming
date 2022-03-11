@@ -25,7 +25,7 @@ func TestWeightedOperations(t *testing.T) {
 
 	ctx.WithChainID("test-chain")
 
-	cdc := app.AppCodec()
+	cdc := types.ModuleCdc
 	appParams := make(simtypes.AppParams)
 
 	weightedOps := simulation.WeightedOperations(appParams, cdc, app.AccountKeeper, app.BankKeeper, app.FarmingKeeper)
@@ -84,7 +84,7 @@ func TestSimulateMsgCreateFixedAmountPlan(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgCreateFixedAmountPlan
-	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
 
 	require.True(t, operationMsg.OK)
@@ -122,7 +122,7 @@ func TestSimulateMsgCreateRatioPlan(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgCreateRatioPlan
-	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
 
 	require.True(t, operationMsg.OK)
@@ -158,7 +158,7 @@ func TestSimulateMsgStake(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgStake
-	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
 
 	require.True(t, operationMsg.OK)
@@ -199,7 +199,7 @@ func TestSimulateMsgUnstake(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgUnstake
-	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
 
 	require.True(t, operationMsg.OK)
@@ -271,7 +271,7 @@ func TestSimulateMsgHarvest(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgHarvest
-	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
 
 	require.True(t, operationMsg.OK)
@@ -337,7 +337,7 @@ func TestSimulateMsgRemovePlan(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgRemovePlan
-	err = app.AppCodec().UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
 	require.NoError(t, err)
 
 	require.True(t, operationMsg.OK)
