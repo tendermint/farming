@@ -402,6 +402,11 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 	// It maps staking coin denom to unit rewards.
 	unitRewardsByDenom := map[string]sdk.DecCoins{}
 
+	// A cache for total stakings.
+	// It maps staking coin denom to total stakings, and if there is no total
+	// stakings for the denom then it stores nil pointer.
+	totalStakingsCache := map[string]*types.TotalStakings{}
+
 	// Get allocation information first.
 	allocInfos := k.AllocationInfos(ctx)
 
@@ -414,10 +419,20 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 		for _, weight := range allocInfo.Plan.GetStakingCoinWeights() {
 			// Check if there are any coins staked for this denom.
 			// If not, skip this denom for rewards allocation.
-			totalStakings, found := k.GetTotalStakings(ctx, weight.Denom)
-			if !found {
+			totalStakingsPtr, ok := totalStakingsCache[weight.Denom]
+			if !ok {
+				totalStakings, found := k.GetTotalStakings(ctx, weight.Denom)
+				if !found {
+					totalStakingsCache[weight.Denom] = nil
+					continue
+				}
+				totalStakingsPtr = &totalStakings
+				totalStakingsCache[weight.Denom] = totalStakingsPtr
+			}
+			if totalStakingsPtr == nil { // Total stakings not found
 				continue
 			}
+			totalStakings := *totalStakingsPtr
 
 			allocCoins, _ := sdk.NewDecCoinsFromCoins(allocInfo.Amount...).MulDecTruncate(weight.Amount).TruncateDecimal()
 			allocCoinsDec := sdk.NewDecCoinsFromCoins(allocCoins...)
