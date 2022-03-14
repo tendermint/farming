@@ -8,9 +8,8 @@ import (
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
-
 	"github.com/tendermint/farming/app/params"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
@@ -24,6 +23,20 @@ const (
 	OpWeightMsgUnstake               = "op_weight_msg_unstake"
 	OpWeightMsgHarvest               = "op_weight_msg_harvest"
 	OpWeightMsgRemovePlan            = "op_weight_msg_remove_plan"
+)
+
+var (
+	poolCoinDenoms = []string{
+		"pool93E069B333B5ECEBFE24C6E1437E814003248E0DD7FF8B9F82119F4587449BA5",
+		"pool3036F43CB8131A1A63D2B3D3B11E9CF6FA2A2B6FEC17D5AD283C25C939614A8C",
+		"poolE4D2617BFE03E1146F6BBA1D9893F2B3D77BA29E7ED532BB721A39FF1ECC1B07",
+	}
+
+	testCoinDenoms = []string{
+		"testa",
+		"testb",
+		"testc",
+	}
 )
 
 // WeightedOperations returns all the operations from the module with their respective weights.
@@ -122,7 +135,7 @@ func SimulateMsgCreateFixedAmountPlan(ak types.AccountKeeper, bk types.BankKeepe
 		name := "simulation-test-" + simtypes.RandStringOfLength(r, 5) // name must be unique
 		creatorAcc := account.GetAddress()
 		// mint pool coins to simulate the real-world cases
-		funds, err := fundBalances(ctx, r, bk, creatorAcc)
+		funds, err := fundBalances(ctx, r, bk, creatorAcc, testCoinDenoms)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "unable to mint pool coins"), nil, nil
 		}
@@ -181,7 +194,7 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 		name := "simulation-test-" + simtypes.RandStringOfLength(r, 5) // name must be unique
 		creatorAcc := account.GetAddress()
 		// mint pool coins to simulate the real-world cases
-		_, err := fundBalances(ctx, r, bk, creatorAcc)
+		_, err := fundBalances(ctx, r, bk, account.GetAddress(), testCoinDenoms)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateRatioPlan, "unable to mint pool coins"), nil, nil
 		}
@@ -423,41 +436,18 @@ func SimulateMsgRemovePlan(ak types.AccountKeeper, bk types.BankKeeper, k keeper
 	}
 }
 
-// mintPoolCoins mints random amount of coins with the provided pool coin denoms and
+// fundBalances mints random amount of coins with the provided coin denoms and
 // send them to the simulated account.
-func mintPoolCoins(ctx sdk.Context, r *rand.Rand, bk types.BankKeeper, acc simtypes.Account) (mintCoins sdk.Coins, err error) {
-	for _, denom := range []string{
-		"pool93E069B333B5ECEBFE24C6E1437E814003248E0DD7FF8B9F82119F4587449BA5",
-		"pool3036F43CB8131A1A63D2B3D3B11E9CF6FA2A2B6FEC17D5AD283C25C939614A8C",
-		"poolE4D2617BFE03E1146F6BBA1D9893F2B3D77BA29E7ED532BB721A39FF1ECC1B07",
-	} {
+func fundBalances(ctx sdk.Context, r *rand.Rand, bk types.BankKeeper, acc sdk.AccAddress, denoms []string) (mintCoins sdk.Coins, err error) {
+	for _, denom := range denoms {
 		mintCoins = mintCoins.Add(sdk.NewInt64Coin(denom, int64(simtypes.RandIntBetween(r, 1e14, 1e15))))
 	}
 
-	if err := bk.MintCoins(ctx, liquiditytypes.ModuleName, mintCoins); err != nil {
+	if err := bk.MintCoins(ctx, minttypes.ModuleName, mintCoins); err != nil {
 		return nil, err
 	}
 
-	if err := bk.SendCoinsFromModuleToAccount(ctx, liquiditytypes.ModuleName, acc.Address, mintCoins); err != nil {
-		return nil, err
-	}
-	return mintCoins, nil
-}
-
-func fundBalances(ctx sdk.Context, r *rand.Rand, bk types.BankKeeper, acc sdk.AccAddress) (mintCoins sdk.Coins, err error) {
-	for _, denom := range []string{
-		"testa",
-		"testb",
-		"testc",
-	} {
-		mintCoins = mintCoins.Add(sdk.NewInt64Coin(denom, int64(simtypes.RandIntBetween(r, 1e14, 1e17))))
-	}
-
-	if err := bk.MintCoins(ctx, liquiditytypes.ModuleName, mintCoins); err != nil {
-		return nil, err
-	}
-
-	if err := bk.SendCoinsFromModuleToAccount(ctx, liquiditytypes.ModuleName, acc, mintCoins); err != nil {
+	if err := bk.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, acc, mintCoins); err != nil {
 		return nil, err
 	}
 	return mintCoins, nil

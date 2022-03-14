@@ -6,9 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
-
 	"github.com/tendermint/farming/app/params"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
@@ -62,7 +61,7 @@ func SimulateAddPublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, 
 			return nil
 		}
 
-		poolCoins, err := mintPoolCoins(ctx, r, bk, simAccount)
+		poolCoins, err := fundBalances(ctx, r, bk, simAccount.Address, poolCoinDenoms)
 		if err != nil {
 			return nil
 		}
@@ -93,7 +92,7 @@ func SimulateModifyPublicPlanProposal(ak types.AccountKeeper, bk types.BankKeepe
 			return nil
 		}
 
-		poolCoins, err := mintPoolCoins(ctx, r, bk, simAccount)
+		poolCoins, err := fundBalances(ctx, r, bk, simAccount.Address, poolCoinDenoms)
 		if err != nil {
 			return nil
 		}
@@ -197,10 +196,10 @@ func SimulateAdvanceEpoch(k keeper.Keeper, bk types.BankKeeper) simtypes.Content
 			plan := plans[rand.Intn(plansLen)]
 			if plan.GetType() == types.PlanTypePrivate {
 				mintCoins := sdk.NewCoins(sdk.NewInt64Coin("farmingreward", int64(simtypes.RandIntBetween(r, 0, 1e15))))
-				if err := bk.MintCoins(ctx, liquiditytypes.ModuleName, mintCoins); err != nil {
+				if err := bk.MintCoins(ctx, minttypes.ModuleName, mintCoins); err != nil {
 					return nil
 				}
-				if err := bk.SendCoinsFromModuleToAccount(ctx, liquiditytypes.ModuleName, plan.GetFarmingPoolAddress(), mintCoins); err != nil {
+				if err := bk.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, plan.GetFarmingPoolAddress(), mintCoins); err != nil {
 					return nil
 				}
 				fmt.Println("[minted farming pool]", mintCoins, plan.String())
