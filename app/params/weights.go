@@ -12,4 +12,5 @@ const (
 	DefaultWeightAddPublicPlanProposal    int = 5
 	DefaultWeightUpdatePublicPlanProposal int = 5
 	DefaultWeightDeletePublicPlanProposal int = 5
+	DefaultWeightAdvanceEpoch             int = 10
 )
