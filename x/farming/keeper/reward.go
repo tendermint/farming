@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -334,10 +335,20 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 		}
 	}
 
+	// Sort keys for deterministic execution.
+	var planIds []uint64
+	for planId := range plans {
+		planIds = append(planIds, planId)
+	}
+	sort.Slice(planIds, func(i, j int) bool {
+		return planIds[i] < planIds[j]
+	})
 	// Calculate how many coins the plans want to allocate rewards from farming pools.
 	// Note that in this step, we don't check if the farming pool has
 	// sufficient balance for all allocations. We'll do that check in the next step.
-	for _, plan := range plans {
+	for _, planId := range planIds {
+		plan := plans[planId]
+
 		farmingPoolAcc := plan.GetFarmingPoolAddress()
 		farmingPool := farmingPoolAcc.String()
 
@@ -370,7 +381,15 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 	// In this step, we check if farming pools have sufficient balance for allocations.
 	// If not, we don't allocate rewards from that farming pool for this epoch.
 	var allocInfos []AllocationInfo
-	for farmingPool, planCoins := range allocCoins {
+	// Sort map keys for deterministic execution.
+	var farmingPools []string
+	for farmingPool := range allocCoins {
+		farmingPools = append(farmingPools, farmingPool)
+	}
+	sort.Strings(farmingPools)
+	for _, farmingPool := range farmingPools {
+		planCoins := allocCoins[farmingPool]
+
 		totalCoins := sdk.NewCoins()
 		for _, amt := range planCoins {
 			totalCoins = totalCoins.Add(amt...)
@@ -471,7 +490,15 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 
 	// For each staking coin denom in the table, increase cumulative unit rewards
 	// and increment current epoch number by 1.
-	for stakingCoinDenom, unitRewards := range unitRewardsByDenom {
+	// Sort keys for deterministic execution.
+	var denoms []string
+	for denom := range unitRewardsByDenom {
+		denoms = append(denoms, denom)
+	}
+	sort.Strings(denoms)
+	for _, stakingCoinDenom := range denoms {
+		unitRewards := unitRewardsByDenom[stakingCoinDenom]
+
 		currentEpoch := k.GetCurrentEpoch(ctx, stakingCoinDenom)
 		historical, _ := k.GetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch-1)
 		k.SetHistoricalRewards(ctx, stakingCoinDenom, currentEpoch, types.HistoricalRewards{
