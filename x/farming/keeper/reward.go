@@ -328,21 +328,15 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 	allocCoins := map[string]map[uint64]sdk.Coins{}
 
 	plans := map[uint64]types.PlanI{} // it maps planId to plan.
+	var planIds []uint64
 	for _, plan := range k.GetPlans(ctx) {
 		// Add plans that are not terminated and active to the map.
 		if !plan.IsTerminated() && types.IsPlanActiveAt(plan, ctx.BlockTime()) {
 			plans[plan.GetId()] = plan
+			planIds = append(planIds, plan.GetId())
 		}
 	}
 
-	// Sort keys for deterministic execution.
-	var planIds []uint64
-	for planId := range plans {
-		planIds = append(planIds, planId)
-	}
-	sort.Slice(planIds, func(i, j int) bool {
-		return planIds[i] < planIds[j]
-	})
 	// Calculate how many coins the plans want to allocate rewards from farming pools.
 	// Note that in this step, we don't check if the farming pool has
 	// sufficient balance for all allocations. We'll do that check in the next step.
