@@ -372,15 +372,16 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 		}
 	}
 
-	// In this step, we check if farming pools have sufficient balance for allocations.
-	// If not, we don't allocate rewards from that farming pool for this epoch.
-	var allocInfos []AllocationInfo
 	// Sort map keys for deterministic execution.
 	var farmingPools []string
 	for farmingPool := range allocCoins {
 		farmingPools = append(farmingPools, farmingPool)
 	}
 	sort.Strings(farmingPools)
+
+	// In this step, we check if farming pools have sufficient balance for allocations.
+	// If not, we don't allocate rewards from that farming pool for this epoch.
+	var allocInfos []AllocationInfo
 	for _, farmingPool := range farmingPools {
 		planCoins := allocCoins[farmingPool]
 
@@ -394,10 +395,19 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 			continue
 		}
 
-		for planID, amt := range planCoins {
+		// Sort map keys for deterministic execution.
+		var planIds []uint64
+		for planId := range planCoins {
+			planIds = append(planIds, planId)
+		}
+		sort.Slice(planIds, func(i, j int) bool {
+			return planIds[i] < planIds[j]
+		})
+
+		for _, planId := range planIds {
 			allocInfos = append(allocInfos, AllocationInfo{
-				Plan:   plans[planID],
-				Amount: amt,
+				Plan:   plans[planId],
+				Amount: planCoins[planId],
 			})
 		}
 	}
@@ -482,14 +492,15 @@ func (k Keeper) AllocateRewards(ctx sdk.Context) error {
 		})
 	}
 
-	// For each staking coin denom in the table, increase cumulative unit rewards
-	// and increment current epoch number by 1.
 	// Sort keys for deterministic execution.
 	var denoms []string
 	for denom := range unitRewardsByDenom {
 		denoms = append(denoms, denom)
 	}
 	sort.Strings(denoms)
+
+	// For each staking coin denom in the table, increase cumulative unit rewards
+	// and increment current epoch number by 1.
 	for _, stakingCoinDenom := range denoms {
 		unitRewards := unitRewardsByDenom[stakingCoinDenom]
 
