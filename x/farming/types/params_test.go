@@ -57,6 +57,20 @@ func TestParamsValidate(t *testing.T) {
 			},
 			"farming fee collector address must not be empty",
 		},
+		{
+			"ZeroPrivatePlanMaxNumDenoms",
+			func(params *types.Params) {
+				params.PrivatePlanMaxNumDenoms = 0
+			},
+			"private plan max num denoms must be positive: 0",
+		},
+		{
+			"ZeroPublicPlanMaxNumDenoms",
+			func(params *types.Params) {
+				params.PublicPlanMaxNumDenoms = 0
+			},
+			"public plan max num denoms must be positive: 0",
+		},
 	}
 
 	for _, tc := range testCases {

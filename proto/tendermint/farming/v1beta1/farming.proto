@@ -38,6 +38,10 @@ message Params {
   ];
 
   uint32 max_num_private_plans = 5 [(gogoproto.moretags) = "yaml:\"max_num_private_plans\""];
+
+  uint32 private_plan_max_num_denoms = 6 [(gogoproto.moretags) = "yaml:\"private_plan_max_num_denoms\""];
+
+  uint32 public_plan_max_num_denoms = 7 [(gogoproto.moretags) = "yaml:\"public_plan_max_num_denoms\""];
 }
 
 // BasePlan defines a base plan type and contains the required fields
@@ -126,6 +130,8 @@ message RatioPlan {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
+
+  repeated string reward_denoms = 3 [(gogoproto.moretags) = "yaml:\"reward_denoms\""];
 }
 
 // PlanType enumerates the valid types of a plan.

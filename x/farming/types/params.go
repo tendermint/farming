@@ -12,18 +12,22 @@ import (
 
 // Parameter store keys
 var (
-	KeyPrivatePlanCreationFee = []byte("PrivatePlanCreationFee")
-	KeyNextEpochDays          = []byte("NextEpochDays")
-	KeyFarmingFeeCollector    = []byte("FarmingFeeCollector")
-	KeyDelayedStakingGasFee   = []byte("DelayedStakingGasFee")
-	KeyMaxNumPrivatePlans     = []byte("MaxNumPrivatePlans")
+	KeyPrivatePlanCreationFee  = []byte("PrivatePlanCreationFee")
+	KeyNextEpochDays           = []byte("NextEpochDays")
+	KeyFarmingFeeCollector     = []byte("FarmingFeeCollector")
+	KeyDelayedStakingGasFee    = []byte("DelayedStakingGasFee")
+	KeyMaxNumPrivatePlans      = []byte("MaxNumPrivatePlans")
+	KeyPrivatePlanMaxNumDenoms = []byte("PrivatePlanMaxNumDenoms")
+	KeyPublicPlanMaxNumDenoms  = []byte("PublicPlanMaxNumDenoms")
 
-	DefaultPrivatePlanCreationFee = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1_000_000_000)))
-	DefaultCurrentEpochDays       = uint32(1)
-	DefaultNextEpochDays          = uint32(1)
-	DefaultFarmingFeeCollector    = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc")))
-	DefaultDelayedStakingGasFee   = sdk.Gas(60000) // See https://github.com/tendermint/farming/issues/102 for details.
-	DefaultMaxNumPrivatePlans     = uint32(10000)
+	DefaultPrivatePlanCreationFee  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1_000_000_000)))
+	DefaultCurrentEpochDays        = uint32(1)
+	DefaultNextEpochDays           = uint32(1)
+	DefaultFarmingFeeCollector     = sdk.AccAddress(address.Module(ModuleName, []byte("FarmingFeeCollectorAcc")))
+	DefaultDelayedStakingGasFee    = sdk.Gas(60000) // See https://github.com/tendermint/farming/issues/102 for details.
+	DefaultMaxNumPrivatePlans      = uint32(10000)
+	DefaultPrivatePlanMaxNumDenoms = uint32(50)
+	DefaultPublicPlanMaxNumDenoms  = uint32(500)
 
 	// ReserveAddressType is an address type of reserve accounts for staking or rewards.
 	// The module uses the address type of 32 bytes length, but it can be changed depending on Cosmos SDK's direction.
@@ -43,11 +47,13 @@ func ParamKeyTable() paramstypes.KeyTable {
 // DefaultParams returns the default farming module parameters.
 func DefaultParams() Params {
 	return Params{
-		PrivatePlanCreationFee: DefaultPrivatePlanCreationFee,
-		NextEpochDays:          DefaultNextEpochDays,
-		FarmingFeeCollector:    DefaultFarmingFeeCollector.String(),
-		DelayedStakingGasFee:   DefaultDelayedStakingGasFee,
-		MaxNumPrivatePlans:     DefaultMaxNumPrivatePlans,
+		PrivatePlanCreationFee:  DefaultPrivatePlanCreationFee,
+		NextEpochDays:           DefaultNextEpochDays,
+		FarmingFeeCollector:     DefaultFarmingFeeCollector.String(),
+		DelayedStakingGasFee:    DefaultDelayedStakingGasFee,
+		MaxNumPrivatePlans:      DefaultMaxNumPrivatePlans,
+		PrivatePlanMaxNumDenoms: DefaultPrivatePlanMaxNumDenoms,
+		PublicPlanMaxNumDenoms:  DefaultPublicPlanMaxNumDenoms,
 	}
 }
 
@@ -59,6 +65,8 @@ func (p *Params) ParamSetPairs() paramstypes.ParamSetPairs {
 		paramstypes.NewParamSetPair(KeyFarmingFeeCollector, &p.FarmingFeeCollector, validateFarmingFeeCollector),
 		paramstypes.NewParamSetPair(KeyDelayedStakingGasFee, &p.DelayedStakingGasFee, validateDelayedStakingGas),
 		paramstypes.NewParamSetPair(KeyMaxNumPrivatePlans, &p.MaxNumPrivatePlans, validateMaxNumPrivatePlans),
+		paramstypes.NewParamSetPair(KeyPrivatePlanMaxNumDenoms, &p.PrivatePlanMaxNumDenoms, validatePrivatePlanMaxNumDenoms),
+		paramstypes.NewParamSetPair(KeyPublicPlanMaxNumDenoms, &p.PublicPlanMaxNumDenoms, validatePublicPlanMaxNumDenoms),
 	}
 }
 
@@ -79,6 +87,8 @@ func (p Params) Validate() error {
 		{p.FarmingFeeCollector, validateFarmingFeeCollector},
 		{p.DelayedStakingGasFee, validateDelayedStakingGas},
 		{p.MaxNumPrivatePlans, validateMaxNumPrivatePlans},
+		{p.PrivatePlanMaxNumDenoms, validatePrivatePlanMaxNumDenoms},
+		{p.PublicPlanMaxNumDenoms, validatePublicPlanMaxNumDenoms},
 	} {
 		if err := v.validator(v.value); err != nil {
 			return err
@@ -106,7 +116,7 @@ func validateNextEpochDays(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v <= 0 {
+	if v == 0 {
 		return fmt.Errorf("next epoch days must be positive: %d", v)
 	}
 
@@ -147,5 +157,31 @@ func validateMaxNumPrivatePlans(i interface{}) error {
 	}
 
 	// Allow zero MaxNumPrivatePlans
+	return nil
+}
+
+func validatePrivatePlanMaxNumDenoms(i interface{}) error {
+	v, ok := i.(uint32)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("private plan max num denoms must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validatePublicPlanMaxNumDenoms(i interface{}) error {
+	v, ok := i.(uint32)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("public plan max num denoms must be positive: %d", v)
+	}
+
 	return nil
 }
