@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"strconv"
+	"strings"
 
 	gogotypes "github.com/gogo/protobuf/types"
 
@@ -268,6 +269,7 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 			sdk.NewAttribute(types.AttributeKeyStartTime, msg.StartTime.String()),
 			sdk.NewAttribute(types.AttributeKeyEndTime, msg.EndTime.String()),
 			sdk.NewAttribute(types.AttributeKeyEpochRatio, msg.EpochRatio.String()),
+			sdk.NewAttribute(types.AttributeKeyRewardDenoms, strings.Join(msg.RewardDenoms, ",")),
 		),
 	})
 
@@ -338,7 +340,7 @@ func (k Keeper) RemovePlan(ctx sdk.Context, creator sdk.AccAddress, planId uint6
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypePlanRemoved,
+			types.EventTypeRemovePlan,
 			sdk.NewAttribute(types.AttributeKeyPlanId, strconv.FormatUint(plan.GetId(), 10)),
 			sdk.NewAttribute(types.AttributeKeyFarmingPoolAddress, plan.GetFarmingPoolAddress().String()),
 			sdk.NewAttribute(types.AttributeKeyTerminationAddress, plan.GetTerminationAddress().String()),

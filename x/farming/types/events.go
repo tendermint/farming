@@ -7,9 +7,9 @@ const (
 	EventTypeStake                 = "stake"
 	EventTypeUnstake               = "unstake"
 	EventTypeHarvest               = "harvest"
+	EventTypeRemovePlan            = "remove_plan"
 	EventTypeRewardsWithdrawn      = "rewards_withdrawn"
 	EventTypePlanTerminated        = "plan_terminated"
-	EventTypePlanRemoved           = "plan_removed"
 	EventTypeRewardsAllocated      = "rewards_allocated"
 
 	AttributeKeyPlanId             = "plan_id" //nolint:golint
@@ -23,6 +23,7 @@ const (
 	AttributeKeyEndTime            = "end_time"
 	AttributeKeyEpochAmount        = "epoch_amount"
 	AttributeKeyEpochRatio         = "epoch_ratio"
+	AttributeKeyRewardDenoms       = "reward_denoms"
 	AttributeKeyFarmer             = "farmer"
 	AttributeKeyAmount             = "amount"
 	AttributeKeyStakingCoinDenom   = "staking_coin_denom"

@@ -58,12 +58,15 @@ type AddPlanRequest struct {
 	EpochAmount sdk.Coins 
 	// epoch_ratio specifies the distributing amount by ratio
 	EpochRatio sdk.Dec
+	// reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+	RewardDenoms []string
 }
 ```
 
 ## ModifyPlanRequest
 
 Request the module to update the plan or the plan type.
+Note that `RewardDenoms` must not be empty when the request is for a ratio plan.
 
 ```go
 // ModifyPlanRequest details a proposal for updating an existing public plan.
@@ -87,7 +90,9 @@ type ModifyPlanRequest struct {
 	// epoch_amount specifies the distributing amount for each epoch
 	EpochAmount sdk.Coins 
 	// epoch_ratio specifies the distributing amount by ratio
-	EpochRatio sdk.Dec 
+	EpochRatio sdk.Dec
+	// reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+	RewardDenoms []string
 }
 ```
 

@@ -146,7 +146,8 @@ Where plan.json contains:
   ],
   "start_time": "2021-08-06T09:00:00Z",
   "end_time": "2022-08-13T09:00:00Z",
-  "epoch_ratio": "1.000000000000000000"
+  "epoch_ratio": "1.000000000000000000",
+  "reward_denoms": ["uatom"]
 }
 
 Description for the parameters:
@@ -156,6 +157,7 @@ Description for the parameters:
 [start_time]: specifies the time for the plan to start 
 [end_time]: specifies the time for the plan to end
 [epoch_ratio]: specifies a ratio to distribute for every epoch. 1.000000000000000000 means to distribute all coins for an epoch
+[reward_denoms]: specifies the whitelist of reward coin denoms that this plan will distribute
 `,
 				version.AppName, types.ModuleName,
 			),

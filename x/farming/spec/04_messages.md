@@ -50,6 +50,7 @@ type MsgCreateRatioPlan struct {
 	StartTime          time.Time    // start time of the plan
 	EndTime            time.Time    // end time of the plan
 	EpochRatio         sdk.Dec      // distributing amount by ratio
+	RewardDenoms       []string     // the whitelist of reward coin denoms that this plan will distribute
 }
 ```
 

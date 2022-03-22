@@ -4,13 +4,15 @@
 
 The `farming` module contains the following parameters:
 
-| Key                        | Type      | Example                                                             |
-| -------------------------- | --------- | ------------------------------------------------------------------- |
-| PrivatePlanCreationFee     | sdk.Coins | [{"denom":"stake","amount":"1000000000"}]                           |
-| NextEpochDays              | uint32    | 1                                                                   |
-| FarmingFeeCollector        | string    | "cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x" |
-| DelayedStakingGasFee       | sdk.Gas   | 60000                                                               |
-| MaxNumPrivatePlans         | uint32    | 10000                                                               |
+| Key                     | Type      | Example                                                             |
+|-------------------------|-----------|---------------------------------------------------------------------|
+| PrivatePlanCreationFee  | sdk.Coins | [{"denom":"stake","amount":"1000000000"}]                           |
+| NextEpochDays           | uint32    | 1                                                                   |
+| FarmingFeeCollector     | string    | "cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x" |
+| DelayedStakingGasFee    | sdk.Gas   | 60000                                                               |
+| MaxNumPrivatePlans      | uint32    | 10000                                                               |
+| PrivatePlanMaxNumDenoms | uint32    | 50                                                                  |
+| PublicPlanMaxNumDenoms  | uint32    | 500                                                                 |
 
 
 ## PrivatePlanCreationFee
@@ -38,3 +40,13 @@ denom of newly staked coin.
 
 The maximum number of private plans that are allowed to be created.
 It does not include terminated plans.
+
+## PrivatePlanMaxNumDenoms
+
+The maximum number of denoms in a private plan's staking coin weights,
+epoch amount and reward denoms.
+
+## PublicPlanMaxNumDenoms
+
+The maximum number of denoms in a public plan's staking coin weights,
+epoch amount and reward denoms.
