@@ -191,6 +191,7 @@ func (suite *KeeperTestSuite) createPrivateFixedAmountPlan(
 	return plan, nil
 }
 
+//nolint
 func (suite *KeeperTestSuite) shouldCreatePrivateFixedAmountPlan(
 	creator sdk.AccAddress, stakingCoinWeights sdk.DecCoins,
 	startTime, endTime time.Time, epochAmt sdk.Coins) types.PlanI {
@@ -214,6 +215,7 @@ func (suite *KeeperTestSuite) createPublicFixedAmountPlan(
 	return plan, nil
 }
 
+//nolint
 func (suite *KeeperTestSuite) shouldCreatePublicFixedAmountPlan(
 	farmingPoolAcc, terminationAcc sdk.AccAddress, stakingCoinWeights sdk.DecCoins,
 	startTime, endTime time.Time, epochAmt sdk.Coins) types.PlanI {
