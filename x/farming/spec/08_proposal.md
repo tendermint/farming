@@ -58,7 +58,7 @@ type AddPlanRequest struct {
 	EpochAmount sdk.Coins 
 	// epoch_ratio specifies the distributing amount by ratio
 	EpochRatio sdk.Dec
-	// reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+	// reward_denoms specifies the whitelist of reward coin denoms that the plan will distribute
 	RewardDenoms []string
 }
 ```
@@ -91,7 +91,7 @@ type ModifyPlanRequest struct {
 	EpochAmount sdk.Coins 
 	// epoch_ratio specifies the distributing amount by ratio
 	EpochRatio sdk.Dec
-	// reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+	// reward_denoms specifies the whitelist of reward coin denoms that the plan will distribute
 	RewardDenoms []string
 }
 ```

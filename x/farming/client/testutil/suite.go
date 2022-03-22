@@ -247,6 +247,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("0.1"),
+		RewardDenoms:       []string{"uatom"},
 	}
 
 	// invalid name
@@ -259,6 +260,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("0.1"),
+		RewardDenoms:       []string{"uatom"},
 	}
 
 	// invalid staking coin weights
@@ -268,6 +270,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("0.1"),
+		RewardDenoms:       []string{"uatom"},
 	}
 
 	// invalid staking coin weights
@@ -277,6 +280,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("0.1"),
+		RewardDenoms:       []string{"uatom"},
 	}
 
 	// invalid start time and end time
@@ -286,6 +290,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 		StartTime:          types.ParseTime("2021-08-13T00:00:00Z"),
 		EndTime:            types.ParseTime("2021-08-06T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("0.1"),
+		RewardDenoms:       []string{"uatom"},
 	}
 
 	// invalid epoch ratio
@@ -295,6 +300,17 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("1.1"),
+		RewardDenoms:       []string{"uatom"},
+	}
+
+	// invalid reward denoms
+	case7 := cli.PrivateRatioPlanRequest{
+		Name:               name,
+		StakingCoinWeights: coinWeights,
+		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
+		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
+		EpochRatio:         sdk.MustNewDecFromStr("1.1"),
+		RewardDenoms:       []string{""},
 	}
 
 	testCases := []struct {
@@ -363,6 +379,17 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 			"invalid epoch ratio case #1",
 			[]string{
 				testutil.WriteToNewTempFile(s.T(), case6.String()).Name(),
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+			},
+			true, &sdk.TxResponse{}, 0,
+		},
+		{
+			"invalid reward denoms case #1",
+			[]string{
+				testutil.WriteToNewTempFile(s.T(), case7.String()).Name(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
