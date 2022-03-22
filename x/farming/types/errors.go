@@ -17,4 +17,5 @@ var (
 	ErrInvalidRemainingRewardsAmount   = sdkerrors.Register(ModuleName, 10, "remaining rewards amount invariant broken")
 	ErrInvalidOutstandingRewardsAmount = sdkerrors.Register(ModuleName, 11, "outstanding rewards amount invariant broken")
 	ErrNumPrivatePlansLimit            = sdkerrors.Register(ModuleName, 12, "cannot create private plans more than the limit")
+	ErrNumMaxDenomsLimit               = sdkerrors.Register(ModuleName, 13, "number of denoms cannot exceed the limit")
 )

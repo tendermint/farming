@@ -14,7 +14,7 @@ import (
 	_ "github.com/stretchr/testify/suite"
 )
 
-func testAddPlanRequest(name string, farmingPoolAcc, terminationAcc string, weightsStr, epochAmountStr, epochRatioStr string) types.AddPlanRequest {
+func testAddPlanRequest(name string, farmingPoolAcc, terminationAcc string, weightsStr, epochAmountStr, epochRatioStr string, rewardDenoms []string) types.AddPlanRequest {
 	weights, err := sdk.ParseDecCoins(weightsStr)
 	if err != nil {
 		panic(err)
@@ -39,6 +39,7 @@ func testAddPlanRequest(name string, farmingPoolAcc, terminationAcc string, weig
 		EndTime:            types.ParseTime("9999-12-31T00:00:00Z"),
 		EpochAmount:        epochAmount,
 		EpochRatio:         epochRatio,
+		RewardDenoms:       rewardDenoms,
 	}
 }
 
@@ -48,10 +49,9 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 
 	addr := suite.addrs[4].String()
 
-	req := testAddPlanRequest("plan1", addr, addr, "1denom1", "1000000denom3", "")
+	req := testAddPlanRequest("plan1", addr, addr, "1denom1", "1000000denom3", "", []string{denom3})
 	proposal := types.NewPublicPlanProposal("title", "description", []types.AddPlanRequest{req}, nil, nil)
-	err := suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	plans = suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Len(plans, 1)
@@ -61,8 +61,7 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 
 	// Same plan name is allowed.
 	proposal = types.NewPublicPlanProposal("title", "description", []types.AddPlanRequest{req}, nil, nil)
-	err = suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	plans = suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Len(plans, 2)
@@ -74,6 +73,7 @@ func (suite *KeeperTestSuite) TestAddPlanRequest() {
 func testModifyPlanRequest(
 	id uint64, name string, farmingPoolAcc, terminationAcc string,
 	weightsStr, startTimeStr, endTimeStr, epochAmountStr, epochRatioStr string,
+	rewardDenoms []string,
 ) types.ModifyPlanRequest {
 	weights, err := sdk.ParseDecCoins(weightsStr)
 	if err != nil {
@@ -109,6 +109,7 @@ func testModifyPlanRequest(
 		EndTime:            endTime,
 		EpochAmount:        epochAmount,
 		EpochRatio:         epochRatio,
+		RewardDenoms:       rewardDenoms,
 	}
 }
 
@@ -118,10 +119,9 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	addr := suite.addrs[5].String()
 
 	// Change name, addrs, epoch amount.
-	req := testModifyPlanRequest(1, "new name", addr, addr, "", "", "", "2000000denom3", "")
+	req := testModifyPlanRequest(1, "new name", addr, addr, "", "", "", "2000000denom3", "", nil)
 	proposal := types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
-	err := suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	plans := suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Len(plans, 1)
@@ -134,10 +134,9 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 2000000)), fixedAmountPlan.EpochAmount))
 
 	// Change staking coin weights, end time.
-	req = testModifyPlanRequest(1, "", "", "", "1denom2", "", "2021-12-31T00:00:00Z", "", "")
+	req = testModifyPlanRequest(1, "", "", "", "1denom2", "", "2021-12-31T00:00:00Z", "", "", nil)
 	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
-	err = suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	plan, _ = suite.keeper.GetPlan(suite.ctx, 1)
 	// These fields below must not have been modified.
@@ -152,10 +151,9 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	suite.Require().Equal(types.ParseTime("2021-12-31T00:00:00Z"), plan.GetEndTime())
 
 	// Change plan type, from FixedAmountPlan to RatioPlan.
-	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.05")
+	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.05", []string{denom3})
 	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
-	err = suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	plan, _ = suite.keeper.GetPlan(suite.ctx, 1)
 	ratioPlan, ok := plan.(*types.RatioPlan)
@@ -163,13 +161,15 @@ func (suite *KeeperTestSuite) TestModifyPlanRequest() {
 	suite.Require().True(decEq(sdk.MustNewDecFromStr("0.05"), ratioPlan.EpochRatio))
 
 	// Test for private plan cannot be modified.
-	err = plan.SetType(types.PlanTypePrivate)
+	err := plan.SetType(types.PlanTypePrivate)
 	suite.Require().NoError(err)
 	suite.Require().Equal(plan.GetType(), types.PlanTypePrivate)
 	suite.keeper.SetPlan(suite.ctx, plan)
 
-	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.1")
+	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.1", []string{denom3})
 	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
+	err = proposal.ValidateBasic()
+	suite.Require().NoError(err)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().ErrorIs(err, types.ErrInvalidPlanType, "plan 2 is not a public plan: invalid plan type")
 }
@@ -178,8 +178,7 @@ func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 	suite.CreateFixedAmountPlan(suite.addrs[4], map[string]string{denom1: "1"}, map[string]int64{denom3: 1000000})
 
 	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []types.DeletePlanRequest{{PlanId: 1}})
-	err := suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	plans := suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Empty(plans)
@@ -189,12 +188,14 @@ func (suite *KeeperTestSuite) TestDeletePlanRequest() {
 	plans = suite.keeper.GetPlans(suite.ctx)
 	suite.Require().Equal(plans[0].GetId(), uint64(2))
 
-	err = plans[0].SetType(types.PlanTypePrivate)
+	err := plans[0].SetType(types.PlanTypePrivate)
 	suite.Require().NoError(err)
 	suite.Require().Equal(plans[0].GetType(), types.PlanTypePrivate)
 	suite.keeper.SetPlan(suite.ctx, plans[0])
 
 	proposal = types.NewPublicPlanProposal("title", "description", nil, nil, []types.DeletePlanRequest{{PlanId: 2}})
+	err = proposal.ValidateBasic()
+	suite.Require().NoError(err)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().ErrorIs(err, types.ErrInvalidPlanType, "plan 2 is not a public plan: invalid plan type")
 }
@@ -208,8 +209,7 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanDeleted() {
 	suite.AdvanceEpoch()
 
 	proposal := types.NewPublicPlanProposal("title", "description", nil, nil, []types.DeletePlanRequest{{PlanId: 1}})
-	err := suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
 
@@ -236,10 +236,9 @@ func (suite *KeeperTestSuite) TestWithdrawRewardsAfterPlanTerminated() {
 	suite.AdvanceEpoch()
 	suite.AdvanceEpoch()
 
-	req := testModifyPlanRequest(1, "", "", "", "", "", "2021-11-01T00:00:00Z", "", "")
+	req := testModifyPlanRequest(1, "", "", "", "", "", "2021-11-01T00:00:00Z", "", "", nil)
 	proposal := types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
-	err := suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	suite.Require().True(coinsEq(sdk.NewCoins(sdk.NewInt64Coin(denom3, 1000000)), suite.AllRewards(suite.addrs[0])))
 
@@ -265,16 +264,17 @@ func (suite *KeeperTestSuite) TestAccumulatedRewardsAfterPlanModification() {
 		sdk.NewInt64Coin(denom3, 10000000),
 	))[0]
 
-	suite.CreateRatioPlan(farmingPool, map[string]string{denom1: "1"}, "0.1")
+	suite.shouldCreatePublicRatioPlan(
+		farmingPool, farmingPool, parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, parseDec("0.1"), []string{denom2, denom3})
 
 	suite.Stake(suite.addrs[0], sdk.NewCoins(sdk.NewInt64Coin(denom1, 1000000)))
 	suite.AdvanceEpoch()
 	suite.AdvanceEpoch() // The farmer has 1000000denom2,1000000denom3 as rewards.
 
-	req := testModifyPlanRequest(1, "", "", "", "", "", "", "1000000denom3", "")
+	req := testModifyPlanRequest(1, "", "", "", "", "", "", "1000000denom3", "", []string{denom2, denom3})
 	proposal := types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
-	err := suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	suite.AdvanceEpoch() // This adds 1000000denom3 as rewards to the farmer.
 
@@ -283,10 +283,9 @@ func (suite *KeeperTestSuite) TestAccumulatedRewardsAfterPlanModification() {
 		suite.AllRewards(suite.addrs[0]),
 	))
 
-	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.5")
+	req = testModifyPlanRequest(1, "", "", "", "", "", "", "", "0.5", []string{denom2, denom3})
 	proposal = types.NewPublicPlanProposal("title", "description", nil, []types.ModifyPlanRequest{req}, nil)
-	err = suite.govHandler(suite.ctx, proposal)
-	suite.Require().NoError(err)
+	suite.handleProposal(proposal)
 
 	suite.AdvanceEpoch() // This adds 4500000denom2,4000000denom3 as rewards to the farmer.
 
@@ -316,6 +315,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-30T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
 				sdk.Dec{},
+				nil,
 			)},
 			nil,
 		},
@@ -341,6 +341,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-30T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
 				sdk.ZeroDec(),
+				nil,
 			)},
 			sdkerrors.Wrapf(types.ErrInvalidPlanName, "plan name cannot be longer than max length of %d", types.MaxNameLength),
 		},
@@ -355,6 +356,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-30T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
 				sdk.ZeroDec(),
+				nil,
 			)},
 			sdkerrors.Wrap(types.ErrInvalidStakingCoinWeights, "staking coin weights must not be empty"),
 		},
@@ -374,6 +376,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-30T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
 				sdk.ZeroDec(),
+				nil,
 			)},
 			sdkerrors.Wrap(types.ErrInvalidStakingCoinWeights, "total weight must be 1"),
 		},
@@ -391,10 +394,11 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-06T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
 				sdk.ZeroDec(),
+				nil,
 			)},
 			sdkerrors.Wrapf(types.ErrInvalidPlanEndTime,
 				"end time %s must be greater than start time %s",
-				types.ParseTime("2021-08-06T00:00:00Z"), types.ParseTime("2021-08-13T00:00:00Z")),
+				types.ParseTime("2021-08-06T00:00:00Z").Format(time.RFC3339), types.ParseTime("2021-08-13T00:00:00Z").Format(time.RFC3339)),
 		},
 		{
 			"epoch amount & epoch ratio case #1",
@@ -410,6 +414,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-30T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin(denom3, 1)),
 				sdk.NewDec(1),
+				[]string{denom3},
 			)},
 			sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "exactly one of epoch amount or epoch ratio must be provided"),
 		},
@@ -427,6 +432,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 				types.ParseTime("2021-08-30T00:00:00Z"),
 				sdk.NewCoins(),
 				sdk.ZeroDec(),
+				nil,
 			)},
 			sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "exactly one of epoch amount or epoch ratio must be provided"),
 		},
@@ -444,8 +450,7 @@ func (suite *KeeperTestSuite) TestValidateAddPublicPlanProposal() {
 			if tc.expectedErr == nil {
 				suite.NoError(err)
 
-				err := keeper.HandlePublicPlanProposal(suite.ctx, suite.keeper, proposal)
-				suite.Require().NoError(err)
+				suite.handleProposal(proposal)
 
 				_, found := suite.keeper.GetPlan(suite.ctx, uint64(1))
 				suite.Require().Equal(true, found)
@@ -471,6 +476,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 			types.ParseTime("2021-08-30T00:00:00Z"),
 			nil,
 			sdk.NewDecWithPrec(10, 2), // 10%
+			[]string{denom3},
 		),
 	}
 
@@ -501,6 +507,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 				plan.GetEndTime(),
 				nil,
 				sdk.NewDecWithPrec(5, 2),
+				[]string{denom3},
 			)},
 			nil,
 		},
@@ -521,6 +528,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 				plan.GetEndTime(),
 				nil,
 				plan.(*types.RatioPlan).EpochRatio,
+				plan.(*types.RatioPlan).RewardDenoms,
 			)},
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid plan id: %d", uint64(0)),
 		},
@@ -539,6 +547,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 				plan.GetEndTime(),
 				nil,
 				plan.(*types.RatioPlan).EpochRatio,
+				plan.(*types.RatioPlan).RewardDenoms,
 			)},
 			sdkerrors.Wrapf(types.ErrInvalidPlanName, "plan name cannot be longer than max length of %d", types.MaxNameLength),
 		},
@@ -554,6 +563,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 				plan.GetEndTime(),
 				nil,
 				plan.(*types.RatioPlan).EpochRatio,
+				plan.(*types.RatioPlan).RewardDenoms,
 			)},
 			sdkerrors.Wrap(types.ErrInvalidStakingCoinWeights, "staking coin weights must not be empty"),
 		},
@@ -574,6 +584,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 				plan.GetEndTime(),
 				nil,
 				plan.(*types.RatioPlan).EpochRatio,
+				plan.(*types.RatioPlan).RewardDenoms,
 			)},
 			sdkerrors.Wrap(types.ErrInvalidStakingCoinWeights, "total weight must be 1"),
 		},
@@ -589,6 +600,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 				types.ParseTime("2021-08-06T00:00:00Z"),
 				nil,
 				plan.(*types.RatioPlan).EpochRatio,
+				plan.(*types.RatioPlan).RewardDenoms,
 			)},
 			sdkerrors.Wrapf(types.ErrInvalidPlanEndTime,
 				"end time %s must be greater than start time %s",
@@ -607,6 +619,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 					plan.GetEndTime(),
 					sdk.NewCoins(sdk.NewInt64Coin("stake", 100_000)),
 					plan.(*types.RatioPlan).EpochRatio,
+					plan.(*types.RatioPlan).RewardDenoms,
 				)},
 			sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "at most one of epoch amount or epoch ratio must be provided"),
 		},
@@ -623,6 +636,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 					plan.GetEndTime(),
 					sdk.Coins{sdk.NewInt64Coin("stake", 0)},
 					sdk.ZeroDec(),
+					nil,
 				)},
 			sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid epoch amount: coin 0stake amount is not positive"),
 		},
@@ -640,8 +654,7 @@ func (suite *KeeperTestSuite) TestValidateModifyPublicPlanProposal() {
 			if tc.expectedErr == nil {
 				suite.NoError(err)
 
-				err := keeper.HandlePublicPlanProposal(suite.ctx, suite.keeper, proposal)
-				suite.Require().NoError(err)
+				suite.handleProposal(proposal)
 
 				_, found := suite.keeper.GetPlan(suite.ctx, tc.modifyReqs[0].GetPlanId())
 				suite.Require().Equal(true, found)
@@ -666,14 +679,10 @@ func (suite *KeeperTestSuite) TestValidateDeletePublicPlanProposal() {
 		types.ParseTime("2021-08-30T00:00:00Z"),
 		nil,
 		sdk.NewDecWithPrec(10, 2), // 10%
+		[]string{denom3},
 	)}
 
-	err := keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", addRequests, nil, nil),
-	)
-	suite.Require().NoError(err)
+	suite.handleProposal(types.NewPublicPlanProposal("testTitle", "testDescription", addRequests, nil, nil))
 
 	// should exist
 	_, found := suite.keeper.GetPlan(suite.ctx, uint64(1))
@@ -682,12 +691,7 @@ func (suite *KeeperTestSuite) TestValidateDeletePublicPlanProposal() {
 	// delete the proposal
 	deleteRequests := []types.DeletePlanRequest{types.NewDeletePlanRequest(uint64(1))}
 
-	err = keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
-		types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, deleteRequests),
-	)
-	suite.Require().NoError(err)
+	suite.handleProposal(types.NewPublicPlanProposal("testTitle", "testDescription", nil, nil, deleteRequests))
 
 	// shouldn't exist
 	_, found = suite.keeper.GetPlan(suite.ctx, uint64(1))
@@ -696,9 +700,7 @@ func (suite *KeeperTestSuite) TestValidateDeletePublicPlanProposal() {
 
 func (suite *KeeperTestSuite) TestUpdatePlanType() {
 	// create a ratio public plan
-	err := keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
+	suite.handleProposal(
 		types.NewPublicPlanProposal("testTitle", "testDescription", []types.AddPlanRequest{
 			types.NewAddPlanRequest(
 				"testPlan",
@@ -712,19 +714,17 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 				types.ParseTime("9999-12-31T00:00:00Z"),
 				sdk.NewCoins(),
 				sdk.NewDecWithPrec(10, 2),
+				[]string{denom3},
 			),
 		}, nil, nil),
 	)
-	suite.Require().NoError(err)
 
 	plan, found := suite.keeper.GetPlan(suite.ctx, uint64(1))
 	suite.Require().Equal(true, found)
 	suite.Require().Equal(plan.(*types.RatioPlan).EpochRatio, sdk.NewDecWithPrec(10, 2))
 
 	// update the ratio plan type to fixed amount plan type
-	err = keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
+	suite.handleProposal(
 		types.NewPublicPlanProposal("testTitle", "testDescription", nil, []types.ModifyPlanRequest{
 			types.NewModifyPlanRequest(
 				plan.GetId(),
@@ -736,19 +736,17 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 				plan.GetEndTime(),
 				sdk.NewCoins(sdk.NewInt64Coin("stake", 100_000)),
 				sdk.ZeroDec(),
+				nil,
 			),
 		}, nil),
 	)
-	suite.Require().NoError(err)
 
 	plan, found = suite.keeper.GetPlan(suite.ctx, uint64(1))
 	suite.Require().Equal(true, found)
 	suite.Require().Equal(plan.(*types.FixedAmountPlan).EpochAmount, sdk.NewCoins(sdk.NewInt64Coin("stake", 100_000)))
 
 	// update back to ratio plan with different epoch ratio
-	err = keeper.HandlePublicPlanProposal(
-		suite.ctx,
-		suite.keeper,
+	suite.handleProposal(
 		types.NewPublicPlanProposal("testTitle", "testDescription", nil, []types.ModifyPlanRequest{
 			types.NewModifyPlanRequest(
 				plan.GetId(),
@@ -760,10 +758,10 @@ func (suite *KeeperTestSuite) TestUpdatePlanType() {
 				plan.GetEndTime(),
 				nil,
 				sdk.NewDecWithPrec(7, 2), // 7%
+				[]string{denom3},
 			),
 		}, nil),
 	)
-	suite.Require().NoError(err)
 
 	plan, found = suite.keeper.GetPlan(suite.ctx, uint64(1))
 	suite.Require().Equal(true, found)
@@ -810,6 +808,7 @@ func (suite *KeeperTestSuite) TestDeletePublicPlan() {
 						types.ParseTime("9999-12-31T00:00:00Z"),
 						sdk.NewCoins(sdk.NewInt64Coin(denom3, 100_000_000)),
 						sdk.ZeroDec(),
+						nil,
 					),
 				}, nil, nil),
 			)

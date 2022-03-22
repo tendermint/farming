@@ -102,10 +102,15 @@ type Params struct {
 	// farming_fee_collector is the module account address to collect fees within the farming module
 	FarmingFeeCollector string `protobuf:"bytes,3,opt,name=farming_fee_collector,json=farmingFeeCollector,proto3" json:"farming_fee_collector,omitempty" yaml:"farming_fee_collector"`
 	// delayed_staking_gas_fee is used to impose gas fee for the delayed staking
-	DelayedStakingGasFee    github_com_cosmos_cosmos_sdk_types.Gas `protobuf:"varint,4,opt,name=delayed_staking_gas_fee,json=delayedStakingGasFee,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Gas" json:"delayed_staking_gas_fee" yaml:"delayed_staking_gas_fee"`
-	MaxNumPrivatePlans      uint32                                 `protobuf:"varint,5,opt,name=max_num_private_plans,json=maxNumPrivatePlans,proto3" json:"max_num_private_plans,omitempty" yaml:"max_num_private_plans"`
-	PrivatePlanMaxNumDenoms uint32                                 `protobuf:"varint,6,opt,name=private_plan_max_num_denoms,json=privatePlanMaxNumDenoms,proto3" json:"private_plan_max_num_denoms,omitempty" yaml:"private_plan_max_num_denoms"`
-	PublicPlanMaxNumDenoms  uint32                                 `protobuf:"varint,7,opt,name=public_plan_max_num_denoms,json=publicPlanMaxNumDenoms,proto3" json:"public_plan_max_num_denoms,omitempty" yaml:"public_plan_max_num_denoms"`
+	DelayedStakingGasFee github_com_cosmos_cosmos_sdk_types.Gas `protobuf:"varint,4,opt,name=delayed_staking_gas_fee,json=delayedStakingGasFee,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Gas" json:"delayed_staking_gas_fee" yaml:"delayed_staking_gas_fee"`
+	// max_num_private_plans is the maximum number of active private plans
+	MaxNumPrivatePlans uint32 `protobuf:"varint,5,opt,name=max_num_private_plans,json=maxNumPrivatePlans,proto3" json:"max_num_private_plans,omitempty" yaml:"max_num_private_plans"`
+	// private_plan_max_num_denoms is the maximum number of denoms in a private plan's
+	// staking coin weights, epoch amount and reward denoms
+	PrivatePlanMaxNumDenoms uint32 `protobuf:"varint,6,opt,name=private_plan_max_num_denoms,json=privatePlanMaxNumDenoms,proto3" json:"private_plan_max_num_denoms,omitempty" yaml:"private_plan_max_num_denoms"`
+	// public_plan_max_num_denoms is the maximum number of denoms in a public plan's
+	// staking coin weights, epoch amount and reward denoms
+	PublicPlanMaxNumDenoms uint32 `protobuf:"varint,7,opt,name=public_plan_max_num_denoms,json=publicPlanMaxNumDenoms,proto3" json:"public_plan_max_num_denoms,omitempty" yaml:"public_plan_max_num_denoms"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -252,8 +257,9 @@ var xxx_messageInfo_FixedAmountPlan proto.InternalMessageInfo
 type RatioPlan struct {
 	*BasePlan `protobuf:"bytes,1,opt,name=base_plan,json=basePlan,proto3,embedded=base_plan" json:"base_plan,omitempty" yaml:"base_plan"`
 	// epoch_ratio specifies the distributing amount by ratio
-	EpochRatio   github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=epoch_ratio,json=epochRatio,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"epoch_ratio" yaml:"epoch_ratio"`
-	RewardDenoms []string                               `protobuf:"bytes,3,rep,name=reward_denoms,json=rewardDenoms,proto3" json:"reward_denoms,omitempty" yaml:"reward_denoms"`
+	EpochRatio github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=epoch_ratio,json=epochRatio,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"epoch_ratio" yaml:"epoch_ratio"`
+	// reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+	RewardDenoms []string `protobuf:"bytes,3,rep,name=reward_denoms,json=rewardDenoms,proto3" json:"reward_denoms,omitempty" yaml:"reward_denoms"`
 }
 
 func (m *RatioPlan) Reset()         { *m = RatioPlan{} }

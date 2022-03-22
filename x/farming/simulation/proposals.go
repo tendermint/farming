@@ -8,6 +8,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+
 	"github.com/tendermint/farming/app/params"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
@@ -66,7 +67,7 @@ func SimulateAddPublicPlanProposal(ak types.AccountKeeper, bk types.BankKeeper, 
 			return nil
 		}
 
-		addPlanReqs := ranAddPlanRequests(r, ctx, simAccount, poolCoins)
+		addPlanReqs := ranAddPlanRequests(r, ctx, k, simAccount, poolCoins)
 
 		return types.NewPublicPlanProposal(
 			simtypes.RandStringOfLength(r, 10),
@@ -126,6 +127,7 @@ func SimulateModifyPublicPlanProposal(ak types.AccountKeeper, bk types.BankKeepe
 					req.StartTime = &startTime
 					req.EndTime = &endTime
 					req.EpochRatio = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 5)), 1)
+					req.RewardDenoms = randStringsSubset(r, testCoinDenoms, int(params.PublicPlanMaxNumDenoms))
 				}
 				break
 			}
@@ -217,7 +219,9 @@ func SimulateAdvanceEpoch(k keeper.Keeper, bk types.BankKeeper) simtypes.Content
 }
 
 // ranAddPlanRequests returns randomized add request proposals.
-func ranAddPlanRequests(r *rand.Rand, ctx sdk.Context, simAccount simtypes.Account, poolCoins sdk.Coins) []types.AddPlanRequest {
+func ranAddPlanRequests(r *rand.Rand, ctx sdk.Context, k keeper.Keeper, simAccount simtypes.Account, poolCoins sdk.Coins) []types.AddPlanRequest {
+	params := k.GetParams(ctx)
+
 	ranProposals := make([]types.AddPlanRequest, 0)
 
 	// Generate a random number of proposals with random values of each parameter
@@ -238,8 +242,24 @@ func ranAddPlanRequests(r *rand.Rand, ctx sdk.Context, simAccount simtypes.Accou
 			)
 		} else {
 			req.EpochRatio = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 10)), 2) // 1% ~ 10%
+			req.RewardDenoms = randStringsSubset(r, testCoinDenoms, int(params.PublicPlanMaxNumDenoms))
 		}
 		ranProposals = append(ranProposals, req)
 	}
 	return ranProposals
+}
+
+// randStringsSubset returns randomized subset of given string slice.
+func randStringsSubset(r *rand.Rand, ss []string, maxNum int) []string {
+	// Clone the string slice.
+	copied := make([]string, len(ss))
+	copy(copied, ss)
+	rand.Shuffle(len(copied), func(i, j int) {
+		copied[i], copied[j] = copied[j], copied[i]
+	})
+	n := r.Intn(len(copied)) + 1
+	if n > maxNum {
+		n = maxNum
+	}
+	return copied[:n]
 }

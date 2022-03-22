@@ -14,11 +14,13 @@ import (
 
 // Simulation parameter constants.
 const (
-	PrivatePlanCreationFee = "private_plan_creation_fee"
-	NextEpochDays          = "next_epoch_days"
-	FarmingFeeCollector    = "farming_fee_collector"
-	CurrentEpochDays       = "current_epoch_days"
-	MaxNumPrivatePlans     = "max_num_private_plans"
+	PrivatePlanCreationFee  = "private_plan_creation_fee"
+	NextEpochDays           = "next_epoch_days"
+	FarmingFeeCollector     = "farming_fee_collector"
+	CurrentEpochDays        = "current_epoch_days"
+	MaxNumPrivatePlans      = "max_num_private_plans"
+	PrivatePlanMaxNumDenoms = "private_plan_max_num_denoms"
+	PublicPlanMaxNumDenoms  = "public_plan_max_num_denoms"
 )
 
 // GenPrivatePlanCreationFee return randomized private plan creation fee.
@@ -44,6 +46,16 @@ func GenFarmingFeeCollector(r *rand.Rand) string {
 // GenMaxNumPrivatePlans returns a randomized value for MaxNumPrivatePlans param.
 func GenMaxNumPrivatePlans(r *rand.Rand) uint32 {
 	return uint32(simulation.RandIntBetween(r, 1, 10000))
+}
+
+// GenPrivatePlanMaxNumDenoms returns a randomized value for PrivatePlanMaxNumDenoms param.
+func GenPrivatePlanMaxNumDenoms(r *rand.Rand) uint32 {
+	return uint32(simulation.RandIntBetween(r, 1, 100))
+}
+
+// GenPublicPlanMaxNumDenoms returns a randomized value for PublicPlanMaxNumDenoms param.
+func GenPublicPlanMaxNumDenoms(r *rand.Rand) uint32 {
+	return uint32(simulation.RandIntBetween(r, 1, 1000))
 }
 
 // RandomizedGenState generates a random GenesisState for farming.
@@ -78,12 +90,26 @@ func RandomizedGenState(simState *module.SimulationState) {
 		func(r *rand.Rand) { maxNumPrivatePlans = GenMaxNumPrivatePlans(r) },
 	)
 
+	var privatePlanMaxNumDenoms uint32
+	simState.AppParams.GetOrGenerate(
+		simState.Cdc, PrivatePlanMaxNumDenoms, &privatePlanMaxNumDenoms, simState.Rand,
+		func(r *rand.Rand) { privatePlanMaxNumDenoms = GenPrivatePlanMaxNumDenoms(r) },
+	)
+
+	var publicPlanMaxNumDenoms uint32
+	simState.AppParams.GetOrGenerate(
+		simState.Cdc, PublicPlanMaxNumDenoms, &publicPlanMaxNumDenoms, simState.Rand,
+		func(r *rand.Rand) { publicPlanMaxNumDenoms = GenPublicPlanMaxNumDenoms(r) },
+	)
+
 	farmingGenesis := types.GenesisState{
 		Params: types.Params{
-			PrivatePlanCreationFee: privatePlanCreationFee,
-			NextEpochDays:          nextEpochDays,
-			FarmingFeeCollector:    feeCollector,
-			MaxNumPrivatePlans:     maxNumPrivatePlans,
+			PrivatePlanCreationFee:  privatePlanCreationFee,
+			NextEpochDays:           nextEpochDays,
+			FarmingFeeCollector:     feeCollector,
+			MaxNumPrivatePlans:      maxNumPrivatePlans,
+			PrivatePlanMaxNumDenoms: privatePlanMaxNumDenoms,
+			PublicPlanMaxNumDenoms:  publicPlanMaxNumDenoms,
 		},
 		CurrentEpochDays: currentEpochDays,
 	}

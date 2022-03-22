@@ -49,6 +49,7 @@ func (suite *ModuleTestSuite) TestMsgCreateRatioPlan() {
 		types.ParseTime("2021-08-02T00:00:00Z"),
 		types.ParseTime("2021-08-10T00:00:00Z"),
 		sdk.NewDecWithPrec(4, 2), // 4%,
+		[]string{denom3},
 	)
 
 	handler := farming.NewHandler(suite.keeper)
@@ -145,7 +146,7 @@ func (suite *ModuleTestSuite) TestMsgRemovePlan() {
 	_, err := handler(suite.ctx, types.NewMsgCreateRatioPlan(
 		"plan1", suite.addrs[4], sdk.NewDecCoins(sdk.NewInt64DecCoin(denom1, 1)),
 		types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
-		sdk.MustNewDecFromStr("0.1")))
+		sdk.MustNewDecFromStr("0.1"), []string{denom3}))
 	suite.Require().NoError(err)
 
 	suite.ctx = suite.ctx.WithBlockTime(types.ParseTime("2022-01-01T00:00:00Z"))

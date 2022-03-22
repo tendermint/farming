@@ -64,7 +64,8 @@ func (suite *KeeperTestSuite) TestInitGenesis() {
 				types.ParseTime("2021-07-30T00:00:00Z"),
 				types.ParseTime("2021-08-30T00:00:00Z"),
 			),
-			sdk.MustNewDecFromStr("0.01")),
+			sdk.MustNewDecFromStr("0.01"),
+			[]string{denom3}),
 	}
 	//for _, plan := range plans {
 	//	suite.keeper.SetPlan(suite.ctx, plan)

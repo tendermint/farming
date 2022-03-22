@@ -78,6 +78,9 @@ message AddPlanRequest {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
+
+  // reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+  repeated string reward_denoms = 9 [(gogoproto.moretags) = "yaml:\"reward_denoms\""];
 }
 
 // ModifyPlanRequest details a proposal for modifying the existing public plan.
@@ -124,6 +127,9 @@ message ModifyPlanRequest {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
+
+  // reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+  repeated string reward_denoms = 10 [(gogoproto.moretags) = "yaml:\"reward_denoms\""];
 }
 
 // DeletePlanRequest details a proposal for deleting an existing public plan.

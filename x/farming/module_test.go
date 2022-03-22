@@ -106,6 +106,7 @@ func (suite *ModuleTestSuite) SetupTest() {
 				types.ParseTime("2021-08-09T00:00:00Z"),
 			),
 			sdk.NewDecWithPrec(4, 2), // 4%
+			[]string{denom2, denom3},
 		),
 		types.NewRatioPlan(
 			types.NewBasePlan(
@@ -121,6 +122,7 @@ func (suite *ModuleTestSuite) SetupTest() {
 				types.ParseTime("2021-08-07T00:00:00Z"),
 			),
 			sdk.NewDecWithPrec(3, 2), // 3%
+			[]string{denom2, denom3},
 		),
 	}
 	suite.samplePlans = append(suite.sampleFixedAmtPlans, suite.sampleRatioPlans...)

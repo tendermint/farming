@@ -204,10 +204,11 @@ func NewFixedAmountPlan(basePlan *BasePlan, epochAmount sdk.Coins) *FixedAmountP
 }
 
 // NewRatioPlan returns a new ratio plan.
-func NewRatioPlan(basePlan *BasePlan, epochRatio sdk.Dec) *RatioPlan {
+func NewRatioPlan(basePlan *BasePlan, epochRatio sdk.Dec, rewardDenoms []string) *RatioPlan {
 	return &RatioPlan{
-		BasePlan:   basePlan,
-		EpochRatio: epochRatio,
+		BasePlan:     basePlan,
+		EpochRatio:   epochRatio,
+		RewardDenoms: rewardDenoms,
 	}
 }
 
@@ -386,6 +387,35 @@ func ValidatePlanName(name string) error {
 		return fmt.Errorf("plan name cannot be longer than max length of %d", MaxNameLength)
 	}
 	return nil
+}
+
+// ValidateRewardDenoms validates reward denoms.
+func ValidateRewardDenoms(rewardDenoms []string) error {
+	if len(rewardDenoms) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "reward denoms must not be empty")
+	}
+	for _, denom := range rewardDenoms {
+		if err := sdk.ValidateDenom(denom); err != nil {
+			return sdkerrors.Wrapf(err, "invalid reward denom")
+		}
+	}
+	return nil
+}
+
+// FilterRewardDenoms returns filtered sdk.Coins which only contains denoms from
+// given rewardDenoms.
+func FilterRewardDenoms(coins sdk.Coins, rewardDenoms []string) sdk.Coins {
+	res := sdk.Coins{}
+	denomSet := map[string]struct{}{}
+	for _, denom := range rewardDenoms {
+		denomSet[denom] = struct{}{}
+	}
+	for _, coin := range coins {
+		if _, ok := denomSet[coin.Denom]; ok {
+			res = res.Add(coin)
+		}
+	}
+	return res
 }
 
 // IsPlanActiveAt returns if the plan is active at given time t.

@@ -14,6 +14,7 @@ import (
 func TestValidateGenesis(t *testing.T) {
 	validAcc := sdk.AccAddress(crypto.AddressHash([]byte("validAcc")))
 	validStakingCoinDenom := "denom1"
+	validRewardDenom := "denom3"
 	validPlan := types.NewRatioPlan(
 		types.NewBasePlan(
 			1,
@@ -28,6 +29,7 @@ func TestValidateGenesis(t *testing.T) {
 			types.ParseTime("9999-12-31T00:00:00Z"),
 		),
 		sdk.NewDecWithPrec(5, 2),
+		[]string{validRewardDenom},
 	)
 	validStaking := types.Staking{
 		Amount:        sdk.NewInt(1000000),
@@ -82,6 +84,7 @@ func TestValidateGenesis(t *testing.T) {
 						types.ParseTime("9999-12-31T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(5, 2),
+					[]string{validRewardDenom},
 				)
 				planAny, _ := types.PackPlan(plan)
 				genState.PlanRecords = []types.PlanRecord{
@@ -136,6 +139,7 @@ func TestValidateGenesis(t *testing.T) {
 						types.ParseTime("9999-12-31T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(5, 2),
+					[]string{validRewardDenom},
 				)
 				planB := types.NewFixedAmountPlan(
 					types.NewBasePlan(
@@ -185,6 +189,7 @@ func TestValidateGenesis(t *testing.T) {
 						types.ParseTime("9999-12-31T00:00:00Z"),
 					),
 					sdk.OneDec(),
+					[]string{validRewardDenom},
 				)
 				planB := types.NewRatioPlan(
 					types.NewBasePlan(
@@ -200,6 +205,7 @@ func TestValidateGenesis(t *testing.T) {
 						types.ParseTime("9999-12-31T00:00:00Z"),
 					),
 					sdk.OneDec(),
+					[]string{validRewardDenom},
 				)
 				planAAny, _ := types.PackPlan(planA)
 				planBAny, _ := types.PackPlan(planB)

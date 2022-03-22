@@ -84,6 +84,7 @@ func TestMsgCreateRatioPlan(t *testing.T) {
 	stakingCoinWeights := sdk.NewDecCoins(sdk.DecCoin{Denom: "farmingCoinDenom", Amount: sdk.MustNewDecFromStr("1.0")})
 	startTime, _ := time.Parse(time.RFC3339, "2021-11-01T22:08:41+00:00") // needs to be deterministic for test
 	endTime := startTime.AddDate(1, 0, 0)
+	rewardDenoms := []string{"denom3"}
 
 	testCases := []struct {
 		expectedErr string
@@ -93,35 +94,49 @@ func TestMsgCreateRatioPlan(t *testing.T) {
 			"", // empty means no error expected
 			types.NewMsgCreateRatioPlan(
 				name, creatorAddr, stakingCoinWeights,
-				startTime, endTime, sdk.NewDec(1),
+				startTime, endTime, sdk.NewDec(1), rewardDenoms,
 			),
 		},
 		{
 			"invalid creator address \"\": empty address string is not allowed: invalid address",
 			types.NewMsgCreateRatioPlan(
 				name, sdk.AccAddress{}, stakingCoinWeights,
-				startTime, endTime, sdk.NewDec(1),
+				startTime, endTime, sdk.NewDec(1), rewardDenoms,
 			),
 		},
 		{
 			"end time 2020-11-01T22:08:41Z must be greater than start time 2021-11-01T22:08:41Z: invalid plan end time",
 			types.NewMsgCreateRatioPlan(
 				name, creatorAddr, stakingCoinWeights,
-				startTime, startTime.AddDate(-1, 0, 0), sdk.NewDec(1),
+				startTime, startTime.AddDate(-1, 0, 0), sdk.NewDec(1), rewardDenoms,
 			),
 		},
 		{
 			"staking coin weights must not be empty: invalid staking coin weights",
 			types.NewMsgCreateRatioPlan(
 				name, creatorAddr, sdk.NewDecCoins(),
-				startTime, endTime, sdk.NewDec(1),
+				startTime, endTime, sdk.NewDec(1), rewardDenoms,
 			),
 		},
 		{
 			"epoch ratio must be positive: -1.000000000000000000: invalid request",
 			types.NewMsgCreateRatioPlan(
 				name, creatorAddr, stakingCoinWeights,
-				startTime, endTime, sdk.NewDec(-1),
+				startTime, endTime, sdk.NewDec(-1), rewardDenoms,
+			),
+		},
+		{
+			"reward denoms must not be empty: invalid request",
+			types.NewMsgCreateRatioPlan(
+				name, creatorAddr, stakingCoinWeights,
+				startTime, endTime, sdk.NewDec(1), []string{},
+			),
+		},
+		{
+			"invalid reward denom: invalid denom: !!!",
+			types.NewMsgCreateRatioPlan(
+				name, creatorAddr, stakingCoinWeights,
+				startTime, endTime, sdk.NewDec(1), []string{"!!!"},
 			),
 		},
 	}

@@ -111,6 +111,7 @@ func TestAddPlanRequest_Validate(t *testing.T) {
 			func(req *types.AddPlanRequest) {
 				req.EpochAmount = nil
 				req.EpochRatio = sdk.NewDecWithPrec(5, 2)
+				req.RewardDenoms = []string{"denom3"}
 			},
 			"",
 		},
@@ -195,7 +196,7 @@ func TestAddPlanRequest_Validate(t *testing.T) {
 				req.StartTime = types.ParseTime("2021-10-01T00:00:00Z")
 				req.EndTime = types.ParseTime("2021-09-01T00:00:00Z")
 			},
-			"end time 2021-09-01 00:00:00 +0000 UTC must be greater than start time 2021-10-01 00:00:00 +0000 UTC: invalid plan end time",
+			"end time 2021-09-01T00:00:00Z must be greater than start time 2021-10-01T00:00:00Z: invalid plan end time",
 		},
 		{
 			"empty epoch amount",
@@ -227,6 +228,15 @@ func TestAddPlanRequest_Validate(t *testing.T) {
 			},
 			"epoch ratio must be less than 1: 2.000000000000000000: invalid request",
 		},
+		{
+			"invalid reward denom",
+			func(req *types.AddPlanRequest) {
+				req.EpochAmount = nil
+				req.EpochRatio = sdk.NewDecWithPrec(5, 2)
+				req.RewardDenoms = []string{"!!!"}
+			},
+			"invalid reward denom: invalid denom: !!!",
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			req := types.NewAddPlanRequest(
@@ -238,6 +248,7 @@ func TestAddPlanRequest_Validate(t *testing.T) {
 				types.ParseTime("9999-12-31T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin("reward1", 10000000)),
 				sdk.Dec{},
+				nil,
 			)
 			tc.malleate(&req)
 			err := req.Validate()
@@ -266,6 +277,7 @@ func TestModifyPlanRequest_Validate(t *testing.T) {
 			func(req *types.ModifyPlanRequest) {
 				req.EpochAmount = nil
 				req.EpochRatio = sdk.NewDecWithPrec(5, 2)
+				req.RewardDenoms = []string{"denom3"}
 			},
 			"",
 		},
@@ -436,6 +448,24 @@ func TestModifyPlanRequest_Validate(t *testing.T) {
 			},
 			"epoch ratio must be less than 1: 2.000000000000000000: invalid request",
 		},
+		{
+			"empty reward denoms",
+			func(req *types.ModifyPlanRequest) {
+				req.EpochAmount = nil
+				req.EpochRatio = sdk.NewDecWithPrec(5, 2)
+				req.RewardDenoms = []string{}
+			},
+			"reward denoms must not be empty: invalid request",
+		},
+		{
+			"invalid reward denom",
+			func(req *types.ModifyPlanRequest) {
+				req.EpochAmount = nil
+				req.EpochRatio = sdk.NewDecWithPrec(5, 2)
+				req.RewardDenoms = []string{"!!!"}
+			},
+			"invalid reward denom: invalid denom: !!!",
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			req := types.NewModifyPlanRequest(
@@ -448,6 +478,7 @@ func TestModifyPlanRequest_Validate(t *testing.T) {
 				types.ParseTime("9999-12-31T00:00:00Z"),
 				sdk.NewCoins(sdk.NewInt64Coin("reward1", 10000000)),
 				sdk.Dec{},
+				nil,
 			)
 			tc.malleate(&req)
 			err := req.Validate()

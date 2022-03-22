@@ -27,6 +27,7 @@ type PrivateRatioPlanRequest struct {
 	StartTime          time.Time    `json:"start_time"`
 	EndTime            time.Time    `json:"end_time"`
 	EpochRatio         sdk.Dec      `json:"epoch_ratio"`
+	RewardDenoms       []string     `json:"reward_denoms"`
 }
 
 // ParsePrivateFixedPlan reads and parses a PrivateFixedPlanRequest from a file.

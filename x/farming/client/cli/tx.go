@@ -178,6 +178,7 @@ Description for the parameters:
 				plan.StartTime,
 				plan.EndTime,
 				plan.EpochRatio,
+				plan.RewardDenoms,
 			)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

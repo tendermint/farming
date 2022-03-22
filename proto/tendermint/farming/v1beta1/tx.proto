@@ -106,6 +106,9 @@ message MsgCreateRatioPlan {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
+
+  // reward_denoms specifies the whitelist of reward coin denoms that this plan will distribute
+  repeated string reward_denoms = 7 [(gogoproto.moretags) = "yaml:\"reward_denoms\""];
 }
 
 // MsgCreateRatioPlanResponse  defines the Msg/MsgCreateRatioPlanResponse

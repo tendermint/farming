@@ -131,6 +131,7 @@ func TestSimulateMsgCreateRatioPlan(t *testing.T) {
 	require.Equal(t, "cosmos1tnh2q55v8wyygtt9srz5safamzdengsnqeycj3", msg.Creator)
 	require.Equal(t, "1.000000000000000000stake", msg.StakingCoinWeights.String())
 	require.Equal(t, "0.007000000000000000", msg.EpochRatio.String())
+	require.Equal(t, []string{"testc", "testa", "testb"}, msg.RewardDenoms)
 	require.Len(t, futureOperations, 0)
 }
 

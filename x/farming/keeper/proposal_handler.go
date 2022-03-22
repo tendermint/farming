@@ -73,6 +73,7 @@ func (k Keeper) AddPublicPlanProposal(ctx sdk.Context, proposals []types.AddPlan
 				p.GetStartTime(),
 				p.GetEndTime(),
 				p.EpochRatio,
+				p.RewardDenoms,
 			)
 
 			plan, err := k.CreateRatioPlan(ctx, msg, farmingPoolAcc, terminationAcc, types.PlanTypePublic)
@@ -153,7 +154,7 @@ func (k Keeper) ModifyPublicPlanProposal(ctx sdk.Context, proposals []types.Modi
 
 		} else if p.IsForRatioPlan() {
 			// change the plan to ratio plan
-			plan = types.NewRatioPlan(plan.GetBasePlan(), p.EpochRatio)
+			plan = types.NewRatioPlan(plan.GetBasePlan(), p.EpochRatio, p.RewardDenoms)
 
 			logger := k.Logger(ctx)
 			logger.Info("updated public ratio plan", "ratio_plan", plan)

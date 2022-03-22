@@ -368,7 +368,9 @@ func (k Keeper) AllocationInfos(ctx sdk.Context) []AllocationInfo {
 		case *types.FixedAmountPlan:
 			ac[plan.GetId()] = plan.EpochAmount
 		case *types.RatioPlan:
-			ac[plan.GetId()], _ = sdk.NewDecCoinsFromCoins(balances...).MulDecTruncate(plan.EpochRatio).TruncateDecimal()
+			filteredBalances := types.FilterRewardDenoms(balances, plan.RewardDenoms)
+			epochAmt, _ := sdk.NewDecCoinsFromCoins(filteredBalances...).MulDecTruncate(plan.EpochRatio).TruncateDecimal()
+			ac[plan.GetId()] = epochAmt
 		}
 	}
 

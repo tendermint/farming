@@ -52,7 +52,8 @@ func (suite *KeeperTestSuite) TestAllocationInfos() {
 				types.ParseTime("2021-07-27T00:00:00Z"),
 				types.ParseTime("2021-07-28T00:00:00Z"),
 			),
-			sdk.MustNewDecFromStr("0.5")),
+			sdk.MustNewDecFromStr("0.5"),
+			[]string{sdk.DefaultBondDenom, denom1, denom2, denom3}),
 		types.NewRatioPlan(
 			types.NewBasePlan(
 				4,
@@ -64,7 +65,8 @@ func (suite *KeeperTestSuite) TestAllocationInfos() {
 				types.ParseTime("2021-07-27T12:00:00Z"),
 				types.ParseTime("2021-07-28T12:00:00Z"),
 			),
-			sdk.MustNewDecFromStr("0.6")),
+			sdk.MustNewDecFromStr("0.6"),
+			[]string{sdk.DefaultBondDenom, denom1, denom2, denom3}),
 	}
 
 	hugeRatioPlan := types.NewRatioPlan(
@@ -78,7 +80,8 @@ func (suite *KeeperTestSuite) TestAllocationInfos() {
 			types.ParseTime("2021-07-27T12:00:00Z"),
 			types.ParseTime("2021-07-28T12:00:00Z"),
 		),
-		sdk.MustNewDecFromStr("0.999999"))
+		sdk.MustNewDecFromStr("0.999999"),
+		[]string{sdk.DefaultBondDenom, denom1, denom2, denom3})
 
 	for _, tc := range []struct {
 		name      string
@@ -520,4 +523,20 @@ func (suite *KeeperTestSuite) TestAllocateRewardsZeroTotalStakings() {
 
 	_, found = suite.keeper.GetTotalStakings(suite.ctx, denom1)
 	suite.Require().False(found)
+}
+
+func (suite *KeeperTestSuite) TestRewardDenoms() {
+	plan := suite.shouldCreatePrivateRatioPlan(
+		suite.addrs[0], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, parseDec("0.1"), []string{"reward0"})
+	suite.fundAddr(plan.GetFarmingPoolAddress(), parseCoins("1000000000reward0,1000000000reward1,100000000reward2"))
+
+	suite.Stake(suite.addrs[1], parseCoins("1000000denom1"))
+	suite.AdvanceEpoch()
+
+	suite.AdvanceEpoch()
+	rewards := suite.AllRewards(suite.addrs[1])
+	for _, coin := range rewards {
+		suite.Require().Equal("reward0", coin.Denom)
+	}
 }

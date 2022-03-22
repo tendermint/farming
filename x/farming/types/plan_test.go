@@ -446,6 +446,8 @@ func TestTotalEpochRatio(t *testing.T) {
 	)
 	startTime := time.Now().UTC()
 	endTime := startTime.AddDate(1, 0, 0)
+	validRewardDenom := "denom3"
+	validRewardDenoms := []string{validRewardDenom}
 
 	testCases := []struct {
 		plans       []types.PlanI
@@ -455,7 +457,7 @@ func TestTotalEpochRatio(t *testing.T) {
 			[]types.PlanI{
 				types.NewRatioPlan(
 					types.NewBasePlan(1, name1, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
-					sdk.NewDec(1),
+					sdk.NewDec(1), validRewardDenoms,
 				),
 			},
 			nil,
@@ -464,11 +466,11 @@ func TestTotalEpochRatio(t *testing.T) {
 			[]types.PlanI{
 				types.NewRatioPlan(
 					types.NewBasePlan(1, name1, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
-					sdk.NewDec(1),
+					sdk.NewDec(1), validRewardDenoms,
 				),
 				types.NewRatioPlan(
 					types.NewBasePlan(1, name2, 1, farmingPoolAddr1.String(), terminationAddr1.String(), stakingCoinWeights, startTime, endTime),
-					sdk.NewDec(1),
+					sdk.NewDec(1), validRewardDenoms,
 				),
 			},
 			sdkerrors.Wrap(types.ErrInvalidTotalEpochRatio, "total epoch ratio must be lower than 1"),
@@ -482,6 +484,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(7, 1), // 0.7
+					validRewardDenoms,
 				),
 				types.NewRatioPlan(
 					types.NewBasePlan(
@@ -490,6 +493,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(7, 1), // 0.7
+					validRewardDenoms,
 				),
 			},
 			nil,
@@ -503,6 +507,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(7, 1), // 0.7
+					validRewardDenoms,
 				),
 				types.NewRatioPlan(
 					types.NewBasePlan(
@@ -511,6 +516,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2023-01-01T00:00:00Z"), types.ParseTime("2024-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(7, 1), // 0.7
+					validRewardDenoms,
 				),
 			},
 			nil,
@@ -524,6 +530,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(7, 1), // 0.7
+					[]string{validRewardDenom},
 				),
 				types.NewRatioPlan(
 					types.NewBasePlan(
@@ -532,6 +539,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-12-31T00:00:00Z"), types.ParseTime("2024-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(7, 1), // 0.7
+					validRewardDenoms,
 				),
 			},
 			sdkerrors.Wrap(types.ErrInvalidTotalEpochRatio, "total epoch ratio must be lower than 1"),
@@ -545,6 +553,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(5, 1), // 0.5
+					validRewardDenoms,
 				),
 				types.NewRatioPlan(
 					types.NewBasePlan(
@@ -553,6 +562,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-01-01T00:00:00Z"), types.ParseTime("2022-07-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(5, 1), // 0.5
+					validRewardDenoms,
 				),
 				types.NewRatioPlan(
 					types.NewBasePlan(
@@ -561,6 +571,7 @@ func TestTotalEpochRatio(t *testing.T) {
 						types.ParseTime("2022-07-01T00:00:00Z"), types.ParseTime("2023-01-01T00:00:00Z"),
 					),
 					sdk.NewDecWithPrec(5, 1), // 0.5
+					validRewardDenoms,
 				),
 			},
 			nil,
@@ -602,6 +613,7 @@ func TestUnpackPlan(t *testing.T) {
 				types.ParseTime("2021-08-07T00:00:00Z"),
 			),
 			sdk.NewDec(1),
+			[]string{"denom3"},
 		),
 	}
 
@@ -641,6 +653,7 @@ func TestUnpackPlanJSON(t *testing.T) {
 			types.ParseTime("2021-08-07T00:00:00Z"),
 		),
 		sdk.NewDec(1),
+		[]string{"denom3"},
 	)
 
 	any, err := types.PackPlan(plan)
@@ -684,6 +697,56 @@ func TestValidatePlanName(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestValidateRewardDenoms(t *testing.T) {
+	for _, tc := range []struct {
+		rewardDenoms []string
+		expectedErr  string
+	}{
+		{[]string{"denom1"}, ""},
+		{[]string{}, "reward denoms must not be empty: invalid request"},
+		{[]string{"!!!"}, "invalid reward denom: invalid denom: !!!"},
+	} {
+		t.Run(strings.Join(tc.rewardDenoms, ","), func(t *testing.T) {
+			err := types.ValidateRewardDenoms(tc.rewardDenoms)
+			if tc.expectedErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.EqualError(t, err, tc.expectedErr)
+			}
+		})
+	}
+}
+
+func TestFilteredRewardDenoms(t *testing.T) {
+	for _, tc := range []struct {
+		name         string
+		coins        sdk.Coins
+		rewardDenoms []string
+		expected     sdk.Coins
+	}{
+		{
+			"valid filtering",
+			sdk.NewCoins(
+				sdk.NewInt64Coin("reward0", 1000000),
+				sdk.NewInt64Coin("reward1", 1000000),
+			),
+			[]string{"reward0"},
+			sdk.NewCoins(sdk.NewInt64Coin("reward0", 1000000)),
+		},
+		{
+			"mutually exclusive",
+			sdk.NewCoins(sdk.NewInt64Coin("reward0", 1000000)),
+			[]string{"reward1"},
+			sdk.Coins{},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			res := types.FilterRewardDenoms(tc.coins, tc.rewardDenoms)
+			require.True(t, res.IsEqual(tc.expected)) // TODO: use coinsEq?
 		})
 	}
 }

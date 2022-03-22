@@ -285,12 +285,25 @@ paths:
                   max_num_private_plans:
                     type: integer
                     format: int64
+                    title: >-
+                      max_num_private_plans is the maximum number of active
+                      private plans
                   private_plan_max_num_denoms:
                     type: integer
                     format: int64
+                    title: >-
+                      private_plan_max_num_denoms is the maximum number of
+                      denoms in a private plan's
+
+                      staking coin weights, epoch amount and reward denoms
                   public_plan_max_num_denoms:
                     type: integer
                     format: int64
+                    title: >-
+                      public_plan_max_num_denoms is the maximum number of denoms
+                      in a public plan's
+
+                      staking coin weights, epoch amount and reward denoms
                 description: Params defines the set of params for the farming module.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
@@ -2260,12 +2273,23 @@ definitions:
       max_num_private_plans:
         type: integer
         format: int64
+        title: max_num_private_plans is the maximum number of active private plans
       private_plan_max_num_denoms:
         type: integer
         format: int64
+        title: >-
+          private_plan_max_num_denoms is the maximum number of denoms in a
+          private plan's
+
+          staking coin weights, epoch amount and reward denoms
       public_plan_max_num_denoms:
         type: integer
         format: int64
+        title: >-
+          public_plan_max_num_denoms is the maximum number of denoms in a public
+          plan's
+
+          staking coin weights, epoch amount and reward denoms
     description: Params defines the set of params for the farming module.
   cosmos.farming.v1beta1.QueryCurrentEpochDaysResponse:
     type: object
@@ -2328,12 +2352,25 @@ definitions:
           max_num_private_plans:
             type: integer
             format: int64
+            title: >-
+              max_num_private_plans is the maximum number of active private
+              plans
           private_plan_max_num_denoms:
             type: integer
             format: int64
+            title: >-
+              private_plan_max_num_denoms is the maximum number of denoms in a
+              private plan's
+
+              staking coin weights, epoch amount and reward denoms
           public_plan_max_num_denoms:
             type: integer
             format: int64
+            title: >-
+              public_plan_max_num_denoms is the maximum number of denoms in a
+              public plan's
+
+              staking coin weights, epoch amount and reward denoms
         description: Params defines the set of params for the farming module.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   cosmos.farming.v1beta1.QueryPlanResponse:
