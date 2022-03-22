@@ -173,6 +173,7 @@ func (suite *KeeperTestSuite) TestPrivatePlanNumMaxDenoms() {
 		weights[i] = sdk.NewDecCoinFromDec(fmt.Sprintf("stake%d", i), weight)
 		totalWeight = totalWeight.Add(weight)
 	}
+	suite.addDenomsFromDecCoins(weights)
 	_, err := suite.createPrivateFixedAmountPlan(
 		suite.addrs[0], weights,
 		sampleStartTime, sampleEndTime, parseCoins("1000000denom3"))
@@ -182,18 +183,20 @@ func (suite *KeeperTestSuite) TestPrivatePlanNumMaxDenoms() {
 	for i := range epochAmt {
 		epochAmt[i] = sdk.NewInt64Coin(fmt.Sprintf("reward%d", i), 1000000)
 	}
+	suite.addDenomsFromCoins(epochAmt)
 	_, err = suite.createPrivateFixedAmountPlan(
 		suite.addrs[0], parseDecCoins("1denom1"),
 		sampleStartTime, sampleEndTime, epochAmt)
 	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
 
-	denoms := make([]string, numDenoms)
-	for i := range denoms {
-		denoms[i] = fmt.Sprintf("reward%d", i)
+	rewardDenoms := make([]string, numDenoms)
+	for i := range rewardDenoms {
+		rewardDenoms[i] = fmt.Sprintf("reward%d", i)
 	}
+	suite.addDenoms(rewardDenoms...)
 	_, err = suite.createPrivateRatioPlan(
 		suite.addrs[0], parseDecCoins("1denom1"),
-		sampleStartTime, sampleEndTime, parseDec("0.1"), denoms)
+		sampleStartTime, sampleEndTime, parseDec("0.1"), rewardDenoms)
 	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
 }
 
@@ -213,6 +216,7 @@ func (suite *KeeperTestSuite) TestPublicPlanMaxNumDenoms() {
 		weights[i] = sdk.NewDecCoinFromDec(fmt.Sprintf("stake%d", i), weight)
 		totalWeight = totalWeight.Add(weight)
 	}
+	suite.addDenomsFromDecCoins(weights)
 	_, err := suite.createPublicFixedAmountPlan(
 		suite.addrs[0], suite.addrs[0], weights,
 		sampleStartTime, sampleEndTime, parseCoins("1000000denom3"))
@@ -222,17 +226,19 @@ func (suite *KeeperTestSuite) TestPublicPlanMaxNumDenoms() {
 	for i := range epochAmt {
 		epochAmt[i] = sdk.NewInt64Coin(fmt.Sprintf("reward%d", i), 1000000)
 	}
+	suite.addDenomsFromCoins(epochAmt)
 	_, err = suite.createPublicFixedAmountPlan(
 		suite.addrs[0], suite.addrs[0], parseDecCoins("1denom1"),
 		sampleStartTime, sampleEndTime, epochAmt)
 	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
 
-	denoms := make([]string, numDenoms)
-	for i := range denoms {
-		denoms[i] = fmt.Sprintf("reward%d", i)
+	rewardDenoms := make([]string, numDenoms)
+	for i := range rewardDenoms {
+		rewardDenoms[i] = fmt.Sprintf("reward%d", i)
 	}
+	suite.addDenoms(rewardDenoms...)
 	_, err = suite.createPublicRatioPlan(
 		suite.addrs[0], suite.addrs[0], parseDecCoins("1denom1"),
-		sampleStartTime, sampleEndTime, parseDec("0.1"), denoms)
+		sampleStartTime, sampleEndTime, parseDec("0.1"), rewardDenoms)
 	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
 }

@@ -11,6 +11,7 @@ Anyone can create this private plan type message.
 - A fixed amount plan distributes the amount of coins by a fixed amount that is defined in `EpochAmount`. 
 - Internally, the private plan's farming pool address is derived and assigned to the plan. 
 - The plan's `TerminationAddress` is set to the plan creator's address.
+- All the coin denoms specified in `StakingCoinWeights` and `EpochAmount` must have positive supply on chain.
 
 The creator must query the plan and send the amount of coins to the farming pool address so that the plan distributes as intended. 
 
@@ -34,6 +35,7 @@ Anyone can create this private plan type message.
 - A ratio plan plans to distribute amount of coins by ratio defined in `EpochRatio`.
 - Internally, the private plan's farming pool address is derived and assigned to the plan.
 - The plan's `TerminationAddress` is set to the plan creator's address.
+- All the coin denoms specified in `StakingCoinWeights` must have positive supply on chain.
 
 The creator must query the plan and send the amount of coins to the farming pool address so that the plan distributes as intended. 
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -339,6 +340,32 @@ func (suite *KeeperTestSuite) handleProposal(content govtypes.Content) {
 func (suite *KeeperTestSuite) fundAddr(addr sdk.AccAddress, amt sdk.Coins) {
 	err := simapp.FundAccount(suite.app.BankKeeper, suite.ctx, addr, amt)
 	suite.Require().NoError(err)
+}
+
+func (suite *KeeperTestSuite) addDenoms(denoms ...string) {
+	suite.T().Helper()
+	coins := sdk.Coins{}
+	for _, denom := range denoms {
+		coins = coins.Add(sdk.NewInt64Coin(denom, 1))
+	}
+	err := suite.app.BankKeeper.MintCoins(suite.ctx, minttypes.ModuleName, coins)
+	suite.Require().NoError(err)
+}
+
+func (suite *KeeperTestSuite) addDenomsFromCoins(coins sdk.Coins) {
+	var denoms []string
+	for _, coin := range coins {
+		denoms = append(denoms, coin.Denom)
+	}
+	suite.addDenoms(denoms...)
+}
+
+func (suite *KeeperTestSuite) addDenomsFromDecCoins(coins sdk.DecCoins) {
+	var denoms []string
+	for _, coin := range coins {
+		denoms = append(denoms, coin.Denom)
+	}
+	suite.addDenoms(denoms...)
 }
 
 func intEq(exp, got sdk.Int) (bool, string, string, string) {

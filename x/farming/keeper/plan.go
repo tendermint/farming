@@ -141,6 +141,17 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		return nil, sdkerrors.Wrap(types.ErrInvalidPlanEndTime, "end time has already passed")
 	}
 
+	for _, coin := range msg.StakingCoinWeights {
+		if k.bankKeeper.GetSupply(ctx, coin.Denom).Amount.IsZero() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidStakingCoinWeights, "denom %s has no supply", coin.Denom)
+		}
+	}
+	for _, coin := range msg.EpochAmount {
+		if k.bankKeeper.GetSupply(ctx, coin.Denom).Amount.IsZero() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidEpochAmount, "denom %s has no supply", coin.Denom)
+		}
+	}
+
 	params := k.GetParams(ctx)
 
 	var maxNumDenoms uint32
@@ -209,6 +220,12 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, farmingPoolAcc, terminationAcc sdk.AccAddress, typ types.PlanType) (types.PlanI, error) {
 	if !ctx.BlockTime().Before(msg.EndTime) { // EndTime <= BlockTime
 		return nil, sdkerrors.Wrap(types.ErrInvalidPlanEndTime, "end time has already passed")
+	}
+
+	for _, coin := range msg.StakingCoinWeights {
+		if k.bankKeeper.GetSupply(ctx, coin.Denom).Amount.IsZero() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidStakingCoinWeights, "denom %s has no supply", coin.Denom)
+		}
 	}
 
 	params := k.GetParams(ctx)
