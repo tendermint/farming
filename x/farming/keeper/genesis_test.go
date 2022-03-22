@@ -14,25 +14,25 @@ import (
 	_ "github.com/stretchr/testify/suite"
 )
 
-func (s *KeeperTestSuite) TestDefaultGenesis() {
+func (suite *KeeperTestSuite) TestDefaultGenesis() {
 	genState := *types.DefaultGenesisState()
 
-	s.keeper.InitGenesis(s.ctx, genState)
-	got := s.keeper.ExportGenesis(s.ctx)
-	s.Require().Equal(genState, *got)
+	suite.keeper.InitGenesis(suite.ctx, genState)
+	got := suite.keeper.ExportGenesis(suite.ctx)
+	suite.Require().Equal(genState, *got)
 }
 
-func (s *KeeperTestSuite) TestImportExportGenesisEmpty() {
-	k, ctx := s.keeper, s.ctx
+func (suite *KeeperTestSuite) TestImportExportGenesisEmpty() {
+	k, ctx := suite.keeper, suite.ctx
 	genState := k.ExportGenesis(ctx)
 
 	var genState2 types.GenesisState
-	bz := s.app.AppCodec().MustMarshalJSON(genState)
-	s.app.AppCodec().MustUnmarshalJSON(bz, &genState2)
+	bz := suite.app.AppCodec().MustMarshalJSON(genState)
+	suite.app.AppCodec().MustUnmarshalJSON(bz, &genState2)
 	k.InitGenesis(ctx, genState2)
 
 	genState3 := k.ExportGenesis(ctx)
-	s.Require().Equal(*genState, genState2, *genState3)
+	suite.Require().Equal(*genState, genState2, *genState3)
 }
 
 func (suite *KeeperTestSuite) TestInitGenesis() {
