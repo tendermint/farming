@@ -30,6 +30,8 @@ type MsgCreateFixedAmountPlan struct {
 
 ## MsgCreateRatioPlan
 
+***This message is disabled by default, you have to build the binary with `make install-testing` to activate this message.***
+
 Anyone can create this private plan type message. 
 
 - A ratio plan plans to distribute amount of coins by ratio defined in `EpochRatio`.
@@ -108,13 +110,9 @@ type MsgRemovePlan struct {
 
 ## MsgAdvanceEpoch
 
-For testing purposes only, this custom message is used to advance epoch by 1. 
+***This message is disabled by default, you have to build the binary with `make install-testing` to activate this message.***
 
-To enable this message, you must build the `farmingd` binary:
-
-```sh
-make install-testing
-```
+For testing purposes only, this custom message is used to advance epoch by 1.
 
 When you send the `MsgAdvanceEpoch` message to the network, epoch increases by 1.
 
