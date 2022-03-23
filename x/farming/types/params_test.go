@@ -24,8 +24,6 @@ next_epoch_days: 1
 farming_fee_collector: cosmos1h292smhhttwy0rl3qr4p6xsvpvxc4v05s6rxtczwq3cs6qc462mqejwy8x
 delayed_staking_gas_fee: 60000
 max_num_private_plans: 10000
-private_plan_max_num_denoms: 50
-public_plan_max_num_denoms: 500
 `
 	require.Equal(t, paramsStr, defaultParams.String())
 }
@@ -58,20 +56,6 @@ func TestParamsValidate(t *testing.T) {
 				params.FarmingFeeCollector = ""
 			},
 			"farming fee collector address must not be empty",
-		},
-		{
-			"ZeroPrivatePlanMaxNumDenoms",
-			func(params *types.Params) {
-				params.PrivatePlanMaxNumDenoms = 0
-			},
-			"private plan max num denoms must be positive: 0",
-		},
-		{
-			"ZeroPublicPlanMaxNumDenoms",
-			func(params *types.Params) {
-				params.PublicPlanMaxNumDenoms = 0
-			},
-			"public plan max num denoms must be positive: 0",
 		},
 	}
 

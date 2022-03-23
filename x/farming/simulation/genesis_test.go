@@ -49,8 +49,6 @@ func TestRandomizedGenState(t *testing.T) {
 	require.Equal(t, dec3, genState.Params.NextEpochDays)
 	require.Equal(t, dec4, genState.Params.FarmingFeeCollector)
 	require.Equal(t, dec5, genState.Params.MaxNumPrivatePlans)
-	require.Equal(t, uint32(89), genState.Params.PrivatePlanMaxNumDenoms)
-	require.Equal(t, uint32(751), genState.Params.PublicPlanMaxNumDenoms)
 }
 
 // TestRandomizedGenState tests abnormal scenarios of applying RandomizedGenState.

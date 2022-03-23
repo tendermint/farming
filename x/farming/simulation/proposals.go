@@ -127,7 +127,7 @@ func SimulateModifyPublicPlanProposal(ak types.AccountKeeper, bk types.BankKeepe
 					req.StartTime = &startTime
 					req.EndTime = &endTime
 					req.EpochRatio = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 5)), 1)
-					req.RewardDenoms = randStringsSubset(r, testCoinDenoms, int(params.PublicPlanMaxNumDenoms))
+					req.RewardDenoms = randStringsSubset(r, testCoinDenoms, types.PublicPlanMaxNumDenoms)
 				}
 				break
 			}
@@ -220,8 +220,6 @@ func SimulateAdvanceEpoch(k keeper.Keeper, bk types.BankKeeper) simtypes.Content
 
 // ranAddPlanRequests returns randomized add request proposals.
 func ranAddPlanRequests(r *rand.Rand, ctx sdk.Context, k keeper.Keeper, simAccount simtypes.Account, poolCoins sdk.Coins) []types.AddPlanRequest {
-	params := k.GetParams(ctx)
-
 	ranProposals := make([]types.AddPlanRequest, 0)
 
 	// Generate a random number of proposals with random values of each parameter
@@ -242,7 +240,7 @@ func ranAddPlanRequests(r *rand.Rand, ctx sdk.Context, k keeper.Keeper, simAccou
 			)
 		} else {
 			req.EpochRatio = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 10)), 2) // 1% ~ 10%
-			req.RewardDenoms = randStringsSubset(r, testCoinDenoms, int(params.PublicPlanMaxNumDenoms))
+			req.RewardDenoms = randStringsSubset(r, testCoinDenoms, types.PublicPlanMaxNumDenoms)
 		}
 		ranProposals = append(ranProposals, req)
 	}

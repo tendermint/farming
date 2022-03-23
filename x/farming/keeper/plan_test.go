@@ -158,8 +158,7 @@ func (suite *KeeperTestSuite) TestCreateExpiredPlan() {
 }
 
 func (suite *KeeperTestSuite) TestPrivatePlanNumMaxDenoms() {
-	params := suite.keeper.GetParams(suite.ctx)
-	numDenoms := int(params.PrivatePlanMaxNumDenoms) + 1 // Invalid number of denoms
+	numDenoms := types.PrivatePlanMaxNumDenoms + 1 // Invalid number of denoms
 
 	weights := make(sdk.DecCoins, numDenoms)
 	totalWeight := sdk.ZeroDec()
@@ -201,8 +200,7 @@ func (suite *KeeperTestSuite) TestPrivatePlanNumMaxDenoms() {
 }
 
 func (suite *KeeperTestSuite) TestPublicPlanMaxNumDenoms() {
-	params := suite.keeper.GetParams(suite.ctx)
-	numDenoms := int(params.PublicPlanMaxNumDenoms) + 1 // Invalid number of denoms
+	numDenoms := types.PublicPlanMaxNumDenoms + 1 // Invalid number of denoms
 
 	weights := make(sdk.DecCoins, numDenoms)
 	totalWeight := sdk.ZeroDec()

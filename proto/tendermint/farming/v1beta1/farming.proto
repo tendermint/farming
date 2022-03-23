@@ -39,14 +39,6 @@ message Params {
 
   // max_num_private_plans is the maximum number of active private plans
   uint32 max_num_private_plans = 5 [(gogoproto.moretags) = "yaml:\"max_num_private_plans\""];
-
-  // private_plan_max_num_denoms is the maximum number of denoms in a private plan's
-  // staking coin weights, epoch amount and reward denoms
-  uint32 private_plan_max_num_denoms = 6 [(gogoproto.moretags) = "yaml:\"private_plan_max_num_denoms\""];
-
-  // public_plan_max_num_denoms is the maximum number of denoms in a public plan's
-  // staking coin weights, epoch amount and reward denoms
-  uint32 public_plan_max_num_denoms = 7 [(gogoproto.moretags) = "yaml:\"public_plan_max_num_denoms\""];
 }
 
 // BasePlan defines a base plan type and contains the required fields

@@ -219,7 +219,7 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 			startTime,
 			endTime,
 			epochRatio,
-			randStringsSubset(r, testCoinDenoms, int(params.PrivatePlanMaxNumDenoms)),
+			randStringsSubset(r, testCoinDenoms, types.PrivatePlanMaxNumDenoms),
 		)
 
 		txCtx := simulation.OperationInput{

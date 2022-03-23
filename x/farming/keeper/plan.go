@@ -152,27 +152,27 @@ func (k Keeper) CreateFixedAmountPlan(ctx sdk.Context, msg *types.MsgCreateFixed
 		}
 	}
 
-	params := k.GetParams(ctx)
-
-	var maxNumDenoms uint32
+	var maxNumDenoms int
 	switch typ {
 	case types.PlanTypePrivate:
-		maxNumDenoms = params.PrivatePlanMaxNumDenoms
+		maxNumDenoms = types.PrivatePlanMaxNumDenoms
 	case types.PlanTypePublic:
-		maxNumDenoms = params.PublicPlanMaxNumDenoms
+		maxNumDenoms = types.PublicPlanMaxNumDenoms
 	}
-	if uint32(len(msg.StakingCoinWeights)) > maxNumDenoms {
+	if len(msg.StakingCoinWeights) > maxNumDenoms {
 		return nil, sdkerrors.Wrapf(
 			types.ErrNumMaxDenomsLimit,
 			"number of denoms in staking coin weights is %d, which exceeds the limit %d",
 			len(msg.StakingCoinWeights), maxNumDenoms)
 	}
-	if uint32(len(msg.EpochAmount)) > maxNumDenoms {
+	if len(msg.EpochAmount) > maxNumDenoms {
 		return nil, sdkerrors.Wrapf(
 			types.ErrNumMaxDenomsLimit,
 			"number of denoms in epoch amount is %d, which exceeds the limit %d",
 			len(msg.EpochAmount), maxNumDenoms)
 	}
+
+	params := k.GetParams(ctx)
 
 	if typ == types.PlanTypePrivate {
 		if uint32(k.GetNumActivePrivatePlans(ctx)) >= params.MaxNumPrivatePlans {
@@ -228,27 +228,27 @@ func (k Keeper) CreateRatioPlan(ctx sdk.Context, msg *types.MsgCreateRatioPlan, 
 		}
 	}
 
-	params := k.GetParams(ctx)
-
-	var maxNumDenoms uint32
+	var maxNumDenoms int
 	switch typ {
 	case types.PlanTypePrivate:
-		maxNumDenoms = params.PrivatePlanMaxNumDenoms
+		maxNumDenoms = types.PrivatePlanMaxNumDenoms
 	case types.PlanTypePublic:
-		maxNumDenoms = params.PublicPlanMaxNumDenoms
+		maxNumDenoms = types.PublicPlanMaxNumDenoms
 	}
-	if uint32(len(msg.StakingCoinWeights)) > maxNumDenoms {
+	if len(msg.StakingCoinWeights) > maxNumDenoms {
 		return nil, sdkerrors.Wrapf(
 			types.ErrNumMaxDenomsLimit,
 			"number of denoms in staking coin weights is %d, which exceeds the limit %d",
 			len(msg.StakingCoinWeights), maxNumDenoms)
 	}
-	if uint32(len(msg.RewardDenoms)) > maxNumDenoms {
+	if len(msg.RewardDenoms) > maxNumDenoms {
 		return nil, sdkerrors.Wrapf(
 			types.ErrNumMaxDenomsLimit,
 			"number of denoms in reward denoms is %d, which exceeds the limit %d",
 			len(msg.RewardDenoms), maxNumDenoms)
 	}
+
+	params := k.GetParams(ctx)
 
 	if typ == types.PlanTypePrivate {
 		if uint32(k.GetNumActivePrivatePlans(ctx)) >= params.MaxNumPrivatePlans {

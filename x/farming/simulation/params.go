@@ -40,15 +40,5 @@ func ParamChanges(r *rand.Rand) []simtypes.ParamChange {
 				return fmt.Sprintf("%d", GenMaxNumPrivatePlans(r))
 			},
 		),
-		simulation.NewSimParamChange(types.ModuleName, string(types.KeyPrivatePlanMaxNumDenoms),
-			func(r *rand.Rand) string {
-				return fmt.Sprintf("%d", GenPrivatePlanMaxNumDenoms(r))
-			},
-		),
-		simulation.NewSimParamChange(types.ModuleName, string(types.KeyPublicPlanMaxNumDenoms),
-			func(r *rand.Rand) string {
-				return fmt.Sprintf("%d", GenPublicPlanMaxNumDenoms(r))
-			},
-		),
 	}
 }
