@@ -70,7 +70,7 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 	name := "test"
 	coinWeights := sdk.NewDecCoins(
 		sdk.DecCoin{
-			Denom:  "poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4",
+			Denom:  "node0token",
 			Amount: sdk.MustNewDecFromStr("1.0"),
 		},
 	)
@@ -81,7 +81,7 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 		StakingCoinWeights: coinWeights,
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
-		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 100_000_000)),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
 	}
 
 	// invalid name
@@ -93,7 +93,7 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 		StakingCoinWeights: sdk.NewDecCoins(),
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
-		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 100_000_000)),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
 	}
 
 	// invalid staking coin weights
@@ -102,16 +102,16 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 		StakingCoinWeights: sdk.NewDecCoins(),
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
-		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 100_000_000)),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
 	}
 
 	// invalid staking coin weights
 	case4 := cli.PrivateFixedPlanRequest{
 		Name:               name,
-		StakingCoinWeights: sdk.NewDecCoins(sdk.NewDecCoin("poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4", sdk.NewInt(2))),
+		StakingCoinWeights: sdk.NewDecCoins(sdk.NewDecCoin("node0token", sdk.NewInt(2))),
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
-		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 100_000_000)),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
 	}
 
 	// invalid start time and end time
@@ -120,7 +120,7 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 		StakingCoinWeights: coinWeights,
 		StartTime:          types.ParseTime("2021-08-13T00:00:00Z"),
 		EndTime:            types.ParseTime("2021-08-06T00:00:00Z"),
-		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 100_000_000)),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 100_000_000)),
 	}
 
 	// invalid epoch amount
@@ -129,7 +129,7 @@ func (s *IntegrationTestSuite) TestNewCreateFixedAmountPlanCmd() {
 		StakingCoinWeights: coinWeights,
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
-		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("uatom", 0)),
+		EpochAmount:        sdk.NewCoins(sdk.NewInt64Coin("node0token", 0)),
 	}
 
 	testCases := []struct {
@@ -235,7 +235,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 	name := "test"
 	coinWeights := sdk.NewDecCoins(
 		sdk.DecCoin{
-			Denom:  "poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4",
+			Denom:  "node0token",
 			Amount: sdk.MustNewDecFromStr("1.0"),
 		},
 	)
@@ -273,7 +273,7 @@ func (s *IntegrationTestSuite) TestNewCreateRatioPlanCmd() {
 	// invalid staking coin weights
 	case4 := cli.PrivateRatioPlanRequest{
 		Name:               name,
-		StakingCoinWeights: sdk.NewDecCoins(sdk.NewDecCoin("poolD35A0CC16EE598F90B044CE296A405BA9C381E38837599D96F2F70C2F02A23A4", sdk.NewInt(2))),
+		StakingCoinWeights: sdk.NewDecCoins(sdk.NewDecCoin("node0token", sdk.NewInt(2))),
 		StartTime:          types.ParseTime("0001-01-01T00:00:00Z"),
 		EndTime:            types.ParseTime("9999-01-01T00:00:00Z"),
 		EpochRatio:         sdk.MustNewDecFromStr("0.1"),
@@ -707,7 +707,7 @@ func (s *QueryCmdTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	// query the farming pool address that is assigned to the pool and
-	// trasnfer some amount of coins to the address
+	// transfer some amount of coins to the address
 	s.fundFarmingPool(1, sdk.NewCoins(sdk.NewInt64Coin("node0token", 1_000_000_000)))
 
 	_, err = MsgStakeExec(

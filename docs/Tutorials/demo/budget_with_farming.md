@@ -528,6 +528,14 @@ farmingd tx farming advance-epoch \
 --yes \
 --output json | jq
 
+farmingd tx farming advance-epoch \
+--chain-id localnet \
+--from user2 \
+--keyring-backend test \
+--broadcast-mode block \
+--yes \
+--output json | jq
+
 # Query rewards
 farmingd q farming rewards cosmos185fflsvwrz0cx46w6qada7mdy92m6kx4gqx0ny \
 --output json | jq
