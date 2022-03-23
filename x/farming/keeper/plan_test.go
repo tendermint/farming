@@ -187,6 +187,11 @@ func (suite *KeeperTestSuite) TestPrivatePlanNumMaxDenoms() {
 		suite.addrs[0], parseDecCoins("1denom1"),
 		sampleStartTime, sampleEndTime, epochAmt)
 	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+
+	_, err = suite.createPrivateRatioPlan(
+		suite.addrs[0], weights,
+		sampleStartTime, sampleEndTime, parseDec("0.1"))
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
 }
 
 func (suite *KeeperTestSuite) TestPublicPlanMaxNumDenoms() {
@@ -219,4 +224,32 @@ func (suite *KeeperTestSuite) TestPublicPlanMaxNumDenoms() {
 		suite.addrs[0], suite.addrs[0], parseDecCoins("1denom1"),
 		sampleStartTime, sampleEndTime, epochAmt)
 	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+
+	_, err = suite.createPublicRatioPlan(
+		suite.addrs[0], suite.addrs[0], weights,
+		sampleStartTime, sampleEndTime, parseDec("0.1"))
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+}
+
+func (suite *KeeperTestSuite) TestCreatePlanSupply() {
+	weight := parseDecCoins("1nosupply1")
+	_, err := suite.createPublicFixedAmountPlan(
+		suite.addrs[0], suite.addrs[0], weight,
+		sampleStartTime, sampleEndTime, parseCoins("1000000denom3"))
+	suite.Require().ErrorIs(err, types.ErrInvalidStakingCoinWeights)
+
+	_, err = suite.createPublicRatioPlan(
+		suite.addrs[0], suite.addrs[0], weight,
+		sampleStartTime, sampleEndTime, parseDec("0.1"))
+	suite.Require().ErrorIs(err, types.ErrInvalidStakingCoinWeights)
+
+	epochAmt := sdk.NewCoins(
+		sdk.NewInt64Coin("nosupply", 10000),
+		sdk.NewInt64Coin("stake", 10000))
+
+	suite.addDenomsFromDecCoins(parseDecCoins("1denom1"))
+	_, err = suite.createPublicFixedAmountPlan(
+		suite.addrs[0], suite.addrs[0], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, epochAmt)
+	suite.Require().ErrorIs(err, types.ErrInvalidEpochAmount)
 }

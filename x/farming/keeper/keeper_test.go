@@ -190,15 +190,6 @@ func (suite *KeeperTestSuite) createPrivateFixedAmountPlan(
 	return plan, nil
 }
 
-//nolint
-func (suite *KeeperTestSuite) shouldCreatePrivateFixedAmountPlan(
-	creator sdk.AccAddress, stakingCoinWeights sdk.DecCoins,
-	startTime, endTime time.Time, epochAmt sdk.Coins) types.PlanI {
-	plan, err := suite.createPrivateFixedAmountPlan(creator, stakingCoinWeights, startTime, endTime, epochAmt)
-	suite.Require().NoError(err)
-	return plan
-}
-
 func (suite *KeeperTestSuite) createPublicFixedAmountPlan(
 	farmingPoolAcc, terminationAcc sdk.AccAddress, stakingCoinWeights sdk.DecCoins,
 	startTime, endTime time.Time, epochAmt sdk.Coins) (types.PlanI, error) {
@@ -214,14 +205,45 @@ func (suite *KeeperTestSuite) createPublicFixedAmountPlan(
 	return plan, nil
 }
 
-//nolint
-func (suite *KeeperTestSuite) shouldCreatePublicFixedAmountPlan(
-	farmingPoolAcc, terminationAcc sdk.AccAddress, stakingCoinWeights sdk.DecCoins,
-	startTime, endTime time.Time, epochAmt sdk.Coins) types.PlanI {
-	plan, err := suite.createPublicFixedAmountPlan(
-		farmingPoolAcc, terminationAcc, stakingCoinWeights, startTime, endTime, epochAmt)
-	suite.Require().NoError(err)
-	return plan
+func (suite *KeeperTestSuite) createPrivateRatioPlan(
+	creator sdk.AccAddress, stakingCoinWeights sdk.DecCoins,
+	startTime, endTime time.Time, epochRatio sdk.Dec) (types.PlanI, error) {
+	msg := types.NewMsgCreateRatioPlan(
+		fmt.Sprintf("plan%d", suite.keeper.GetGlobalPlanId(suite.ctx)+1),
+		creator, stakingCoinWeights,
+		startTime, endTime, epochRatio,
+	)
+	farmingPoolAcc, err := suite.keeper.DerivePrivatePlanFarmingPoolAcc(suite.ctx, msg.Name)
+	if err != nil {
+		return nil, err
+	}
+	plan, err := suite.keeper.CreateRatioPlan(suite.ctx, msg, farmingPoolAcc, creator, types.PlanTypePrivate)
+	if err != nil {
+		return nil, err
+	}
+	if err := types.ValidateTotalEpochRatio(suite.keeper.GetPlans(suite.ctx)); err != nil {
+		return nil, err
+	}
+	return plan, nil
+}
+
+func (suite *KeeperTestSuite) createPublicRatioPlan(
+	farmingPoolAcc, terminationAcc sdk.AccAddress,
+	stakingCoinWeights sdk.DecCoins, startTime, endTime time.Time,
+	epochRatio sdk.Dec) (types.PlanI, error) {
+	msg := types.NewMsgCreateRatioPlan(
+		fmt.Sprintf("plan%d", suite.keeper.GetGlobalPlanId(suite.ctx)+1),
+		farmingPoolAcc, stakingCoinWeights,
+		startTime, endTime, epochRatio,
+	)
+	plan, err := suite.keeper.CreateRatioPlan(suite.ctx, msg, farmingPoolAcc, terminationAcc, types.PlanTypePublic)
+	if err != nil {
+		return nil, err
+	}
+	if err := types.ValidateTotalEpochRatio(suite.keeper.GetPlans(suite.ctx)); err != nil {
+		return nil, err
+	}
+	return plan, nil
 }
 
 func (suite *KeeperTestSuite) CreateFixedAmountPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochAmountMap map[string]int64) {
