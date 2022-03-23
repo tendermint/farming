@@ -15,6 +15,7 @@ import (
 
 	farmingapp "github.com/tendermint/farming/app"
 	"github.com/tendermint/farming/app/params"
+	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/simulation"
 	"github.com/tendermint/farming/x/farming/types"
 )
@@ -100,6 +101,7 @@ func TestSimulateMsgCreateFixedAmountPlan(t *testing.T) {
 // Abnormal scenarios, where the message are created by an errors are not tested here.
 func TestSimulateMsgCreateRatioPlan(t *testing.T) {
 	app, ctx := createTestApp(false)
+	keeper.EnableRatioPlan = true
 
 	// setup a single account
 	s := rand.NewSource(1)

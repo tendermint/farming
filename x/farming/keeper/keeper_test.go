@@ -57,6 +57,8 @@ func (suite *KeeperTestSuite) SetupTest() {
 	app := simapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
+	keeper.EnableRatioPlan = true
+
 	suite.app = app
 	suite.ctx = ctx
 	suite.keeper = suite.app.FarmingKeeper
