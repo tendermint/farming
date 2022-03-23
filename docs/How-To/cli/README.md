@@ -156,6 +156,7 @@ Create the `private-fixed-plan.json` file. This private ratio farming plan inten
 - `start_time`: start time of the farming plan 
 - `end_time`: end time of the farming plan
 - `epoch_ratio`: a ratio to distribute per epoch as an incentive for staking denoms that are defined in staking coin weights. The ratio refers to all coins that the creator has in their account. Note that the total ratio cannot exceed 1.0 (100%). 
+- `reward_denoms`: the whitelist of reward coin denoms that the plan will distribute
 
 ```json
 {
@@ -172,7 +173,10 @@ Create the `private-fixed-plan.json` file. This private ratio farming plan inten
   ],
   "start_time": "2021-08-06T09:00:00Z",
   "end_time": "2021-08-13T09:00:00Z",
-  "epoch_ratio": "0.100000000000000000"
+  "epoch_ratio": "0.100000000000000000",
+  "reward_denoms": [
+    "stake"
+  ]
 }
 ```
 
@@ -208,7 +212,10 @@ farmingd tx farming create-private-ratio-plan private-ratio-plan.json \
         ],
         "start_time": "2021-08-06T09:00:00Z",
         "end_time": "2021-08-13T09:00:00Z",
-        "epoch_ratio": "0.100000000000000000"
+        "epoch_ratio": "0.100000000000000000",
+        "reward_denoms": [
+          "stake"
+        ]
       }
     ],
     "memo": "",
@@ -529,7 +536,10 @@ farmingd q farming plans \
           }
         ]
       },
-      "epoch_ratio": "0.500000000000000000"
+      "epoch_ratio": "0.500000000000000000",
+      "reward_denoms": [
+        "stake"
+      ]
     }
   ],
   "pagination": {
@@ -577,7 +587,10 @@ farmingd q farming plan 1 --output json | jq
           }
         ]
       },
-      "epoch_ratio": "0.500000000000000000"
+      "epoch_ratio": "0.500000000000000000",
+      "reward_denoms": [
+        "stake"
+      ]
     }
   ],
   "pagination": {

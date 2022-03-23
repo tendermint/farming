@@ -79,7 +79,10 @@ http://localhost:1317/cosmos/farming/v1beta1/plans
           }
         ]
       },
-      "epoch_ratio": "0.500000000000000000"
+      "epoch_ratio": "0.500000000000000000",
+      "reward_denoms": [
+        "uatom"
+      ]
     }
   ],
   "pagination": {
@@ -127,7 +130,10 @@ http://localhost:1317/cosmos/farming/v1beta1/plans/1
         }
       ]
     },
-    "epoch_ratio": "0.500000000000000000"
+    "epoch_ratio": "0.500000000000000000",
+    "reward_denoms": [
+      "uatom"
+    ]
   }
 }
 ```

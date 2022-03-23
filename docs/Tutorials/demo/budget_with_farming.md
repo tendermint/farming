@@ -220,6 +220,7 @@ where the fields in the JSON file are:
 - `start_time`: is start time of the farming plan
 - `end_time`: is start time of the farming plan
 - `epoch_ratio`: is the distributing amount by ratio per epoch
+- `reward_denoms`: the whitelist of reward coin denoms that the plan will distribute
 
 where the fields in the JSON file are:
 
@@ -244,7 +245,10 @@ where the fields in the JSON file are:
       ],
       "start_time": "2021-09-01T00:00:00Z",
       "end_time": "2031-09-30T00:00:00Z",
-      "epoch_ratio": "0.900000000000000000"
+      "epoch_ratio": "0.900000000000000000",
+      "reward_denoms": [
+        "stake"
+      ]
     }
   ]
 }
@@ -427,7 +431,10 @@ Add a second public ratio plan proposal:
       ],
       "start_time": "2021-09-01T00:00:00Z",
       "end_time": "2031-09-30T00:00:00Z",
-      "epoch_ratio": "0.500000000000000000"
+      "epoch_ratio": "0.500000000000000000",
+      "reward_denoms": [
+        "stake"
+      ]
     }
   ],
   "add_plan_requests": [
@@ -447,7 +454,10 @@ Add a second public ratio plan proposal:
       ],
       "start_time": "2021-09-11T00:00:00Z",
       "end_time": "2031-09-30T00:00:00Z",
-      "epoch_ratio": "0.500000000000000000"
+      "epoch_ratio": "0.500000000000000000",
+      "reward_denoms": [
+        "stake"
+      ]
     }
   ]
 }
@@ -520,6 +530,14 @@ farmingd q farming stakings cosmos185fflsvwrz0cx46w6qada7mdy92m6kx4gqx0ny \
 --output json | jq
 
 # Increase epoch by 2 again to distribute rewards
+farmingd tx farming advance-epoch \
+--chain-id localnet \
+--from user2 \
+--keyring-backend test \
+--broadcast-mode block \
+--yes \
+--output json | jq
+
 farmingd tx farming advance-epoch \
 --chain-id localnet \
 --from user2 \

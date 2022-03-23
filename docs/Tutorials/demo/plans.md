@@ -4,7 +4,7 @@ There are two different types of farming plans in the farming module. Whereas a 
 
 In this documentation, some sample data in JSON are provided. They will be used to test out farming plan functionality.
 
-## Table of Contetns
+## Table of Contents
 
 - [Bootstrap Local Network](#Boostrap)
 - [Public Farming Plan](#Public-Farming-Plan)
@@ -156,7 +156,10 @@ Create `public-ratio-plan-proposal.json` file in your local directory and copy t
       ],
       "start_time": "2021-08-06T09:00:00Z",
       "end_time": "2021-08-13T09:00:00Z",
-      "epoch_ratio": "0.100000000000000000"
+      "epoch_ratio": "0.100000000000000000",
+      "reward_denoms": [
+        "uatom"
+      ]
     }
   ]
 }
@@ -221,7 +224,10 @@ Create `public-multiple-plans-proposal.json` file in your local directory and co
       ],
       "start_time": "2021-08-06T09:00:00Z",
       "end_time": "2021-08-13T09:00:00Z",
-      "epoch_ratio": "0.100000000000000000"
+      "epoch_ratio": "0.100000000000000000",
+      "reward_denoms": [
+        "stake"
+      ]
     }
   ]
 }
@@ -398,7 +404,10 @@ Create `private-ratio-plan.json` file in your local directory and copy the below
   ],
   "start_time": "2021-08-06T09:00:00Z",
   "end_time": "2021-08-13T09:00:00Z",
-  "epoch_ratio": "1.000000000000000000"
+  "epoch_ratio": "1.000000000000000000",
+  "reward_denoms": [
+    "uatom"
+  ]
 }
 ```
 
