@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/tendermint/farming/x/farming"
@@ -144,16 +146,110 @@ func (suite *KeeperTestSuite) TestCreateExpiredPlan() {
 	_, err := msgServer.CreateFixedAmountPlan(sdk.WrapSDKContext(suite.ctx), msg)
 	suite.Require().ErrorIs(err, types.ErrInvalidPlanEndTime)
 
-	req := types.AddPlanRequest{
-		Name:               "plan2",
-		FarmingPoolAddress: suite.addrs[4].String(),
-		TerminationAddress: suite.addrs[4].String(),
-		StakingCoinWeights: sdk.NewDecCoins(sdk.NewInt64DecCoin(denom1, 1)),
-		StartTime:          types.ParseTime("2021-01-01T00:00:00Z"),
-		EndTime:            types.ParseTime("2022-01-01T00:00:00Z"),
-		EpochRatio:         sdk.NewDecWithPrec(3, 1),
-	}
+	req := types.NewAddPlanRequest(
+		"plan2", suite.addrs[4].String(), suite.addrs[4].String(), parseDecCoins("1denom1"),
+		types.ParseTime("2021-01-01T00:00:00Z"), types.ParseTime("2022-01-01T00:00:00Z"),
+		nil, parseDec("0.3"))
 	proposal := types.NewPublicPlanProposal("title", "description", []types.AddPlanRequest{req}, nil, nil)
+	err = proposal.ValidateBasic()
+	suite.Require().NoError(err)
 	err = suite.govHandler(suite.ctx, proposal)
 	suite.Require().ErrorIs(err, types.ErrInvalidPlanEndTime)
+}
+
+func (suite *KeeperTestSuite) TestPrivatePlanNumMaxDenoms() {
+	numDenoms := types.PrivatePlanMaxNumDenoms + 1 // Invalid number of denoms
+
+	weights := make(sdk.DecCoins, numDenoms)
+	totalWeight := sdk.ZeroDec()
+	for i := range weights {
+		var weight sdk.Dec
+		if i < numDenoms {
+			weight = sdk.OneDec().QuoTruncate(sdk.NewDec(int64(numDenoms)))
+		} else {
+			weight = sdk.OneDec().Sub(totalWeight)
+		}
+		weights[i] = sdk.NewDecCoinFromDec(fmt.Sprintf("stake%d", i), weight)
+		totalWeight = totalWeight.Add(weight)
+	}
+	suite.addDenomsFromDecCoins(weights)
+	_, err := suite.createPrivateFixedAmountPlan(
+		suite.addrs[0], weights,
+		sampleStartTime, sampleEndTime, parseCoins("1000000denom3"))
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+
+	epochAmt := make(sdk.Coins, numDenoms)
+	for i := range epochAmt {
+		epochAmt[i] = sdk.NewInt64Coin(fmt.Sprintf("reward%d", i), 1000000)
+	}
+	suite.addDenomsFromCoins(epochAmt)
+	_, err = suite.createPrivateFixedAmountPlan(
+		suite.addrs[0], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, epochAmt)
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+
+	_, err = suite.createPrivateRatioPlan(
+		suite.addrs[0], weights,
+		sampleStartTime, sampleEndTime, parseDec("0.1"))
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+}
+
+func (suite *KeeperTestSuite) TestPublicPlanMaxNumDenoms() {
+	numDenoms := types.PublicPlanMaxNumDenoms + 1 // Invalid number of denoms
+
+	weights := make(sdk.DecCoins, numDenoms)
+	totalWeight := sdk.ZeroDec()
+	for i := range weights {
+		var weight sdk.Dec
+		if i < numDenoms {
+			weight = sdk.OneDec().QuoTruncate(sdk.NewDec(int64(numDenoms)))
+		} else {
+			weight = sdk.OneDec().Sub(totalWeight)
+		}
+		weights[i] = sdk.NewDecCoinFromDec(fmt.Sprintf("stake%d", i), weight)
+		totalWeight = totalWeight.Add(weight)
+	}
+	suite.addDenomsFromDecCoins(weights)
+	_, err := suite.createPublicFixedAmountPlan(
+		suite.addrs[0], suite.addrs[0], weights,
+		sampleStartTime, sampleEndTime, parseCoins("1000000denom3"))
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+
+	epochAmt := make(sdk.Coins, numDenoms)
+	for i := range epochAmt {
+		epochAmt[i] = sdk.NewInt64Coin(fmt.Sprintf("reward%d", i), 1000000)
+	}
+	suite.addDenomsFromCoins(epochAmt)
+	_, err = suite.createPublicFixedAmountPlan(
+		suite.addrs[0], suite.addrs[0], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, epochAmt)
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+
+	_, err = suite.createPublicRatioPlan(
+		suite.addrs[0], suite.addrs[0], weights,
+		sampleStartTime, sampleEndTime, parseDec("0.1"))
+	suite.Require().ErrorIs(err, types.ErrNumMaxDenomsLimit)
+}
+
+func (suite *KeeperTestSuite) TestCreatePlanSupply() {
+	weight := parseDecCoins("1nosupply1")
+	_, err := suite.createPublicFixedAmountPlan(
+		suite.addrs[0], suite.addrs[0], weight,
+		sampleStartTime, sampleEndTime, parseCoins("1000000denom3"))
+	suite.Require().ErrorIs(err, types.ErrInvalidStakingCoinWeights)
+
+	_, err = suite.createPublicRatioPlan(
+		suite.addrs[0], suite.addrs[0], weight,
+		sampleStartTime, sampleEndTime, parseDec("0.1"))
+	suite.Require().ErrorIs(err, types.ErrInvalidStakingCoinWeights)
+
+	epochAmt := sdk.NewCoins(
+		sdk.NewInt64Coin("nosupply", 10000),
+		sdk.NewInt64Coin("stake", 10000))
+
+	suite.addDenomsFromDecCoins(parseDecCoins("1denom1"))
+	_, err = suite.createPublicFixedAmountPlan(
+		suite.addrs[0], suite.addrs[0], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, epochAmt)
+	suite.Require().ErrorIs(err, types.ErrInvalidEpochAmount)
 }

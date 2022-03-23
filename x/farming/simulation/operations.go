@@ -10,6 +10,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+
 	"github.com/tendermint/farming/app/params"
 	"github.com/tendermint/farming/x/farming/keeper"
 	"github.com/tendermint/farming/x/farming/types"
@@ -127,6 +128,10 @@ func SimulateMsgCreateFixedAmountPlan(ak types.AccountKeeper, bk types.BankKeepe
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
 		params := k.GetParams(ctx)
+		if uint32(k.GetNumActivePrivatePlans(ctx)) > params.MaxNumPrivatePlans {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "maximum number of private plans reached"), nil, nil
+		}
+
 		_, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
 		if hasNeg {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateFixedAmountPlan, "insufficient balance for plan creation fee"), nil, nil
@@ -186,6 +191,10 @@ func SimulateMsgCreateRatioPlan(ak types.AccountKeeper, bk types.BankKeeper, k k
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
 		params := k.GetParams(ctx)
+		if uint32(k.GetNumActivePrivatePlans(ctx)) > params.MaxNumPrivatePlans {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateRatioPlan, "maximum number of private plans reached"), nil, nil
+		}
+
 		_, hasNeg := spendable.SafeSub(params.PrivatePlanCreationFee)
 		if hasNeg {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateRatioPlan, "insufficient balance for plan creation fee"), nil, nil
@@ -340,31 +349,27 @@ func SimulateMsgHarvest(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		var simAccount simtypes.Account
+		var stakingCoinDenoms []string
 
+		skip := true
 		// find staking from the simulated accounts
-		var ranStaking sdk.Coins
 		for _, acc := range accs {
-			staking := k.GetAllStakedCoinsByFarmer(ctx, acc.Address)
-			if !staking.IsZero() {
+			staked := k.GetAllStakedCoinsByFarmer(ctx, acc.Address)
+			stakingCoinDenoms = nil
+			for _, coin := range staked {
+				rewards := k.Rewards(ctx, acc.Address, coin.Denom)
+				if !rewards.IsZero() {
+					stakingCoinDenoms = append(stakingCoinDenoms, coin.Denom)
+				}
+			}
+			if len(stakingCoinDenoms) > 0 {
 				simAccount = acc
-				ranStaking = staking
+				skip = false
 				break
 			}
 		}
-
-		var stakingCoinDenoms []string
-		for _, coin := range ranStaking {
-			stakingCoinDenoms = append(stakingCoinDenoms, coin.Denom)
-		}
-
-		var totalRewards sdk.Coins
-		for _, denom := range stakingCoinDenoms {
-			rewards := k.Rewards(ctx, simAccount.Address, denom)
-			totalRewards = totalRewards.Add(rewards...)
-		}
-
-		if totalRewards.IsZero() {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "no rewards to harvest"), nil, nil
+		if skip {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgHarvest, "no account to harvest rewards"), nil, nil
 		}
 
 		account := ak.GetAccount(ctx, simAccount.Address)

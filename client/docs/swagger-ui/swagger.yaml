@@ -285,6 +285,9 @@ paths:
                   max_num_private_plans:
                     type: integer
                     format: int64
+                    title: >-
+                      max_num_private_plans is the maximum number of active
+                      private plans
                 description: Params defines the set of params for the farming module.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
@@ -2254,6 +2257,7 @@ definitions:
       max_num_private_plans:
         type: integer
         format: int64
+        title: max_num_private_plans is the maximum number of active private plans
     description: Params defines the set of params for the farming module.
   cosmos.farming.v1beta1.QueryCurrentEpochDaysResponse:
     type: object
@@ -2316,6 +2320,9 @@ definitions:
           max_num_private_plans:
             type: integer
             format: int64
+            title: >-
+              max_num_private_plans is the maximum number of active private
+              plans
         description: Params defines the set of params for the farming module.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   cosmos.farming.v1beta1.QueryPlanResponse:
