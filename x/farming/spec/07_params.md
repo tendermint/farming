@@ -38,3 +38,19 @@ denom of newly staked coin.
 
 The maximum number of private plans that are allowed to be created.
 It does not include terminated plans.
+
+# Global constants
+
+There are some global constants defined in `x/farming/types/params.go`.
+
+## PrivatePlanMaxNumDenoms
+
+This is the maximum number of denoms in a private plan's staking coin weights,
+epoch amount and reward denoms.
+It's set to `50`.
+
+## PublicPlanMaxNumDenoms
+
+This is the maximum number of denoms in a public plan's staking coin weights,
+epoch amount and reward denoms.
+It's set to `500`.
