@@ -56,7 +56,10 @@ func TestParsePrivateRatioPlan(t *testing.T) {
   ],
   "start_time": "2021-07-15T08:41:21Z",
   "end_time": "2022-07-16T08:41:21Z",
-  "epoch_ratio": "1.000000000000000000"
+  "epoch_ratio": "1.000000000000000000",
+  "reward_denoms": [
+    "uatom"
+  ]
 }
 `)
 
@@ -69,6 +72,7 @@ func TestParsePrivateRatioPlan(t *testing.T) {
 	require.Equal(t, "2021-07-15T08:41:21Z", plan.StartTime.Format(time.RFC3339))
 	require.Equal(t, "2022-07-16T08:41:21Z", plan.EndTime.Format(time.RFC3339))
 	require.Equal(t, "1.000000000000000000", plan.EpochRatio.String())
+	require.Equal(t, []string{"uatom"}, plan.RewardDenoms)
 }
 
 func TestParsePublicPlanProposal(t *testing.T) {
