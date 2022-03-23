@@ -42,6 +42,7 @@ type KeeperTestSuite struct {
 	ctx                 sdk.Context
 	keeper              keeper.Keeper
 	querier             keeper.Querier
+	msgServer           types.MsgServer
 	govHandler          govtypes.Handler
 	addrs               []sdk.AccAddress
 	sampleFixedAmtPlans []types.PlanI
@@ -63,6 +64,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.ctx = ctx
 	suite.keeper = suite.app.FarmingKeeper
 	suite.querier = keeper.Querier{Keeper: suite.keeper}
+	suite.msgServer = keeper.NewMsgServerImpl(suite.keeper)
 	suite.govHandler = farming.NewPublicPlanProposalHandler(suite.keeper)
 	suite.addrs = simapp.AddTestAddrs(suite.app, suite.ctx, 6, sdk.ZeroInt())
 	for _, addr := range suite.addrs {
