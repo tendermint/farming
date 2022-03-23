@@ -91,7 +91,7 @@ type FixedAmountPlan struct {
 type RatioPlan struct {
     *BasePlan
 
-    EpochRatio   sdk.Dec  // distributing amount by ratio
+    EpochRatio sdk.Dec // distributing amount by ratio
 }
 ```
 

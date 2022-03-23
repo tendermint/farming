@@ -23,7 +23,6 @@ const (
 	AttributeKeyEndTime            = "end_time"
 	AttributeKeyEpochAmount        = "epoch_amount"
 	AttributeKeyEpochRatio         = "epoch_ratio"
-	AttributeKeyRewardDenoms       = "reward_denoms"
 	AttributeKeyFarmer             = "farmer"
 	AttributeKeyAmount             = "amount"
 	AttributeKeyStakingCoinDenom   = "staking_coin_denom"

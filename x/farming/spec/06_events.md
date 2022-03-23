@@ -43,7 +43,6 @@ The `farming` module emits the following events:
 | create_ratio_plan | start_time           | {startTime}          |
 | create_ratio_plan | end_time             | {endTime}            |
 | create_ratio_plan | epoch_ratio          | {epochRatio}         |
-| create_ratio_plan | reward_denoms        | {rewardDenoms}       |
 | message           | module               | farming              |
 | message           | action               | create_ratio_plan    |
 | message           | sender               | {senderAddress}      |
