@@ -63,7 +63,8 @@ endif
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
-testing_ldflags = -X github.com/tendermint/farming/x/farming/keeper.enableAdvanceEpoch=true
+testing_ldflags = -X github.com/tendermint/farming/x/farming/keeper.enableAdvanceEpoch=true \
+                  -X github.com/tendermint/farming/x/farming/keeper.enableRatioPlan=true
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 TESTING_BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags) $(testing_ldflags)'

@@ -19,4 +19,5 @@ var (
 	ErrNumPrivatePlansLimit            = sdkerrors.Register(ModuleName, 12, "cannot create private plans more than the limit")
 	ErrNumMaxDenomsLimit               = sdkerrors.Register(ModuleName, 13, "number of denoms cannot exceed the limit")
 	ErrInvalidEpochAmount              = sdkerrors.Register(ModuleName, 14, "invalid epoch amount")
+	ErrRatioPlanDisabled               = sdkerrors.Register(ModuleName, 15, "creation of ratio plans is disabled")
 )

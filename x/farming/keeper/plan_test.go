@@ -253,3 +253,40 @@ func (suite *KeeperTestSuite) TestCreatePlanSupply() {
 		sampleStartTime, sampleEndTime, epochAmt)
 	suite.Require().ErrorIs(err, types.ErrInvalidEpochAmount)
 }
+
+func (suite *KeeperTestSuite) TestRatioPlanDefaultDisabled() {
+	keeper.EnableRatioPlan = false
+	defer func() {
+		keeper.EnableRatioPlan = true // Rollback the change
+	}()
+
+	// Creating a ratio plan through the msg server will fail.
+	msg := types.NewMsgCreateRatioPlan(
+		"plan1", suite.addrs[0], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, parseDec("0.01"))
+	_, err := suite.msgServer.CreateRatioPlan(sdk.WrapSDKContext(suite.ctx), msg)
+	suite.Require().ErrorIs(err, types.ErrRatioPlanDisabled)
+
+	// Adding a ratio plan through public plan proposal will fail.
+	addReq := types.NewAddPlanRequest(
+		"plan1", suite.addrs[1].String(), suite.addrs[1].String(),
+		parseDecCoins("1denom1"), sampleStartTime, sampleEndTime, nil, parseDec("0.01"))
+	proposal := types.NewPublicPlanProposal(
+		"title", "description", []types.AddPlanRequest{addReq}, nil, nil)
+	suite.Require().NoError(proposal.ValidateBasic())
+	err = suite.govHandler(suite.ctx, proposal)
+	suite.Require().ErrorIs(err, types.ErrRatioPlanDisabled)
+
+	// Modifying a plan type to ratio plan through proposal will fail, too.
+	plan, err := suite.createPublicFixedAmountPlan(
+		suite.addrs[2], suite.addrs[2], parseDecCoins("1denom1"),
+		sampleStartTime, sampleEndTime, parseCoins("1000000stake"))
+	suite.Require().NoError(err)
+	modifyReq := types.NewModifyPlanRequest(
+		plan.GetId(), "", "", "", nil, plan.GetStartTime(), plan.GetEndTime(), nil, parseDec("0.01"))
+	proposal = types.NewPublicPlanProposal(
+		"title", "description", nil, []types.ModifyPlanRequest{modifyReq}, nil)
+	suite.Require().NoError(proposal.ValidateBasic())
+	err = suite.govHandler(suite.ctx, proposal)
+	suite.Require().ErrorIs(err, types.ErrRatioPlanDisabled)
+}

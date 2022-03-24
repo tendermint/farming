@@ -40,6 +40,10 @@ var (
 	}
 )
 
+func init() {
+	keeper.EnableRatioPlan = true
+}
+
 // WeightedOperations returns all the operations from the module with their respective weights.
 func WeightedOperations(
 	appParams simtypes.AppParams, cdc codec.JSONCodec, ak types.AccountKeeper,

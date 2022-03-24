@@ -41,6 +41,8 @@ One use case is to use the module to provide incentives for liquidity pool inves
 
 ### Step 1. Build from source
 
+***Since the creation of ratio plans through msg server or gov proposal is disabled by default, you have to build the binary with `make install-testing` to activate it.***
+
 ```bash
 # Clone the demo project and build `farmingd` for testing
 git clone -b v1.0.0 https://github.com/tendermint/farming.git
